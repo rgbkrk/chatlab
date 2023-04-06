@@ -1,7 +1,7 @@
 [tool]
 [tool.poetry]
 name = "murkrow"
-version = "0.1.0"
+version = "0.1.1"
 homepage = "https://github.com/rgbkrk/murkrow"
 description = "Markdown for LLMs."
 authors = ["Kyle Kelley <rgbkrk@gmail.com>"]
@@ -23,7 +23,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = ">=3.8,<4.0"
-click = "8.0.1"
+click = "8.0.4"
 
 black  = { version = "^21.5b2", optional = true}
 isort  = { version = "^5.8.0", optional = true}
