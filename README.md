@@ -4,6 +4,10 @@
 pip install murkrow
 ```
 
+## Description
+
+"Introducing murkrow—the mystical maestro of markdown, data, and language! With a clever caw and a crafty wing, murkrow weaves the art of displaying markdown text in notebooks, summarizing the rows of your DataFrames, and conjuring eloquent messages for Large Language Models. Whether you're a data wizard or a language aficionado, let murkrow be your guide through the enchanted realms of data and text. Embrace the magic, and let your creativity soar with murkrow!"
+
 [![pypi](https://img.shields.io/pypi/v/murkrow.svg)](https://pypi.org/project/murkrow/)
 [![python](https://img.shields.io/pypi/pyversions/murkrow.svg)](https://pypi.org/project/murkrow/)
 [![Build Status](https://github.com/rgbkrk/murkrow/actions/workflows/dev.yml/badge.svg)](https://github.com/rgbkrk/murkrow/actions/workflows/dev.yml)
