@@ -13,9 +13,9 @@ Report bugs at https://github.com/rgbkrk/murkrow/issues.
 
 If you are reporting a bug, please include:
 
-* Your operating system name and version.
-* Any details about your local setup that might be helpful in troubleshooting.
-* Detailed steps to reproduce the bug.
+-   Your operating system name and version.
+-   Any details about your local setup that might be helpful in troubleshooting.
+-   Detailed steps to reproduce the bug.
 
 ### Fix Bugs
 
@@ -39,10 +39,10 @@ The best way to send feedback is to file an issue at https://github.com/rgbkrk/m
 
 If you are proposing a feature:
 
-* Explain in detail how it would work.
-* Keep the scope as narrow as possible, to make it easier to implement.
-* Remember that this is a volunteer-driven project, and that contributions
-  are welcome :)
+-   Explain in detail how it would work.
+-   Keep the scope as narrow as possible, to make it easier to implement.
+-   Remember that this is a volunteer-driven project, and that contributions
+    are welcome :)
 
 ## Get Started!
 
@@ -95,7 +95,7 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list in README.md.
-3. The pull request should work for Python 3.6, 3.7, 3.8 and 3.9. Check
+3. The pull request should work for Python 3.8 and 3.9. Check
    https://github.com/rgbkrk/murkrow/actions
    and make sure that the tests pass for all supported Python versions.
 
@@ -106,7 +106,6 @@ $ poetry run pytest tests/test_murkrow.py
 ```
 
 To run a subset of tests.
-
 
 ## Deploying
 
