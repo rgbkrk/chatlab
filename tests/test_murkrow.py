@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Tests for `murkrow` package."""
 
-from murkrow import assistant, human, narrate, system, user
+from murkrow import assistant, human, narrate, system, user, ai
 
 
 def test_messaging():
@@ -11,3 +11,4 @@ def test_messaging():
     assert narrate('hello') == {'role': 'system', 'message': 'hello'}
     assert system('hello') == {'role': 'system', 'message': 'hello'}
     assert user('hello') == {'role': 'user', 'message': 'hello'}
+    assert ai('hello') == {'role': 'assistant', 'message': 'hello'}
