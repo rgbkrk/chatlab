@@ -1,16 +1,16 @@
 # OpenAI role helpers
 
 
-def ai(message):
+def assistant(message):
     return {
         'role': 'assistant',
         'message': message,
     }
 
 
-def human(message, name=None):
+def user(message):
     return {
-        'role': 'human',
+        'role': 'user',
         'message': message,
     }
 
@@ -22,5 +22,14 @@ def system(message):
     }
 
 
-def create_named_human(name):
-    return lambda message: human(message, name=name)
+# Aliases
+def narrate(message):
+    return system(message)
+
+
+def human(message):
+    return user(message)
+
+
+def ai(message):
+    return assistant(message)
