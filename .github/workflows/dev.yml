@@ -43,7 +43,7 @@ jobs:
       - name: list files
         run: ls -l .
 
-      - uses: codecov/codecov-action@v1
-        with:
-          fail_ci_if_error: true
-          files: coverage.xml
+      # - uses: codecov/codecov-action@v1
+      #   with:
+      #     fail_ci_if_error: true
+      #     files: coverage.xml

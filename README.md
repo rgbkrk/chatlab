@@ -11,7 +11,8 @@ pip install murkrow
 [![pypi](https://img.shields.io/pypi/v/murkrow.svg)](https://pypi.org/project/murkrow/)
 [![python](https://img.shields.io/pypi/pyversions/murkrow.svg)](https://pypi.org/project/murkrow/)
 [![Build Status](https://github.com/rgbkrk/murkrow/actions/workflows/dev.yml/badge.svg)](https://github.com/rgbkrk/murkrow/actions/workflows/dev.yml)
-[![codecov](https://codecov.io/gh/rgbkrk/murkrow/branch/main/graphs/badge.svg)](https://codecov.io/github/rgbkrk/murkrow)
+
+<!-- [![codecov](https://codecov.io/gh/rgbkrk/murkrow/branch/main/graphs/badge.svg)](https://codecov.io/github/rgbkrk/murkrow) -->
 
 Markdown for LLMs
 
