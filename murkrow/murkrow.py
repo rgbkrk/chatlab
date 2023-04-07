@@ -1,10 +1,11 @@
 """Simple chatterbox."""
 
 from typing import List, Union
+
 import openai
 
 from .display import Markdown
-from .messaging import ai, deltas, human, Message
+from .messaging import Message, ai, deltas, human
 
 
 class Murkrow:
