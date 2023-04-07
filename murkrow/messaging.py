@@ -1,4 +1,3 @@
-import openai
 from typing import Any, Dict, Iterator, List, TypedDict
 
 
@@ -64,29 +63,3 @@ def human(message):
 
 def ai(message):
     return assistant(message)
-
-
-class Murkrow:
-    def __init__(self, *initial_context):
-        if initial_context is None:
-            initial_context = []
-
-        self.messages = []
-        self.messages.extend(initial_context)
-        self.model = "gpt-3.5-turbo"
-
-    def chat(self, *messages):
-        self.messages.extend(messages)
-
-        mark = Markdown()
-        mark.display()
-
-        resp = openai.ChatCompletion.create(
-            model=self.model,
-            messages=self.messages,
-            stream=True,
-        )
-
-        mark.extend(deltas(resp))
-
-        self.messages.append(ai(mark.message))
