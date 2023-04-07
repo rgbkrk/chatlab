@@ -4,21 +4,21 @@
 def assistant(message):
     return {
         'role': 'assistant',
-        'message': message,
+        'content': message,
     }
 
 
 def user(message):
     return {
         'role': 'user',
-        'message': message,
+        'content': message,
     }
 
 
 def system(message):
     return {
         'role': 'system',
-        'message': message,
+        'content': message,
     }
 
 
