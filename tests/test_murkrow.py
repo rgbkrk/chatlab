@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Tests for `murkrow` package."""
 
-from murkrow import assistant, human, narrate, system, user, ai
+from murkrow import ai, assistant, human, narrate, system, user
 
 
 def test_messaging():

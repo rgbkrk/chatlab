@@ -159,7 +159,7 @@ name = "astunparse"
 version = "1.6.3"
 description = "An AST unparser for Python"
 category = "dev"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "astunparse-1.6.3-py2.py3-none-any.whl", hash = "sha256:c2652417f2c8b5bb325c885ae329bdf3f86424075c4fd1a128674bc6fba4b8e8"},
@@ -187,7 +187,7 @@ name = "atomicwrites"
 version = "1.4.1"
 description = "Atomic file writes."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 files = [
     {file = "atomicwrites-1.4.1.tar.gz", hash = "sha256:81b2c9071a49367a7f770170e5eec8cb66567cfbbc8c73d20ce5ca4a8d71cf11"},
@@ -229,7 +229,7 @@ name = "black"
 version = "23.3.0"
 description = "The uncompromising code formatter."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "black-23.3.0-cp310-cp310-macosx_10_16_arm64.whl", hash = "sha256:0945e13506be58bf7db93ee5853243eb368ace1c08a24c65ce108986eac65915"},
@@ -279,7 +279,7 @@ name = "bleach"
 version = "6.0.0"
 description = "An easy safelist-based HTML-sanitizing tool."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "bleach-6.0.0-py3-none-any.whl", hash = "sha256:33c16e3353dbd13028ab4799a0f89a83f113405c766e9c122df8a06f5b85b3f4"},
@@ -298,11 +298,23 @@ name = "bump2version"
 version = "1.0.1"
 description = "Version-bump your software with a single command!"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.5"
 files = [
     {file = "bump2version-1.0.1-py2.py3-none-any.whl", hash = "sha256:37f927ea17cde7ae2d7baf832f8e80ce3777624554a653006c9144f8017fe410"},
     {file = "bump2version-1.0.1.tar.gz", hash = "sha256:762cb2bfad61f4ec8e2bdf452c7c267416f8c70dd9ecb1653fd0bbb01fa936e6"},
+]
+
+[[package]]
+name = "cachetools"
+version = "5.3.0"
+description = "Extensible memoizing collections and decorators"
+category = "dev"
+optional = false
+python-versions = "~=3.7"
+files = [
+    {file = "cachetools-5.3.0-py3-none-any.whl", hash = "sha256:429e1a1e845c008ea6c85aa35d4b98b65d6a9763eeef3e37e92728a12d1de9d4"},
+    {file = "cachetools-5.3.0.tar.gz", hash = "sha256:13dfddc7b8df938c21a940dfa6557ce6e94a2f1cdfa58eb90c805721d58f2c14"},
 ]
 
 [[package]]
@@ -322,7 +334,7 @@ name = "cffi"
 version = "1.15.1"
 description = "Foreign Function Interface for Python calling C code."
 category = "dev"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "cffi-1.15.1-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:a66d3508133af6e8548451b25058d5812812ec3798c886bf38ed24a98216fab2"},
@@ -399,11 +411,23 @@ name = "cfgv"
 version = "3.3.1"
 description = "Validate configuration and produce human readable error messages."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.6.1"
 files = [
     {file = "cfgv-3.3.1-py2.py3-none-any.whl", hash = "sha256:c6a0883f3917a037485059700b9e75da2464e6c27051014ad85ba6aaa5884426"},
     {file = "cfgv-3.3.1.tar.gz", hash = "sha256:f5a830efb9ce7a445376bb66ec94c638a9787422f96264c98edc6bdeed8ab736"},
+]
+
+[[package]]
+name = "chardet"
+version = "5.1.0"
+description = "Universal encoding detector for Python 3"
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "chardet-5.1.0-py3-none-any.whl", hash = "sha256:362777fb014af596ad31334fde1e8c327dfdb076e1960d1694662d46a6917ab9"},
+    {file = "chardet-5.1.0.tar.gz", hash = "sha256:0d62712b956bc154f85fb0a266e2a3c5913c2967e00348701b32411d6def31e5"},
 ]
 
 [[package]]
@@ -496,7 +520,7 @@ name = "click"
 version = "8.1.3"
 description = "Composable command line interface toolkit"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "click-8.1.3-py3-none-any.whl", hash = "sha256:bb4d8133cb15a609f44e8213d9b391b0809795062913b383c62be0ee95b1db48"},
@@ -523,7 +547,7 @@ name = "coverage"
 version = "7.2.3"
 description = "Code coverage measurement for Python"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "coverage-7.2.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:e58c0d41d336569d63d1b113bd573db8363bc4146f39444125b7f8060e4e04f5"},
@@ -587,7 +611,7 @@ name = "cryptography"
 version = "40.0.1"
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "cryptography-40.0.1-cp36-abi3-macosx_10_12_universal2.whl", hash = "sha256:918cb89086c7d98b1b86b9fdb70c712e5a9325ba6f7d7cfb509e784e0cfc6917"},
@@ -641,7 +665,7 @@ name = "distlib"
 version = "0.3.6"
 description = "Distribution utilities"
 category = "dev"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "distlib-0.3.6-py2.py3-none-any.whl", hash = "sha256:f35c4b692542ca110de7ef0bea44d73981caeb34ca0b9b6b2e6d7790dda8f80e"},
@@ -653,7 +677,7 @@ name = "docutils"
 version = "0.19"
 description = "Docutils -- Python Documentation Utilities"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "docutils-0.19-py3-none-any.whl", hash = "sha256:5e1de4d849fee02c63b040a4a3fd567f4ab104defd8a5511fbbc24a8a017efbc"},
@@ -680,7 +704,7 @@ name = "filelock"
 version = "3.11.0"
 description = "A platform independent file lock."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "filelock-3.11.0-py3-none-any.whl", hash = "sha256:f08a52314748335c6460fc8fe40cd5638b85001225db78c2aa01c8c0db83b318"},
@@ -696,7 +720,7 @@ name = "flake8"
 version = "3.9.2"
 description = "the modular source code checker: pep8 pyflakes and co"
 category = "dev"
-optional = true
+optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 files = [
     {file = "flake8-3.9.2-py2.py3-none-any.whl", hash = "sha256:bf8fd333346d844f616e8d47905ef3a3384edae6b4e9beb0c5101e25e3110907"},
@@ -713,7 +737,7 @@ name = "flake8-docstrings"
 version = "1.7.0"
 description = "Extension for flake8 which uses pydocstyle to check docstrings"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "flake8_docstrings-1.7.0-py2.py3-none-any.whl", hash = "sha256:51f2344026da083fc084166a9353f5082b01f72901df422f74b4d953ae88ac75"},
@@ -813,7 +837,7 @@ name = "ghp-import"
 version = "2.1.0"
 description = "Copy your docs directly to the gh-pages branch."
 category = "dev"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "ghp-import-2.1.0.tar.gz", hash = "sha256:9c535c4c61193c2df8871222567d7fd7e5014d835f97dc7b7439069e2413d343"},
@@ -831,7 +855,7 @@ name = "identify"
 version = "2.5.22"
 description = "File identification library for Python"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "identify-2.5.22-py2.py3-none-any.whl", hash = "sha256:f0faad595a4687053669c112004178149f6c326db71ee999ae4636685753ad2f"},
@@ -858,7 +882,7 @@ name = "importlib-metadata"
 version = "6.2.0"
 description = "Read metadata from Python packages"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "importlib_metadata-6.2.0-py3-none-any.whl", hash = "sha256:8388b74023a138c605fddd0d47cb81dd706232569f56c9aca7d9c7fdb54caeba"},
@@ -878,7 +902,7 @@ name = "importlib-resources"
 version = "5.12.0"
 description = "Read resources from Python packages"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "importlib_resources-5.12.0-py3-none-any.whl", hash = "sha256:7b1deeebbf351c7578e09bf2f63fa2ce8b5ffec296e0d349139d43cca061a81a"},
@@ -897,7 +921,7 @@ name = "iniconfig"
 version = "2.0.0"
 description = "brain-dead simple config-ini parsing"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "iniconfig-2.0.0-py3-none-any.whl", hash = "sha256:b6a85871a79d2e3b22d2d1b94ac2824226a63c6b741c88f7ae975f18b6778374"},
@@ -949,7 +973,7 @@ name = "isort"
 version = "5.12.0"
 description = "A Python utility / library to sort Python imports."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.8.0"
 files = [
     {file = "isort-5.12.0-py3-none-any.whl", hash = "sha256:f84c2818376e66cf843d497486ea8fed8700b340f308f076c6fb1229dff318b6"},
@@ -967,7 +991,7 @@ name = "jaraco-classes"
 version = "3.2.3"
 description = "Utility functions for Python class constructs"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "jaraco.classes-3.2.3-py3-none-any.whl", hash = "sha256:2353de3288bc6b82120752201c6b1c1a14b058267fa424ed5ce5984e3b922158"},
@@ -1006,7 +1030,7 @@ name = "jeepney"
 version = "0.8.0"
 description = "Low-level, pure Python DBus protocol wrapper."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "jeepney-0.8.0-py3-none-any.whl", hash = "sha256:c0a454ad016ca575060802ee4d590dd912e35c122fa04e70306de3d076cce755"},
@@ -1022,7 +1046,7 @@ name = "jinja2"
 version = "3.1.2"
 description = "A very fast and expressive template engine."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "Jinja2-3.1.2-py3-none-any.whl", hash = "sha256:6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61"},
@@ -1040,7 +1064,7 @@ name = "keyring"
 version = "23.13.1"
 description = "Store and access your passwords safely."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "keyring-23.13.1-py3-none-any.whl", hash = "sha256:771ed2a91909389ed6148631de678f82ddc73737d85a927f382a8a1b157898cd"},
@@ -1065,7 +1089,7 @@ name = "markdown"
 version = "3.3.7"
 description = "Python implementation of Markdown."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "Markdown-3.3.7-py3-none-any.whl", hash = "sha256:f5da449a6e1c989a4cea2631aa8ee67caa5a2ef855d551c88f9e309f4634c621"},
@@ -1083,7 +1107,7 @@ name = "markupsafe"
 version = "2.1.2"
 description = "Safely add untrusted strings to HTML/XML markup."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "MarkupSafe-2.1.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:665a36ae6f8f20a4676b53224e33d456a6f5a72657d9c83c2aa00765072f31f7"},
@@ -1158,7 +1182,7 @@ name = "mccabe"
 version = "0.6.1"
 description = "McCabe checker, plugin for flake8"
 category = "dev"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
@@ -1170,7 +1194,7 @@ name = "mergedeep"
 version = "1.3.4"
 description = "A deep merge function for 🐍."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "mergedeep-1.3.4-py3-none-any.whl", hash = "sha256:70775750742b25c0d8f36c55aed03d24c3384d17c951b3175d898bd778ef0307"},
@@ -1182,7 +1206,7 @@ name = "mkdocs"
 version = "1.4.2"
 description = "Project documentation with Markdown."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "mkdocs-1.4.2-py3-none-any.whl", hash = "sha256:c8856a832c1e56702577023cd64cc5f84948280c1c0fcc6af4cd39006ea6aa8c"},
@@ -1211,7 +1235,7 @@ name = "mkdocs-autorefs"
 version = "0.2.1"
 description = "Automatically link across pages in MkDocs."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.6,<4.0"
 files = [
     {file = "mkdocs-autorefs-0.2.1.tar.gz", hash = "sha256:b8156d653ed91356e71675ce1fa1186d2b2c2085050012522895c9aa98fca3e5"},
@@ -1227,7 +1251,7 @@ name = "mkdocs-include-markdown-plugin"
 version = "1.0.0"
 description = "Mkdocs Markdown includer plugin."
 category = "dev"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "mkdocs_include_markdown_plugin-1.0.0-py3-none-any.whl", hash = "sha256:5143312d4aa99dfbfb40bab04ea193928f8142ea8d02f64a52e55bf9d6b61b58"},
@@ -1243,7 +1267,7 @@ name = "mkdocs-material"
 version = "6.2.8"
 description = "A Material Design theme for MkDocs"
 category = "dev"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "mkdocs-material-6.2.8.tar.gz", hash = "sha256:ce2f4a71e5db49540d71fd32f9afba7645765f7eca391e560d1d27f947eb344c"},
@@ -1262,7 +1286,7 @@ name = "mkdocs-material-extensions"
 version = "1.1.1"
 description = "Extension pack for Python Markdown and MkDocs Material."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "mkdocs_material_extensions-1.1.1-py3-none-any.whl", hash = "sha256:e41d9f38e4798b6617ad98ca8f7f1157b1e4385ac1459ca1e4ea219b556df945"},
@@ -1274,7 +1298,7 @@ name = "mkdocstrings"
 version = "0.15.2"
 description = "Automatic documentation from sources, for MkDocs."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.6,<4.0"
 files = [
     {file = "mkdocstrings-0.15.2-py3-none-any.whl", hash = "sha256:8d6cbe64c07ae66739010979ca01d49dd2f64d1a45009f089d217b9cd2a65e36"},
@@ -1295,7 +1319,7 @@ name = "more-itertools"
 version = "9.1.0"
 description = "More routines for operating on iterables, beyond itertools"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "more-itertools-9.1.0.tar.gz", hash = "sha256:cabaa341ad0389ea83c17a94566a53ae4c9d07349861ecb14dc6d0345cf9ac5d"},
@@ -1391,7 +1415,7 @@ name = "mypy"
 version = "0.900"
 description = "Optional static typing for Python"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.5"
 files = [
     {file = "mypy-0.900-cp35-cp35m-macosx_10_9_x86_64.whl", hash = "sha256:07efc88486877d595cca7f7d237e6d04d1ba6f01dc8f74a81b716270f6770968"},
@@ -1433,7 +1457,7 @@ name = "mypy-extensions"
 version = "0.4.4"
 description = "Experimental type system extensions for programs checked with the mypy typechecker."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=2.7"
 files = [
     {file = "mypy_extensions-0.4.4.tar.gz", hash = "sha256:c8b707883a96efe9b4bb3aaf0dcc07e7e217d7d8368eec4db4049ee9e142f4fd"},
@@ -1444,7 +1468,7 @@ name = "nodeenv"
 version = "1.7.0"
 description = "Node.js virtual environment builder"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*"
 files = [
     {file = "nodeenv-1.7.0-py2.py3-none-any.whl", hash = "sha256:27083a7b96a25f2f5e1d8cb4b6317ee8aeda3bdd121394e5ac54e498028a042e"},
@@ -1482,7 +1506,7 @@ name = "packaging"
 version = "23.0"
 description = "Core utilities for Python packages"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "packaging-23.0-py3-none-any.whl", hash = "sha256:714ac14496c3e68c99c29b00845f7a2b85f3bb6f1078fd9f72fd20f0570002b2"},
@@ -1510,7 +1534,7 @@ name = "pathspec"
 version = "0.11.1"
 description = "Utility library for gitignore style pattern matching of file paths."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "pathspec-0.11.1-py3-none-any.whl", hash = "sha256:d8af70af76652554bd134c22b3e8a1cc46ed7d91edcdd721ef1a0c51a84a5293"},
@@ -1549,7 +1573,7 @@ name = "pip"
 version = "20.3.4"
 description = "The PyPA recommended tool for installing Python packages."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*"
 files = [
     {file = "pip-20.3.4-py2.py3-none-any.whl", hash = "sha256:217ae5161a0e08c0fb873858806e3478c9775caffce5168b50ec885e358c199d"},
@@ -1561,7 +1585,7 @@ name = "pkginfo"
 version = "1.9.6"
 description = "Query metadata from sdists / bdists / installed packages."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "pkginfo-1.9.6-py3-none-any.whl", hash = "sha256:4b7a555a6d5a22169fcc9cf7bfd78d296b0361adad412a346c1226849af5e546"},
@@ -1576,7 +1600,7 @@ name = "platformdirs"
 version = "3.2.0"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "platformdirs-3.2.0-py3-none-any.whl", hash = "sha256:ebe11c0d7a805086e99506aa331612429a72ca7cd52a1f0d277dc4adc20cb10e"},
@@ -1592,7 +1616,7 @@ name = "pluggy"
 version = "1.0.0"
 description = "plugin and hook calling mechanisms for python"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "pluggy-1.0.0-py2.py3-none-any.whl", hash = "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"},
@@ -1608,7 +1632,7 @@ name = "pre-commit"
 version = "2.21.0"
 description = "A framework for managing and maintaining multi-language pre-commit hooks."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "pre_commit-2.21.0-py2.py3-none-any.whl", hash = "sha256:e2f91727039fc39a92f58a588a25b87f936de6567eed4f0e673e0507edc75bad"},
@@ -1669,7 +1693,7 @@ name = "py"
 version = "1.11.0"
 description = "library with cross-python path, ini-parsing, io, code, log facilities"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 files = [
     {file = "py-1.11.0-py2.py3-none-any.whl", hash = "sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378"},
@@ -1681,7 +1705,7 @@ name = "pycodestyle"
 version = "2.7.0"
 description = "Python style guide checker"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 files = [
     {file = "pycodestyle-2.7.0-py2.py3-none-any.whl", hash = "sha256:514f76d918fcc0b55c6680472f0a37970994e07bbb80725808c17089be302068"},
@@ -1693,7 +1717,7 @@ name = "pycparser"
 version = "2.21"
 description = "C parser in Python"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 files = [
     {file = "pycparser-2.21-py2.py3-none-any.whl", hash = "sha256:8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9"},
@@ -1705,7 +1729,7 @@ name = "pydocstyle"
 version = "6.3.0"
 description = "Python docstring style checker"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "pydocstyle-6.3.0-py3-none-any.whl", hash = "sha256:118762d452a49d6b05e194ef344a55822987a462831ade91ec5c06fd2169d019"},
@@ -1723,7 +1747,7 @@ name = "pyflakes"
 version = "2.3.1"
 description = "passive checker of Python programs"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 files = [
     {file = "pyflakes-2.3.1-py2.py3-none-any.whl", hash = "sha256:7893783d01b8a89811dd72d7dfd4d84ff098e5eed95cfa8905b22bbffe52efc3"},
@@ -1750,7 +1774,7 @@ name = "pymdown-extensions"
 version = "8.2"
 description = "Extension pack for Python Markdown."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "pymdown-extensions-8.2.tar.gz", hash = "sha256:b6daa94aad9e1310f9c64c8b1f01e4ce82937ab7eb53bfc92876a97aca02a6f4"},
@@ -1761,11 +1785,31 @@ files = [
 Markdown = ">=3.2"
 
 [[package]]
+name = "pyproject-api"
+version = "1.5.1"
+description = "API to interact with the python pyproject.toml based projects"
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pyproject_api-1.5.1-py3-none-any.whl", hash = "sha256:4698a3777c2e0f6b624f8a4599131e2a25376d90fe8d146d7ac74c67c6f97c43"},
+    {file = "pyproject_api-1.5.1.tar.gz", hash = "sha256:435f46547a9ff22cf4208ee274fca3e2869aeb062a4834adfc99a4dd64af3cf9"},
+]
+
+[package.dependencies]
+packaging = ">=23"
+tomli = {version = ">=2.0.1", markers = "python_version < \"3.11\""}
+
+[package.extras]
+docs = ["furo (>=2022.12.7)", "sphinx (>=6.1.3)", "sphinx-autodoc-typehints (>=1.22,!=1.23.4)"]
+testing = ["covdefaults (>=2.2.2)", "importlib-metadata (>=6)", "pytest (>=7.2.1)", "pytest-cov (>=4)", "pytest-mock (>=3.10)", "virtualenv (>=20.17.1)", "wheel (>=0.38.4)"]
+
+[[package]]
 name = "pytest"
 version = "6.2.5"
 description = "pytest: simple powerful testing with Python"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "pytest-6.2.5-py3-none-any.whl", hash = "sha256:7310f8d27bc79ced999e760ca304d69f6ba6c6649c0b60fb0e04a4a77cacc134"},
@@ -1790,7 +1834,7 @@ name = "pytest-cov"
 version = "2.12.1"
 description = "Pytest plugin for measuring coverage."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 files = [
     {file = "pytest-cov-2.12.1.tar.gz", hash = "sha256:261ceeb8c227b726249b376b8526b600f38667ee314f910353fa318caa01f4d7"},
@@ -1810,7 +1854,7 @@ name = "python-dateutil"
 version = "2.8.2"
 description = "Extensions to the standard Python datetime module"
 category = "dev"
-optional = true
+optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
     {file = "python-dateutil-2.8.2.tar.gz", hash = "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86"},
@@ -1825,7 +1869,7 @@ name = "pytkdocs"
 version = "0.11.1"
 description = "Load Python objects documentation."
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.6.1,<4.0.0"
 files = [
     {file = "pytkdocs-0.11.1-py3-none-any.whl", hash = "sha256:89ca4926d0acc266235beb24cb0b0591aa6bf7adedfae54bf9421d529d782c8d"},
@@ -1843,7 +1887,7 @@ name = "pywin32-ctypes"
 version = "0.2.0"
 description = ""
 category = "dev"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "pywin32-ctypes-0.2.0.tar.gz", hash = "sha256:24ffc3b341d457d48e8922352130cf2644024a4ff09762a2261fd34c36ee5942"},
@@ -1855,7 +1899,7 @@ name = "pyyaml"
 version = "6.0"
 description = "YAML parser and emitter for Python"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "PyYAML-6.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:d4db7c7aef085872ef65a8fd7d6d09a14ae91f691dec3e87ee5ee0539d516f53"},
@@ -1905,7 +1949,7 @@ name = "pyyaml-env-tag"
 version = "0.1"
 description = "A custom YAML tag for referencing environment variables in YAML files. "
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "pyyaml_env_tag-0.1-py3-none-any.whl", hash = "sha256:af31106dec8a4d68c60207c1886031cbf839b68aa7abccdb19868200532c2069"},
@@ -1920,7 +1964,7 @@ name = "readme-renderer"
 version = "37.3"
 description = "readme_renderer is a library for rendering \"readme\" descriptions for Warehouse"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "readme_renderer-37.3-py3-none-any.whl", hash = "sha256:f67a16caedfa71eef48a31b39708637a6f4664c4394801a7b0d6432d13907343"},
@@ -1962,7 +2006,7 @@ name = "requests-toolbelt"
 version = "0.10.1"
 description = "A utility belt for advanced users of python-requests"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 files = [
     {file = "requests-toolbelt-0.10.1.tar.gz", hash = "sha256:62e09f7ff5ccbda92772a29f394a49c3ad6cb181d568b1337626b2abb628a63d"},
@@ -1977,7 +2021,7 @@ name = "rfc3986"
 version = "2.0.0"
 description = "Validating URI References per RFC 3986"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "rfc3986-2.0.0-py2.py3-none-any.whl", hash = "sha256:50b1502b60e289cb37883f3dfd34532b8873c7de9f49bb546641ce9cbd256ebd"},
@@ -1992,7 +2036,7 @@ name = "secretstorage"
 version = "3.3.3"
 description = "Python bindings to FreeDesktop.org Secret Service API"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "SecretStorage-3.3.3-py3-none-any.whl", hash = "sha256:f356e6628222568e3af06f2eba8df495efa13b3b63081dafd4f7d9a7b7bc9f99"},
@@ -2008,7 +2052,7 @@ name = "setuptools"
 version = "67.6.1"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "setuptools-67.6.1-py3-none-any.whl", hash = "sha256:e728ca814a823bf7bf60162daf9db95b93d532948c4c0bea762ce62f60189078"},
@@ -2037,7 +2081,7 @@ name = "snowballstemmer"
 version = "2.2.0"
 description = "This package provides 29 stemmers for 28 languages generated from Snowball algorithms."
 category = "dev"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "snowballstemmer-2.2.0-py2.py3-none-any.whl", hash = "sha256:c8e1716e83cc398ae16824e5572ae04e0d9fc2c6b985fb0f900f5f0c96ecba1a"},
@@ -2069,7 +2113,7 @@ name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 files = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
@@ -2081,7 +2125,7 @@ name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
@@ -2090,29 +2134,31 @@ files = [
 
 [[package]]
 name = "tox"
-version = "3.28.0"
+version = "4.4.11"
 description = "tox is a generic virtualenv management and test command line tool"
 category = "dev"
-optional = true
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
+optional = false
+python-versions = ">=3.7"
 files = [
-    {file = "tox-3.28.0-py2.py3-none-any.whl", hash = "sha256:57b5ab7e8bb3074edc3c0c0b4b192a4f3799d3723b2c5b76f1fa9f2d40316eea"},
-    {file = "tox-3.28.0.tar.gz", hash = "sha256:d0d28f3fe6d6d7195c27f8b054c3e99d5451952b54abdae673b71609a581f640"},
+    {file = "tox-4.4.11-py3-none-any.whl", hash = "sha256:6fa4dbd933d0e335b5392c81e9cd467630119b3669705dbad47814a93b6c9586"},
+    {file = "tox-4.4.11.tar.gz", hash = "sha256:cd88e41aef9c71f0ba02b6d7939f102760b192b63458fbe04dbbaed82f7bf5f5"},
 ]
 
 [package.dependencies]
-colorama = {version = ">=0.4.1", markers = "platform_system == \"Windows\""}
-filelock = ">=3.0.0"
-packaging = ">=14"
-pluggy = ">=0.12.0"
-py = ">=1.4.17"
-six = ">=1.14.0"
-tomli = {version = ">=2.0.1", markers = "python_version >= \"3.7\" and python_version < \"3.11\""}
-virtualenv = ">=16.0.0,<20.0.0 || >20.0.0,<20.0.1 || >20.0.1,<20.0.2 || >20.0.2,<20.0.3 || >20.0.3,<20.0.4 || >20.0.4,<20.0.5 || >20.0.5,<20.0.6 || >20.0.6,<20.0.7 || >20.0.7"
+cachetools = ">=5.3"
+chardet = ">=5.1"
+colorama = ">=0.4.6"
+filelock = ">=3.10.7"
+packaging = ">=23"
+platformdirs = ">=3.2"
+pluggy = ">=1"
+pyproject-api = ">=1.5.1"
+tomli = {version = ">=2.0.1", markers = "python_version < \"3.11\""}
+virtualenv = ">=20.21"
 
 [package.extras]
-docs = ["pygments-github-lexers (>=0.0.5)", "sphinx (>=2.0.0)", "sphinxcontrib-autoprogram (>=0.1.5)", "towncrier (>=18.5.0)"]
-testing = ["flaky (>=3.4.0)", "freezegun (>=0.3.11)", "pathlib2 (>=2.3.3)", "psutil (>=5.6.1)", "pytest (>=4.0.0)", "pytest-cov (>=2.5.1)", "pytest-mock (>=1.10.0)", "pytest-randomly (>=1.0.0)"]
+docs = ["furo (>=2023.3.27)", "sphinx (>=6.1.3)", "sphinx-argparse-cli (>=1.11)", "sphinx-autodoc-typehints (>=1.22,!=1.23.4)", "sphinx-copybutton (>=0.5.1)", "sphinx-inline-tabs (>=2022.1.2b11)", "sphinxcontrib-towncrier (>=0.2.1a0)", "towncrier (>=22.12)"]
+testing = ["build[virtualenv] (>=0.10)", "covdefaults (>=2.3)", "devpi-process (>=0.3)", "diff-cover (>=7.5)", "distlib (>=0.3.6)", "flaky (>=3.7)", "hatch-vcs (>=0.3)", "hatchling (>=1.13)", "psutil (>=5.9.4)", "pytest (>=7.2.2)", "pytest-cov (>=4)", "pytest-mock (>=3.10)", "pytest-xdist (>=3.2.1)", "re-assert (>=1.1)", "time-machine (>=2.9)", "wheel (>=0.40)"]
 
 [[package]]
 name = "tqdm"
@@ -2156,7 +2202,7 @@ name = "twine"
 version = "3.8.0"
 description = "Collection of utilities for publishing packages on PyPI"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "twine-3.8.0-py3-none-any.whl", hash = "sha256:d0550fca9dc19f3d5e8eadfce0c227294df0a2a951251a4385797c8a6198b7c8"},
@@ -2209,7 +2255,7 @@ name = "virtualenv"
 version = "20.21.0"
 description = "Virtual Python Environment builder"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "virtualenv-20.21.0-py3-none-any.whl", hash = "sha256:31712f8f2a17bd06234fa97fdf19609e789dd4e3e4bf108c3da71d710651adbc"},
@@ -2230,7 +2276,7 @@ name = "watchdog"
 version = "3.0.0"
 description = "Filesystem events monitoring"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "watchdog-3.0.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:336adfc6f5cc4e037d52db31194f7581ff744b67382eb6021c868322e32eef41"},
@@ -2282,7 +2328,7 @@ name = "webencodings"
 version = "0.5.1"
 description = "Character encoding aliases for legacy web content"
 category = "dev"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "webencodings-0.5.1-py2.py3-none-any.whl", hash = "sha256:a0af1213f3c2226497a97e2b3aa01a7e4bee4f403f95be16fc9acd2947514a78"},
@@ -2294,7 +2340,7 @@ name = "wheel"
 version = "0.40.0"
 description = "A built-package format for Python"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "wheel-0.40.0-py3-none-any.whl", hash = "sha256:d236b20e7cb522daf2390fa84c55eea81c5c30190f90f29ae2ca1ad8355bf247"},
@@ -2397,7 +2443,7 @@ name = "zipp"
 version = "3.15.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 category = "dev"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "zipp-3.15.0-py3-none-any.whl", hash = "sha256:48904fc76a60e542af151aded95726c1a5c34ed43ab4134b597665c86d7ad556"},
@@ -2416,4 +2462,4 @@ test = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<4.0"
-content-hash = "fc7981fd183bfd61e8fa73fccbb4201eda5e49ba3e32168981cb45b72878c87b"
+content-hash = "6d24db5f2cc8c0964e42c48125d0d77672f5d293593e34a8ff08c9027e3c3a52"
