@@ -1,4 +1,12 @@
-from typing import Any, Dict, Iterator, List, TypedDict
+"""Little messaging helpers for Murkrow.
+
+>>> from murkrow import Murkrow, ai, human, system
+>>> murkrow = Murkrow(system("You are a large bird"))
+>>> murkrow.chat(human("What are you?"))
+I am a large bird.
+
+"""
+from typing import Iterator, List, TypedDict
 
 Delta = TypedDict(
     "Delta",
@@ -24,6 +32,13 @@ StreamCompletion = TypedDict(
 
 
 def deltas(completion: Iterator[StreamCompletion]) -> Iterator[str]:
+    """Extract the deltas from a stream completion.
+
+    >>> from murkrow import deltas
+    >>> deltas([{'choices': [{'delta': {'content': 'Hello'}}]}])
+    ['Hello']
+
+    """
     for chunk in completion:
         delta = chunk["choices"][0]["delta"]
         if "content" in delta:
@@ -40,6 +55,12 @@ Message = TypedDict(
 
 
 def assistant(content: str) -> Message:
+    """Create a message from the assistant.
+
+    >>> from murkrow import assistant
+    >>> assistant("Hello!")
+    {'role': 'assistant', 'content': 'Hello!'}
+    """
     return {
         'role': 'assistant',
         'content': content,
@@ -47,6 +68,7 @@ def assistant(content: str) -> Message:
 
 
 def user(content: str) -> Message:
+    """Create a message from the user."""
     return {
         'role': 'user',
         'content': content,
@@ -54,6 +76,7 @@ def user(content: str) -> Message:
 
 
 def system(content: str) -> Message:
+    """Create a message from the system."""
     return {
         'role': 'system',
         'content': content,
