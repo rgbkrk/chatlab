@@ -9,5 +9,6 @@ __version__ = '0.1.7'
 
 from .display import Markdown
 from .messaging import ai, assistant, human, narrate, system, user
+from .murkrow import Murkrow
 
-__all__ = ["Markdown", "human", "ai", "narrate", "system", "user", "assistant"]
+__all__ = ["Markdown", "human", "ai", "narrate", "system", "user", "assistant", "Murkrow"]
