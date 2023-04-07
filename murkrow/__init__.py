@@ -2,7 +2,7 @@
 
 __author__ = """Kyle Kelley"""
 __email__ = 'rgbkrk@gmail.com'
-__version__ = '0.1.6'
+__version__ = '0.1.7'
 
 
 # Export Markdown from display
