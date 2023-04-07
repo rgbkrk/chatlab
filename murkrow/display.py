@@ -1,3 +1,13 @@
+"""display.py!
+
+This module provides a `Markdown` class that works similarly to `IPython.display.Markdown` with
+a few extra features.
+
+* The `Markdown`'s display updates in place while messages are appended to it
+* The `Markdown`'s display can be updated from an iterator
+
+"""
+
 import os
 from binascii import hexlify
 from typing import Any, Dict, Iterator, Tuple, Union
@@ -6,8 +16,7 @@ from IPython.core import display_functions
 
 
 class Markdown:
-    """
-    A class for displaying a markdown string that can be updated in place.
+    """A class for displaying a markdown string that can be updated in place.
 
     This class provides an easy way to create and update a Markdown string in Jupyter Notebooks. It
     supports real-time updates of Markdown content which is useful for emitting ChatGPT suggestions
@@ -42,29 +51,33 @@ class Markdown:
     """
 
     def __init__(self, message: str = "") -> None:
+        """Initialize a `Markdown` object with an optional message."""
         self._message: str = message
         self._display_id: str = hexlify(os.urandom(8)).decode('ascii')
 
     def append(self, delta: str) -> None:
+        """Append a string to the `Markdown`."""
         self.message += delta
 
     def extend(self, delta_generator: Iterator[str]) -> None:
+        """Extend the `Markdown` with a generator/iterator of strings."""
         for delta in delta_generator:
             self.append(delta)
 
-    def consume(self, delta_generator: Iterator[str]) -> None:
-        self.extend(delta_generator)
+    # Alias consume
+    consume = extend
 
     def display(self) -> None:
-        '''Display the `Markdown` with a display ID for receiving updates'''
+        """Display the `Markdown` with a display ID for receiving updates."""
         display_functions.display(self, display_id=self._display_id)
 
     def update_displays(self) -> None:
-        '''Force an update to all displays'''
+        """Force an update to all displays of this `Markdown`."""
         display_functions.display(self, display_id=self._display_id, update=True)
 
     @property
     def metadata(self) -> Dict[str, Any]:
+        """Return the metadata for the `Markdown`."""
         return {
             "murkrow": {
                 "default": True,
@@ -72,12 +85,14 @@ class Markdown:
         }
 
     def __repr__(self) -> str:
+        """Provide a plaintext version of the `Markdown`."""
         message = self._message
         if message is None or message == "":
             message = " "
         return message
 
     def _repr_markdown_(self) -> Union[str, Tuple[str, Dict[str, Any]]]:
+        """Emit our markdown with metadata."""
         message = self._message
         # Handle some platforms that don't support empty Markdown
         if message is None or message == "":
@@ -87,6 +102,7 @@ class Markdown:
 
     @property
     def message(self) -> str:
+        """Return the `Markdown` message."""
         return self._message
 
     @message.setter

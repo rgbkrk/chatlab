@@ -1,6 +1,5 @@
 from typing import Any, Dict, Iterator, List, TypedDict
 
-
 Delta = TypedDict(
     "Delta",
     {
@@ -31,35 +30,37 @@ def deltas(completion: Iterator[StreamCompletion]) -> Iterator[str]:
             yield delta["content"]
 
 
-def assistant(message):
+Message = TypedDict(
+    "Message",
+    {
+        "role": str,
+        "content": str,
+    },
+)
+
+
+def assistant(content: str) -> Message:
     return {
         'role': 'assistant',
-        'content': message,
+        'content': content,
     }
 
 
-def user(message):
+def user(content: str) -> Message:
     return {
         'role': 'user',
-        'content': message,
+        'content': content,
     }
 
 
-def system(message):
+def system(content: str) -> Message:
     return {
         'role': 'system',
-        'content': message,
+        'content': content,
     }
 
 
 # Aliases
-def narrate(message):
-    return system(message)
-
-
-def human(message):
-    return user(message)
-
-
-def ai(message):
-    return assistant(message)
+narrate = system
+human = user
+ai = assistant
