@@ -41,8 +41,12 @@ def deltas(completion: Iterator[StreamCompletion]) -> Iterator[str]:
     """
     for chunk in completion:
         delta = chunk["choices"][0]["delta"]
-        if "content" in delta:
+        if "content" in delta and delta["content"] is not None:
             yield delta["content"]
+        else:
+            yield f"""Hmmmm...
+
+            {delta}"""
 
 
 Message = TypedDict(

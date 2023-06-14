@@ -32,7 +32,7 @@ class Murkrow:
 
     messages: List[Message]
     model: str
-    function_registry: Optional["FunctionRegistry"]
+    function_registry: Optional[FunctionRegistry]
 
     def __init__(self, *initial_context: Union[Message, str], model="gpt-3.5-turbo-0613"):
         """Initialize a `Murkrow` object with an optional initial context of messages.
@@ -63,11 +63,21 @@ class Murkrow:
         mark = Markdown()
         mark.display()
 
-        resp = openai.ChatCompletion.create(
-            model=self.model,
-            messages=self.messages,
-            stream=True,
-        )
+        if self.function_registry is None:
+            resp = openai.ChatCompletion.create(
+                model=self.model,
+                messages=self.messages,
+                stream=True,
+            )
+
+        else:
+            resp = openai.ChatCompletion.create(
+                model=self.model,
+                messages=self.messages,
+                functions=self.function_registry.function_definitions,
+                function_call="auto",
+                stream=True,
+            )
 
         mark.extend(deltas(resp))
 
