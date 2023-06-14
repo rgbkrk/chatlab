@@ -1,6 +1,7 @@
 """Simple chatterbox."""
 
-from typing import List, Union
+from typing import List, Optional, Union
+from murkrow.registry import FunctionRegistry
 
 import openai
 
@@ -29,7 +30,11 @@ class Murkrow:
 
     """
 
-    def __init__(self, *initial_context: Union[Message, str], model="gpt-3.5-turbo"):
+    messages: List[Message]
+    model: str
+    function_registry: Optional["FunctionRegistry"]
+
+    def __init__(self, *initial_context: Union[Message, str], model="gpt-3.5-turbo-0613"):
         """Initialize a `Murkrow` object with an optional initial context of messages.
 
         >>> from murkrow import Murkrow, narrate
@@ -39,7 +44,7 @@ class Murkrow:
 
         """
         if initial_context is None:
-            initial_context = []
+            initial_context = []  # type: ignore
 
         self.messages: List[Message] = []
 
