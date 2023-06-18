@@ -6,12 +6,13 @@
 I am a large bird.
 
 """
-from typing import Iterator, List, TypedDict
+from typing import Iterator, List, Optional, TypedDict
 
 Delta = TypedDict(
     "Delta",
     {
-        "content": str,
+        "content": Optional[str],
+        "finish_reason": Optional[str],
     },
 )
 
@@ -41,12 +42,18 @@ def deltas(completion: Iterator[StreamCompletion]) -> Iterator[str]:
     """
     for chunk in completion:
         delta = chunk["choices"][0]["delta"]
-        if "content" in delta and delta["content"] is not None:
+
+        if "finish_reason" in delta:
+            if delta["finish_reason"] == "stop":
+                break
+
+            print(chunk)
+
+        elif "content" in delta and delta["content"] is not None:
             yield delta["content"]
         else:
-            yield f"""Hmmmm...
-
-            {delta}"""
+            print(chunk)
+            print(delta)
 
 
 Message = TypedDict(

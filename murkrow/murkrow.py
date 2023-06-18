@@ -34,7 +34,12 @@ class Murkrow:
     model: str
     function_registry: Optional[FunctionRegistry]
 
-    def __init__(self, *initial_context: Union[Message, str], model="gpt-3.5-turbo-0613"):
+    def __init__(
+        self,
+        *initial_context: Union[Message, str],
+        model="gpt-3.5-turbo-0613",
+        function_registry: Optional[FunctionRegistry] = None,
+    ):
         """Initialize a `Murkrow` object with an optional initial context of messages.
 
         >>> from murkrow import Murkrow, narrate
@@ -50,6 +55,7 @@ class Murkrow:
 
         self.append(*initial_context)
         self.model = model
+        self.function_registry = function_registry
 
     def chat(self, *messages: Union[Message, str]):
         """Send messages to the chat model and display the response.
