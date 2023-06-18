@@ -5,14 +5,6 @@ import json
 from pydantic import BaseModel
 
 
-def create_function_schema(function, parameters_model) -> dict:
-    return {
-        "name": function.__name__,
-        "description": function.__doc__,
-        "parameters": parameters_model.schema(),
-    }
-
-
 class FunctionRegistry:
     """Captures a function with schema both for sending to OpenAI and for
     executing locally"""
@@ -21,10 +13,12 @@ class FunctionRegistry:
     __schemas: dict[str, dict]
 
     def __init__(self):
+        """Initialize a FunctionRegistry object."""
         self.__functions = {}
         self.__schemas = {}
 
     def register(self, function: Callable, parameters_model: "BaseModel"):
+        """Register a function with a schema for sending to OpenAI."""
         doc = function.__doc__ or parameters_model.__doc__
         name = function.__name__
 
@@ -43,13 +37,16 @@ class FunctionRegistry:
         }
 
     def get(self, function_name):
+        """Get a function by name."""
         return self.__functions[function_name]
 
     def call(self, function_call):
+        """Call a function by name with the given parameters."""
         function = self.get(function_call.name)
         parameters = json.loads(function_call.arguments)
         return function(**parameters)
 
     @property
     def function_definitions(self) -> list[dict]:
+        """Get a list of function definitions."""
         return list(self.__schemas.values())

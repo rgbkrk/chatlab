@@ -1,7 +1,9 @@
 """Simple chatterbox."""
 
-from typing import List, Optional, Union
+from typing import Callable, Generator, Iterator, List, Optional, Union
 from murkrow.registry import FunctionRegistry
+
+from pydantic import BaseModel
 
 import openai
 
@@ -32,7 +34,7 @@ class Murkrow:
 
     messages: List[Message]
     model: str
-    function_registry: Optional[FunctionRegistry]
+    function_registry: FunctionRegistry
 
     def __init__(
         self,
@@ -55,7 +57,11 @@ class Murkrow:
 
         self.append(*initial_context)
         self.model = model
-        self.function_registry = function_registry
+
+        if function_registry is None:
+            self.function_registry = FunctionRegistry()
+        else:
+            self.function_registry = function_registry
 
     def chat(self, *messages: Union[Message, str]):
         """Send messages to the chat model and display the response.
@@ -69,23 +75,17 @@ class Murkrow:
         mark = Markdown()
         mark.display()
 
-        if self.function_registry is None:
-            resp = openai.ChatCompletion.create(
-                model=self.model,
-                messages=self.messages,
-                stream=True,
-            )
+        resp = openai.ChatCompletion.create(
+            model=self.model,
+            messages=self.messages,
+            functions=self.function_registry.function_definitions,
+            function_call="auto",
+            stream=True,
+        )
 
-        else:
-            resp = openai.ChatCompletion.create(
-                model=self.model,
-                messages=self.messages,
-                functions=self.function_registry.function_definitions,
-                function_call="auto",
-                stream=True,
-            )
+        text = deltas(resp)  # type: ignore
 
-        mark.extend(deltas(resp))
+        mark.extend(text)
 
         self.messages.append(ai(mark.message))
 
@@ -104,3 +104,13 @@ class Murkrow:
                 self.messages.append(human(message))
             else:
                 self.messages.append(message)
+
+    def register(self, function: Callable, parameters_model: "BaseModel"):
+        """Register a function with the Murkrow instance.
+
+        Args:
+            function (Callable): The function to register.
+            parameters_model (BaseModel): The pydantic model to use for parameters.
+
+        """
+        self.function_registry.register(function, parameters_model)
