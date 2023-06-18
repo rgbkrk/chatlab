@@ -40,11 +40,15 @@ class FunctionRegistry:
         """Get a function by name."""
         return self.__functions[function_name]
 
-    def call(self, function_call):
+    def call(self, name, arguments):
         """Call a function by name with the given parameters."""
-        function = self.get(function_call.name)
-        parameters = json.loads(function_call.arguments)
+        function = self.get(name)
+        parameters = arguments
         return function(**parameters)
+
+    def __contains__(self, name):
+        """Check if a function is registered by name."""
+        return name in self.__functions
 
     @property
     def function_definitions(self) -> list[dict]:

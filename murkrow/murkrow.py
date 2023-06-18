@@ -1,5 +1,6 @@
 """Simple chatterbox."""
 
+import json
 from typing import Callable, Generator, Iterator, List, Optional, Union
 from murkrow.registry import FunctionRegistry
 
@@ -8,7 +9,7 @@ from pydantic import BaseModel
 import openai
 
 from .display import Markdown
-from .messaging import Message, ai, deltas, human
+from .messaging import Message, ai, deltas, human, function_called
 
 
 class Murkrow:
@@ -83,9 +84,46 @@ class Murkrow:
             stream=True,
         )
 
-        text = deltas(resp)  # type: ignore
+        function_name = None
+        function_args = None
 
-        mark.extend(text)
+        for result in resp:  # Go through the results of the stream
+            choice = result['choices'][0]  # Get the first choice, since we're not doing bulk
+
+            # TODO: When moving from a content delta to a function call delta, we need to flush the
+            #       Markdown display and instead show the function call being built out
+
+            if 'delta' in choice:  # If there is a delta in the result
+                delta = choice['delta']
+                if 'content' in delta:  # If the delta contains content
+                    mark.append(delta['content'])  # Extend the markdown with the content
+
+                elif 'function_call' in delta:  # If the delta contains a function call
+                    function_call = delta['function_call']
+                    if 'name' in function_call:
+                        function_name = function_call['name']
+
+                    if 'arguments' in function_call:
+                        # Build up the arguments string
+                        function_args = (function_args or "") + function_call['arguments']
+
+            if 'finish_reason' in choice and choice['finish_reason'] == "function_call":
+                if function_name and function_args and function_name in self.function_registry:
+                    # Evaluate the arguments as a JSON
+                    arguments = json.loads(function_args)
+
+                    # Execute the function and get the result
+                    function_result = self.function_registry.call(function_name, arguments)
+
+                    repr_llm = repr(function_result)
+
+                    # We... probably have to recurse at this point...
+                    # Instead calling self.chat(function_called(...))
+                    self.messages.append(function_called(name=function_name, content=repr_llm))
+
+                    # Reset function name and arguments for the next function call
+                    function_name = None
+                    function_args = None
 
         self.messages.append(ai(mark.message))
 
