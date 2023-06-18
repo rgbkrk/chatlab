@@ -24,7 +24,7 @@ class FunctionRegistry:
         self.__functions = {}
         self.__schemas = {}
 
-    def register(self, function: Callable, parameters_model: Type[BaseModel]):
+    def register(self, function: Callable, parameters_model: "BaseModel"):
         doc = function.__doc__ or parameters_model.__doc__
         name = function.__name__
 
