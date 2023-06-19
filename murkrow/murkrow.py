@@ -36,12 +36,14 @@ class Session:
     messages: List[Message]
     model: str
     function_registry: FunctionRegistry
+    auto_continue: bool
 
     def __init__(
         self,
         *initial_context: Union[Message, str],
         model="gpt-3.5-turbo-0613",
         function_registry: Optional[FunctionRegistry] = None,
+        auto_continue: bool = True,
     ):
         """Initialize a `Murkrow` object with an optional initial context of messages.
 
@@ -58,13 +60,14 @@ class Session:
 
         self.append(*initial_context)
         self.model = model
+        self.auto_continue = auto_continue
 
         if function_registry is None:
             self.function_registry = FunctionRegistry()
         else:
             self.function_registry = function_registry
 
-    def chat(self, *messages: Union[Message, str]):
+    def chat(self, *messages: Union[Message, str], auto_continue: Optional[bool] = None):
         """Send messages to the chat model and display the response.
 
         Args:
@@ -91,9 +94,6 @@ class Session:
 
         for result in resp:  # Go through the results of the stream
             choice = result['choices'][0]  # Get the first choice, since we're not doing bulk
-
-            # TODO: When moving from a content delta to a function call delta, we need to flush the
-            #       Markdown display and instead show the function call being built out
 
             if 'delta' in choice:  # If there is a delta in the result
                 delta = choice['delta']
@@ -155,6 +155,23 @@ class Session:
 
                 if 'max_tokens' in choice['finish_reason']:
                     mark.append("\n...MAX TOKENS REACHED...\n")
+
+        # In priority order:
+        #
+        # `auto_continue` argument
+        # `self.auto_continue`
+        #
+        # If `auto_continue` is False, then `self.auto_continue` is ignored
+        continuing = False
+
+        if auto_continue is not None:
+            continuing = auto_continue
+        elif self.auto_continue:
+            continuing = True
+
+        if continuing and self.messages[-1]['role'] == 'function':
+            # Automatically let the LLM continue from our function result
+            self.chat()
 
     def append(self, *messages: Union[Message, str]):
         """Append messages to the conversation history.
