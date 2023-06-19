@@ -128,6 +128,9 @@ class Murkrow:
                 if function_name and function_args and function_name in self.function_registry:
                     self.messages.append(assistant_function_call(name=function_name, arguments=function_args))
 
+                    mark = Markdown()
+                    mark.display()
+
                     # Evaluate the arguments as a JSON
                     arguments = json.loads(function_args)
 
@@ -135,6 +138,8 @@ class Murkrow:
                     function_result = self.function_registry.call(function_name, arguments)
 
                     repr_llm = repr(function_result)
+
+                    mark.message = f"<details><summary>Function results</summary>{repr_llm}</details>"
 
                     self.messages.append(function_called(name=function_name, content=repr_llm))
 
