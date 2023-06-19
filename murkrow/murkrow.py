@@ -1,11 +1,15 @@
 """Simple chatterbox."""
 
-from typing import List, Union
+import json
+from typing import Callable, List, Optional, Union
+from murkrow.registry import FunctionRegistry
+
+from pydantic import BaseModel
 
 import openai
 
 from .display import Markdown
-from .messaging import Message, ai, deltas, human
+from .messaging import Message, ai, assistant, human, function_called, assistant_function_call
 
 
 class Murkrow:
@@ -29,7 +33,16 @@ class Murkrow:
 
     """
 
-    def __init__(self, *initial_context: Union[Message, str], model="gpt-3.5-turbo"):
+    messages: List[Message]
+    model: str
+    function_registry: FunctionRegistry
+
+    def __init__(
+        self,
+        *initial_context: Union[Message, str],
+        model="gpt-3.5-turbo-0613",
+        function_registry: Optional[FunctionRegistry] = None,
+    ):
         """Initialize a `Murkrow` object with an optional initial context of messages.
 
         >>> from murkrow import Murkrow, narrate
@@ -39,12 +52,17 @@ class Murkrow:
 
         """
         if initial_context is None:
-            initial_context = []
+            initial_context = []  # type: ignore
 
         self.messages: List[Message] = []
 
         self.append(*initial_context)
         self.model = model
+
+        if function_registry is None:
+            self.function_registry = FunctionRegistry()
+        else:
+            self.function_registry = function_registry
 
     def chat(self, *messages: Union[Message, str]):
         """Send messages to the chat model and display the response.
@@ -61,12 +79,77 @@ class Murkrow:
         resp = openai.ChatCompletion.create(
             model=self.model,
             messages=self.messages,
+            functions=self.function_registry.function_definitions,
+            function_call="auto",
             stream=True,
         )
 
-        mark.extend(deltas(resp))
+        function_name = None
+        function_args = None
 
-        self.messages.append(ai(mark.message))
+        in_function = False
+
+        for result in resp:  # Go through the results of the stream
+            choice = result['choices'][0]  # Get the first choice, since we're not doing bulk
+
+            # TODO: When moving from a content delta to a function call delta, we need to flush the
+            #       Markdown display and instead show the function call being built out
+
+            if 'delta' in choice:  # If there is a delta in the result
+                delta = choice['delta']
+                if 'content' in delta and delta['content'] is not None:  # If the delta contains content
+                    mark.append(delta['content'])  # Extend the markdown with the content
+
+                elif 'function_call' in delta:  # If the delta contains a function call
+                    # Previous message finished
+                    if not in_function:
+                        # Wrap up the previous
+                        self.messages.append(assistant(mark.message))
+                        mark = Markdown()
+                        mark.display()
+
+                        in_function = True
+
+                    function_call = delta['function_call']
+                    if 'name' in function_call:
+                        function_name = function_call['name']
+
+                    if 'arguments' in function_call:
+                        # Build up the arguments string
+                        function_args = (function_args or "") + function_call['arguments']
+
+                    function_block = (
+                        f"<details><summary>Running {function_name}</summary><pre>{function_args}</pre></details>"
+                    )
+
+                    mark.message = function_block
+
+            if 'finish_reason' in choice and choice['finish_reason'] == "function_call":
+                if function_name and function_args and function_name in self.function_registry:
+                    self.messages.append(assistant_function_call(name=function_name, arguments=function_args))
+
+                    # Evaluate the arguments as a JSON
+                    arguments = json.loads(function_args)
+
+                    # Execute the function and get the result
+                    function_result = self.function_registry.call(function_name, arguments)
+
+                    repr_llm = repr(function_result)
+
+                    self.messages.append(function_called(name=function_name, content=repr_llm))
+
+                    # Reset function name and arguments for the next function call
+                    function_name = None
+                    function_args = None
+
+                    in_function = False
+            elif 'finish_reason' in choice and choice['finish_reason'] is not None:
+                if not in_function:
+                    # Wrap up the previous assistant
+                    self.messages.append(assistant(mark.message))
+
+                if 'max_tokens' in choice['finish_reason']:
+                    mark.append("\n...MAX TOKENS REACHED...\n")
 
     def append(self, *messages: Union[Message, str]):
         """Append messages to the conversation history.
@@ -83,3 +166,13 @@ class Murkrow:
                 self.messages.append(human(message))
             else:
                 self.messages.append(message)
+
+    def register(self, function: Callable, parameters_model: "BaseModel"):
+        """Register a function with the Murkrow instance.
+
+        Args:
+            function (Callable): The function to register.
+            parameters_model (BaseModel): The pydantic model to use for parameters.
+
+        """
+        self.function_registry.register(function, parameters_model)
