@@ -9,13 +9,13 @@
 >>> murky.chat("What are you?")
 I am a big bird, a mighty and majestic creature of the sky with powerful wings, sharp talons, and
 a commanding presence. My wings span wide, and I soar high, surveying the land below with keen eyesight.
-I am the king of the skies, the lord of the avian realm. Squawk! 
+I am the king of the skies, the lord of the avian realm. Squawk!
 
 """
 
 __author__ = """Kyle Kelley"""
 __email__ = 'rgbkrk@gmail.com'
-__version__ = '0.3.0'
+__version__ = '0.5.0'
 
 
 # Export Markdown from display
