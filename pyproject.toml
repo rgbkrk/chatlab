@@ -1,7 +1,7 @@
 [tool]
 [tool.poetry]
 name = "murkrow"
-version = "0.3.0"
+version = "0.4.0"
 homepage = "https://github.com/rgbkrk/murkrow"
 description = "Markdown for LLMs."
 authors = ["Kyle Kelley <rgbkrk@gmail.com>"]
@@ -113,4 +113,3 @@ skip_gitignore = true
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
