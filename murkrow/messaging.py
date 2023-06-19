@@ -6,7 +6,9 @@
 I am a large bird.
 
 """
-from typing import Iterator, List, NotRequired, Optional, TypedDict
+from typing import Iterator, List, Optional, TypedDict
+from typing_extensions import NotRequired
+
 
 FunctionCall = TypedDict(
     "FunctionCall",
