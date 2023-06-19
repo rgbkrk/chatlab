@@ -80,11 +80,18 @@ class Session:
         mark = Markdown()
         mark.display()
 
+        # Don't pass in functions if there are none
+        chat_function_arguments = dict()
+        if len(self.function_registry.function_definitions) > 0:
+            chat_function_arguments = dict(
+                functions=self.function_registry.function_definitions,
+                function_call="auto",
+            )
+
         resp = openai.ChatCompletion.create(
             model=self.model,
             messages=self.messages,
-            functions=self.function_registry.function_definitions,
-            function_call="auto",
+            **chat_function_arguments,
             stream=True,
         )
 
