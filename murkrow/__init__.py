@@ -15,7 +15,7 @@ I am the king of the skies, the lord of the avian realm. Squawk!
 
 __author__ = """Kyle Kelley"""
 __email__ = 'rgbkrk@gmail.com'
-__version__ = '0.4.0'
+__version__ = '0.5.0'
 
 
 # Export Markdown from display
