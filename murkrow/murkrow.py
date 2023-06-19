@@ -73,6 +73,8 @@ class Session:
         Args:
             messages (str | Message): One or more messages to send to the chat, can be strings or Message objects.
 
+            auto_continue (bool): Whether to continue the conversation after the messages are sent. Defaults to the
+
         """
         self.append(*messages)
 
@@ -80,11 +82,18 @@ class Session:
         mark = Markdown()
         mark.display()
 
+        # Don't pass in functions if there are none
+        chat_function_arguments = dict()
+        if len(self.function_registry.function_definitions) > 0:
+            chat_function_arguments = dict(
+                functions=self.function_registry.function_definitions,
+                function_call="auto",
+            )
+
         resp = openai.ChatCompletion.create(
             model=self.model,
             messages=self.messages,
-            functions=self.function_registry.function_definitions,
-            function_call="auto",
+            **chat_function_arguments,
             stream=True,
         )
 
@@ -94,6 +103,7 @@ class Session:
         # We can replace in_function with chat_function_display is not None
 
         for result in resp:  # Go through the results of the stream
+            # TODO: Move this setup back into deltas
             choice = result['choices'][0]  # Get the first choice, since we're not doing bulk
 
             if 'delta' in choice:  # If there is a delta in the result

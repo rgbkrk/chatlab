@@ -7,11 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.1]
+
+### Fixed
+
+-   Fixed a bug where zero functions would create an `InvalidRequestError: [] is too short - 'functions'`
+
 ## [0.12.0]
 
 ### Added
 
-- A little chat function displayer
+-   A little chat function displayer
 
 ## [0.11.4]
 
