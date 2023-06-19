@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 from murkrow.registry import FunctionRegistry
 
-from .display import Markdown
+from .display import ChatFunctionDisplay, Markdown
 from .messaging import Message, assistant, assistant_function_call, function_result, human
 
 
@@ -76,6 +76,7 @@ class Session:
         """
         self.append(*messages)
 
+        # Get the output area ready
         mark = Markdown()
         mark.display()
 
@@ -87,8 +88,7 @@ class Session:
             stream=True,
         )
 
-        function_name = None
-        function_args = None
+        chat_function_display = None
 
         in_function = False
 
@@ -105,6 +105,7 @@ class Session:
                     if not in_function:
                         # Wrap up the previous
                         self.messages.append(assistant(mark.message))
+                        # TODO: With the CFD, we should toss the old markdown display
                         mark = Markdown()
                         mark.display()
 
@@ -112,24 +113,23 @@ class Session:
 
                     function_call = delta['function_call']
                     if 'name' in function_call:
-                        function_name = function_call['name']
+                        chat_function_display = ChatFunctionDisplay(function_call["name"])
+                        chat_function_display.display()
 
                     if 'arguments' in function_call:
-                        # Build up the arguments string
-                        function_args = (function_args or "") + function_call['arguments']
-
-                    function_block = (
-                        f"<details><summary>Running {function_name}</summary><pre>{function_args}</pre></details>"
-                    )
-
-                    mark.message = function_block
+                        if chat_function_display is None:
+                            raise ValueError("Function arguments provided without function name")
+                        chat_function_display.append_arguments(function_call['arguments'])
 
             if 'finish_reason' in choice and choice['finish_reason'] == "function_call":
+                if chat_function_display is None:
+                    raise ValueError("Function call finished without function name")
+
+                function_name = chat_function_display.function_name
+                function_args = chat_function_display.function_args
+
                 if function_name and function_args and function_name in self.function_registry:
                     self.messages.append(assistant_function_call(name=function_name, arguments=function_args))
-
-                    mark = Markdown()
-                    mark.display()
 
                     # Evaluate the arguments as a JSON
                     arguments = json.loads(function_args)
@@ -139,13 +139,12 @@ class Session:
 
                     repr_llm = repr(output)
 
-                    mark.message = f"<details><summary>Function results</summary>{repr_llm}</details>"
+                    chat_function_display.append_result(repr_llm)
 
                     self.messages.append(function_result(name=function_name, content=repr_llm))
 
-                    # Reset function name and arguments for the next function call
-                    function_name = None
-                    function_args = None
+                    # Reset to no function display for the next call
+                    chat_function_display = None
 
                     in_function = False
             elif 'finish_reason' in choice and choice['finish_reason'] is not None:
