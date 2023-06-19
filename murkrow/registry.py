@@ -1,6 +1,44 @@
-from typing import Callable, Type
+"""Registry of functions for use by ChatCompletions.
 
-import json
+Example usage:
+
+    from murkrow import FunctionRegistry
+    from pydantic import BaseModel
+
+    registry = FunctionRegistry()
+
+    class Parameters(BaseModel):
+        name: str
+
+    from datetime import datetime
+    from pytz import timezone, all_timezones, utc
+    from typing import Optional
+    from pydantic import BaseModel
+
+    def what_time(tz: Optional[str] = None):
+        '''Current time, defaulting to the user's current timezone'''
+        if tz is None:
+            pass
+        elif tz in all_timezones:
+            tz = timezone(tz)
+        else:
+            return 'Invalid timezone'
+        return datetime.now(tz).strftime('%I:%M %p')
+
+    class WhatTime(BaseModel):
+        timezone: Optional[str]
+
+    
+    import murkrow
+    registry = murkrow.FunctionRegistry()
+
+    session = murkrow.Session(
+        function_registry=registry,
+    )
+
+"""
+
+from typing import Callable
 
 from pydantic import BaseModel
 
