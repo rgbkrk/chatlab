@@ -1,7 +1,7 @@
 """Simple chatterbox."""
 
 import json
-from typing import Callable, Generator, Iterator, List, Optional, Union
+from typing import Callable, List, Optional, Union
 from murkrow.registry import FunctionRegistry
 
 from pydantic import BaseModel
@@ -9,7 +9,7 @@ from pydantic import BaseModel
 import openai
 
 from .display import Markdown
-from .messaging import Message, ai, deltas, human, function_called
+from .messaging import Message, ai, assistant, human, function_called, assistant_function_call
 
 
 class Murkrow:
@@ -87,6 +87,8 @@ class Murkrow:
         function_name = None
         function_args = None
 
+        in_function = False
+
         for result in resp:  # Go through the results of the stream
             choice = result['choices'][0]  # Get the first choice, since we're not doing bulk
 
@@ -99,6 +101,15 @@ class Murkrow:
                     mark.append(delta['content'])  # Extend the markdown with the content
 
                 elif 'function_call' in delta:  # If the delta contains a function call
+                    # Previous message finished
+                    if not in_function:
+                        # Wrap up the previous
+                        self.messages.append(assistant(mark.message))
+                        mark = Markdown()
+                        mark.display()
+
+                        in_function = True
+
                     function_call = delta['function_call']
                     if 'name' in function_call:
                         function_name = function_call['name']
@@ -107,8 +118,16 @@ class Murkrow:
                         # Build up the arguments string
                         function_args = (function_args or "") + function_call['arguments']
 
+                    function_block = (
+                        f"<details><summary>Running {function_name}</summary><pre>{function_args}</pre></details>"
+                    )
+
+                    mark.message = function_block
+
             if 'finish_reason' in choice and choice['finish_reason'] == "function_call":
                 if function_name and function_args and function_name in self.function_registry:
+                    self.messages.append(assistant_function_call(name=function_name, arguments=function_args))
+
                     # Evaluate the arguments as a JSON
                     arguments = json.loads(function_args)
 
@@ -117,15 +136,20 @@ class Murkrow:
 
                     repr_llm = repr(function_result)
 
-                    # We... probably have to recurse at this point...
-                    # Instead calling self.chat(function_called(...))
                     self.messages.append(function_called(name=function_name, content=repr_llm))
 
                     # Reset function name and arguments for the next function call
                     function_name = None
                     function_args = None
 
-        self.messages.append(ai(mark.message))
+                    in_function = False
+            elif 'finish_reason' in choice and choice['finish_reason'] is not None:
+                if not in_function:
+                    # Wrap up the previous assistant
+                    self.messages.append(assistant(mark.message))
+
+                if 'max_tokens' in choice['finish_reason']:
+                    mark.append("\n...MAX TOKENS REACHED...\n")
 
     def append(self, *messages: Union[Message, str]):
         """Append messages to the conversation history.
