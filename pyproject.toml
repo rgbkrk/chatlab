@@ -22,7 +22,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.9.3,<3.12"
+python = ">=3.9.0,<3.12"
 ipython = "^8.12.0"
 openai = "^0.27.4"
 pydantic = "^1.10.9"
@@ -39,18 +39,11 @@ pytest = "^7.2.2"
 pytest-cov = "^4.0.0"
 virtualenv = "^20.21.0"
 pip = "^23.0.1"
-mkdocs = "^1.4.2"
-mkdocs-include-markdown-plugin = "^4.0.4"
-mkdocs-material = "^9.1.6"
-mkdocstrings = "^0.21.2"
-mkdocs-material-extensions = "^1.1.1"
 twine = "^4.0.2"
-mkdocs-autorefs = "^0.4.1"
 pre-commit = "^3.2.2"
 toml = "^0.10.2"
 bump2version = "^1.0.1"
 jinja2 = "^3.1.2"
-mkdocstrings-python = "^0.9.0"
 ipykernel = "^6.23.2"
 
 [tool.poetry.extras]
@@ -62,22 +55,9 @@ test = [
     "flake8",
     "flake8-docstrings",
     "pytest-cov"
-    ]
+]
 
 dev = ["tox", "pre-commit", "virtualenv", "pip", "twine", "toml", "bump2version"]
-
-doc = [
-    "mkdocs",
-    "mkdocs-include-markdown-plugin",
-    "mkdocs-material",
-    "mkdocstrings",
-    "mkdocs-material-extension",
-    "mkdocs-autorefs"
-    ]
-
-[tool.poetry.scripts]
-murkrow = 'murkrow.cli:main'
-
 
 
 [tool.black]
@@ -101,6 +81,7 @@ exclude = '''
 '''
 
 [tool.isort]
+profile = "black"
 multi_line_output = 3
 include_trailing_comma = true
 force_grid_wrap = 0

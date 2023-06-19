@@ -7,8 +7,8 @@ I am a large bird.
 
 """
 from typing import Iterator, List, Optional, TypedDict
-from typing_extensions import NotRequired
 
+from typing_extensions import NotRequired
 
 FunctionCall = TypedDict(
     "FunctionCall",
@@ -49,6 +49,7 @@ def deltas(completion: Iterator[StreamCompletion]) -> Iterator[str]:
     >>> from murkrow import deltas
     >>> deltas([{'choices': [{'delta': {'content': 'Hello'}}]}])
     ['Hello']
+
     """
 
     for chunk in completion:
@@ -119,7 +120,7 @@ def assistant_function_call(name: str, arguments: str) -> Message:
     }
 
 
-def function_called(name: str, content: str) -> Message:
+def function_result(name: str, content: str) -> Message:
     """Create a function message."""
     return {
         'role': 'function',

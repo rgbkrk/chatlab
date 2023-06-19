@@ -21,7 +21,22 @@ __version__ = '0.5.2'
 # Export Markdown from display
 
 from .display import Markdown
-from .messaging import ai, assistant, human, narrate, system, user
-from .murkrow import Murkrow
+from .messaging import ai, assistant, assistant_function_call, function_result, human, narrate, system, user
+from .murkrow import Session
 
-__all__ = ["Markdown", "human", "ai", "narrate", "system", "user", "assistant", "Murkrow"]
+# Backwards compatibility
+Murkrow = Session
+
+__all__ = [
+    "Markdown",
+    "human",
+    "ai",
+    "narrate",
+    "system",
+    "user",
+    "assistant",
+    "assistant_function_call",
+    "function_result",
+    "Murkrow",
+    "Session",
+]
