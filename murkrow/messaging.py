@@ -49,153 +49,11 @@ def deltas(completion: Iterator[StreamCompletion]) -> Iterator[str]:
     >>> from murkrow import deltas
     >>> deltas([{'choices': [{'delta': {'content': 'Hello'}}]}])
     ['Hello']
-
     """
-
-    # When the Assistant starts entering into a function call, it does not
-    # repeat the name and instead makes choices like this
-    '''
-    {
-  "index": 0,
-  "delta": {
-    "role": "assistant",
-    "content": null,
-    "function_call": {
-      "name": "execute",
-      "arguments": ""
-    }
-  },
-  "finish_reason": null
-}
-{
-  "index": 0,
-  "delta": {
-    "function_call": {
-      "arguments": "{\n"
-    }
-  },
-  "finish_reason": null
-}
-{
-  "index": 0,
-  "delta": {
-    "function_call": {
-      "arguments": " "
-    }
-  },
-  "finish_reason": null
-}
-{
-  "index": 0,
-  "delta": {
-    "function_call": {
-      "arguments": " \""
-    }
-  },
-  "finish_reason": null
-}
-{
-  "index": 0,
-  "delta": {
-    "function_call": {
-      "arguments": "code"
-    }
-  },
-  "finish_reason": null
-}
-{
-  "index": 0,
-  "delta": {
-    "function_call": {
-      "arguments": "\":"
-    }
-  },
-  "finish_reason": null
-}
-{
-  "index": 0,
-  "delta": {
-    "function_call": {
-      "arguments": " \""
-    }
-  },
-  "finish_reason": null
-}
-{
-  "index": 0,
-  "delta": {
-    "function_call": {
-      "arguments": "import"
-    }
-  },
-  "finish_reason": null
-}
-{
-  "index": 0,
-  "delta": {
-    "function_call": {
-      "arguments": " random"
-    }
-  },
-  "finish_reason": null
-}
-{
-  "index": 0,
-  "delta": {
-    "function_call": {
-      "arguments": "\\n"
-    }
-  },
-  "finish_reason": null
-}
-{
-  "index": 0,
-  "delta": {
-    "function_call": {
-      "arguments": "random"
-    }
-  },
-  "finish_reason": null
-}
-{
-  "index": 0,
-  "delta": {
-    "function_call": {
-      "arguments": ".random"
-    }
-  },
-  "finish_reason": null
-}
-{
-  "index": 0,
-  "delta": {
-    "function_call": {
-      "arguments": "()\"\n"
-    }
-  },
-  "finish_reason": null
-}
-{
-  "index": 0,
-  "delta": {
-    "function_call": {
-      "arguments": "}"
-    }
-  },
-  "finish_reason": null
-}
-{
-  "index": 0,
-  "delta": {},
-  "finish_reason": "function_call"
-}
-    
-    '''
 
     for chunk in completion:
         # Note that chunk has an ID for the completion. We're not using it yet
         choice = chunk["choices"][0]
-        print(choice)
 
         delta = choice["delta"]
 
@@ -203,14 +61,10 @@ def deltas(completion: Iterator[StreamCompletion]) -> Iterator[str]:
             if delta["finish_reason"] == "stop":
                 break
 
-            # print(chunk)
-
         elif "content" in delta and delta["content"] is not None:
             yield delta["content"]
         else:
             pass
-            # print(chunk)
-            # print(delta)
 
 
 Message = TypedDict(
