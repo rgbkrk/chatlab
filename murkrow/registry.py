@@ -36,6 +36,8 @@ Example usage:
         function_registry=registry,
     )
 
+    session.chat("What time is it?")
+
 """
 
 from typing import Callable

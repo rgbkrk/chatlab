@@ -49,6 +49,7 @@ def deltas(completion: Iterator[StreamCompletion]) -> Iterator[str]:
     >>> from murkrow import deltas
     >>> deltas([{'choices': [{'delta': {'content': 'Hello'}}]}])
     ['Hello']
+
     """
 
     for chunk in completion:
