@@ -73,6 +73,8 @@ class Session:
         Args:
             messages (str | Message): One or more messages to send to the chat, can be strings or Message objects.
 
+            auto_continue (bool): Whether to continue the conversation after the messages are sent. Defaults to the
+
         """
         self.append(*messages)
 
