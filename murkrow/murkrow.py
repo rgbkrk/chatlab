@@ -91,6 +91,7 @@ class Session:
         chat_function_display = None
 
         in_function = False
+        # We can replace in_function with chat_function_display is not None
 
         for result in resp:  # Go through the results of the stream
             choice = result['choices'][0]  # Get the first choice, since we're not doing bulk
@@ -103,7 +104,7 @@ class Session:
                 elif 'function_call' in delta:  # If the delta contains a function call
                     # Previous message finished
                     if not in_function:
-                        # Wrap up the previous
+                        # Wrap up the previous assistant message
                         self.messages.append(assistant(mark.message))
                         # TODO: With the CFD, we should toss the old markdown display
                         mark = Markdown()
@@ -129,6 +130,7 @@ class Session:
                 function_args = chat_function_display.function_args
 
                 if function_name and function_args and function_name in self.function_registry:
+                    chat_function_display.set_state("Running")
                     self.messages.append(assistant_function_call(name=function_name, arguments=function_args))
 
                     # Evaluate the arguments as a JSON
@@ -140,6 +142,8 @@ class Session:
                     repr_llm = repr(output)
 
                     chat_function_display.append_result(repr_llm)
+                    chat_function_display.set_state("Ran")
+                    chat_function_display.set_finished()
 
                     self.messages.append(function_result(name=function_name, content=repr_llm))
 
