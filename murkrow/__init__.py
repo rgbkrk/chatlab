@@ -23,9 +23,7 @@ __version__ = '0.9.0'
 from .display import Markdown
 from .messaging import ai, assistant, assistant_function_call, function_result, human, narrate, system, user
 from .murkrow import Session
-
-# Backwards compatibility
-Murkrow = Session
+from .registry import FunctionRegistry
 
 __all__ = [
     "Markdown",
@@ -37,6 +35,6 @@ __all__ = [
     "assistant",
     "assistant_function_call",
     "function_result",
-    "Murkrow",
     "Session",
+    "FunctionRegistry",
 ]
