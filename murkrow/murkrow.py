@@ -97,7 +97,7 @@ class Murkrow:
 
             if 'delta' in choice:  # If there is a delta in the result
                 delta = choice['delta']
-                if 'content' in delta:  # If the delta contains content
+                if 'content' in delta and delta['content'] is not None:  # If the delta contains content
                     mark.append(delta['content'])  # Extend the markdown with the content
 
                 elif 'function_call' in delta:  # If the delta contains a function call
