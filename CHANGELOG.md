@@ -1,13 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.10.0
 
--   Added chat functions
+- Created a simple OpenAI chat interface for use in interactive computing environments
 
-## 0.1.1 (2023-04-06)
-
--   First automated release on PyPI.
-
-## 0.1.0 (2023-04-06)
-
--   First release on PyPI.
