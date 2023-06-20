@@ -23,9 +23,11 @@ In the notebook, text will stream into a Markdown output.
 
 ![image](https://github.com/rgbkrk/murkrow/assets/836375/81b2837c-430c-42eb-ae60-0c3a91ae26b6)
 
-When using chat functions, you'll get a nice collapsible display of inputs and outputs.
+When using chat functions in the notebook\*, you'll get a nice collapsible display of inputs and outputs.
 
 ![click](https://github.com/rgbkrk/murkrow/assets/836375/21c6bd4c-cd3b-48b9-812a-2b86a05c20da)
+
+\* Tested in JupyterLab and Noteable
 
 ### Installation
 
