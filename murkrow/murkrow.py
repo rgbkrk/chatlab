@@ -115,10 +115,10 @@ class Session:
                     # Previous message finished
                     if not in_function:
                         # Wrap up the previous assistant message
-                        self.messages.append(assistant(mark.message))
-                        # TODO: With the CFD, we should toss the old markdown display
-                        mark = Markdown()
-                        mark.display()
+                        if mark.message.strip() != "":
+                            self.messages.append(assistant(mark.message))
+                            mark = Markdown()
+                            mark.display()
 
                         in_function = True
 
