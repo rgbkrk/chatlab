@@ -285,12 +285,13 @@ class ChatFunctionCall:
                 return message_stack
 
             try:
-                output = ip.run_cell(function_args)
+                output = ip.run_cell(function_args, silent=True)
+                repr_llm = repr(output.result)
+
                 self.set_state("Finished")
                 self.set_finished(True)
-
-                repr_llm = repr(output)
                 self.append_result(repr_llm)
+
                 message_stack.append(function_result(name="python", content=repr_llm))
                 return message_stack
 
@@ -325,7 +326,7 @@ class ChatFunctionCall:
 
         self.append_result(repr_llm)
         self.set_state("Ran")
-        self.set_finished()
+        self.set_finished(True)
 
         message_stack.append(function_result(name=function_name, content=repr_llm))
         return message_stack
