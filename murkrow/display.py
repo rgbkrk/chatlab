@@ -14,6 +14,7 @@ from binascii import hexlify
 from typing import Any, Dict, Iterator, Optional, Tuple, Union
 
 from IPython.core import display_functions
+from IPython.core.getipython import get_ipython
 from vdom import details, div, span, style, summary
 
 from murkrow.registry import FunctionRegistry
@@ -275,6 +276,28 @@ class ChatFunctionCall:
             self.set_state("Error")
             message_stack.append(system("Function call message finished without function name"))
             return message_stack
+
+        if function_name == "python":
+            ip = get_ipython()
+            if ip is None:
+                self.set_state("Error")
+                message_stack.append(system("Could not get IPython instance"))
+                return message_stack
+
+            try:
+                output = ip.run_cell(function_args)
+                self.set_state("Finished")
+                self.set_finished(True)
+
+                repr_llm = repr(output)
+                self.append_result(repr_llm)
+                message_stack.append(function_result(name="python", content=repr_llm))
+                return message_stack
+
+            except Exception as e:
+                self.set_state("Error")
+                message_stack.append(system(f"Error running cell: {e}"))
+                return message_stack
 
         if function_name not in self.function_registry:
             self.set_state("Error")
