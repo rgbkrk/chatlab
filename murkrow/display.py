@@ -153,6 +153,7 @@ def raw_function_interface_heading(text: str):
     return div(
         text,
         style=dict(
+            color=colors["darkest"],
             fontWeight="500",
             marginBottom="5px",
         ),
@@ -165,6 +166,7 @@ def raw_function_interface(text: str):
         text,
         style=dict(
             background=colors["ultralight"],
+            color=colors["darkest"],
             padding="10px",
             marginBottom="10px",
             unicodeBidi="embed",
@@ -196,7 +198,7 @@ def ChatFunctionComponent(
         )
 
     return div(
-        style(".murkrow-chat-details summary > *  { display: inline; }"),
+        style(".murkrow-chat-details summary > *  { display: inline; color: #27374D; }"),
         details(
             summary(
                 function_logo(),
