@@ -8,18 +8,16 @@ a few extra features.
 
 """
 
-import json
 import os
 from binascii import hexlify
 from typing import Any, Dict, Iterator, Optional, Tuple, Union
 
 from IPython.core import display_functions
-from IPython.core.getipython import get_ipython
 from vdom import details, div, span, style, summary
 
 from murkrow.registry import FunctionArgumentError, FunctionRegistry, UnknownFunctionError
 
-from .messaging import Message, assistant_function_call, function_result, system
+from .messaging import Message, function_result, system
 
 
 class Markdown:
@@ -247,17 +245,17 @@ class ChatFunctionCall:
     finished: bool = False
 
     def __init__(self, function_name: str, function_registry: FunctionRegistry):
-        """Initialize a `ChatFunctionDisplay` object with an optional message."""
+        """Initialize a `ChatFunctionCall` object with an optional message."""
         self.function_name = function_name
         self.function_registry = function_registry
         self._display_id: str = hexlify(os.urandom(8)).decode('ascii')
 
     def display(self):
-        """Display the `ChatFunctionDisplay` with a display ID for receiving updates."""
+        """Display the `ChatFunctionCall` with a display ID for receiving updates."""
         display_functions.display(self, display_id=self._display_id)
 
     def update_displays(self) -> None:
-        """Force an update to all displays of this `ChatFunctionDisplay`."""
+        """Force an update to all displays of this `ChatFunctionCall`."""
         display_functions.display(self, display_id=self._display_id, update=True)
 
     def call(self) -> Message:
@@ -287,9 +285,10 @@ class ChatFunctionCall:
 
         repr_llm = repr(output)
 
-        self.append_result(repr_llm)
-        self.set_state("Ran")
-        self.set_finished(True)
+        self.function_result = repr_llm
+        self.finished = True
+        self.state = "Finished"
+        self.update_displays()
 
         return function_result(name=function_name, content=repr_llm)
 
@@ -300,21 +299,9 @@ class ChatFunctionCall:
         self.function_args += args
         self.update_displays()
 
-    def append_result(self, result: str):
-        """Append more characters to the `function_result`."""
-        if self.function_result is None:
-            self.function_result = ""
-        self.function_result += result
-        self.update_displays()
-
     def set_state(self, state: str):
-        """Set the state of the function."""
+        """Set the state of the ChatFunctionCall."""
         self.state = state
-        self.update_displays()
-
-    def set_finished(self, finished: bool = True):
-        """Set the finished state of the function."""
-        self.finished = finished
         self.update_displays()
 
     def _repr_mimebundle_(self, include=None, exclude=None):
