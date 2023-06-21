@@ -161,7 +161,7 @@ class Session:
                 return
 
             elif 'finish_reason' in choice and choice['finish_reason'] is not None:
-                if chat_function is not None:
+                if chat_function is None:
                     # Wrap up the previous assistant
                     self.messages.append(assistant(mark.message))
 
