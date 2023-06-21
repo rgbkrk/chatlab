@@ -67,7 +67,7 @@ def generate_function_schema(
     function: Callable, parameters_model: Optional["BaseModel"] = None, json_schema: Optional[dict] = None
 ):
     """Generate a function schema for sending to OpenAI."""
-    doc = function.__doc__ or (parameters_model.__doc__ if parameters_model else None)
+    doc = function.__doc__
     func_name = function.__name__
 
     if not func_name:
@@ -75,7 +75,7 @@ def generate_function_schema(
     if func_name == "<lambda>":
         raise Exception("Lambda functions can only be used if their __name__ is set")
     if not doc:
-        raise Exception("Function or parameter model must have a docstring")
+        raise Exception("Function must have a docstring")
 
     schema = None
     if json_schema:
