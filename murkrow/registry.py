@@ -73,9 +73,9 @@ def generate_function_schema(
     if not func_name:
         raise Exception("Function must have a name")
     if func_name == "<lambda>":
-        raise Exception("Lambda functions can only be used if their __name__ is set")
+        raise Exception("Lambdas cannot be registered. Use `def` instead.")
     if not doc:
-        raise Exception("Function must have a docstring")
+        raise Exception("Only functions with docstrings can be registered")
 
     schema = None
     if json_schema:
