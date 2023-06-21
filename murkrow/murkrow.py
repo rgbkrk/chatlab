@@ -1,6 +1,7 @@
 """Simple chatterbox."""
 
 import json
+import logging
 from typing import Callable, List, Optional, Union
 
 import openai
@@ -10,6 +11,8 @@ from murkrow.registry import FunctionRegistry
 
 from .display import ChatFunctionDisplay, Markdown
 from .messaging import Message, assistant, assistant_function_call, function_result, human
+
+logger = logging.getLogger(__name__)
 
 
 class Session:
@@ -214,5 +217,5 @@ class Session:
         """
         full_schema = self.function_registry.register(function, parameters_model, json_schema)
 
-        print("Created function with schema:")
-        print(json.dumps(full_schema, indent=2))
+        logger.debug("Created function with schema:")
+        logger.debug(json.dumps(full_schema, indent=2))
