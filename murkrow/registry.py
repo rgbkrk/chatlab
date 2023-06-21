@@ -110,6 +110,8 @@ def generate_function_schema(
             else:
                 raise Exception(f"Type annotation of parameter {name} in function {func_name} is not allowed")
 
+        schema = {"type": "object", "properties": {}, "required": []}
+        if len(schema_properties) > 0:
             schema = {
                 "type": "object",
                 "properties": schema_properties,
