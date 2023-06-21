@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from murkrow.registry import FunctionRegistry
 
 from .display import ChatFunctionCall, Markdown
-from .messaging import Message, assistant, human
+from .messaging import Message, assistant, assistant_function_call, human
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +47,7 @@ class Session:
         model="gpt-3.5-turbo-0613",
         function_registry: Optional[FunctionRegistry] = None,
         auto_continue: bool = True,
+        include_builtin_python: bool = False,
     ):
         """Initialize a `Murkrow` object with an optional initial context of messages.
 
@@ -65,8 +66,10 @@ class Session:
         self.model = model
         self.auto_continue = auto_continue
 
+        self.include_builtin_python = include_builtin_python
+
         if function_registry is None:
-            self.function_registry = FunctionRegistry()
+            self.function_registry = FunctionRegistry(include_builtin_python=self.include_builtin_python)
         else:
             self.function_registry = function_registry
 
@@ -116,9 +119,12 @@ class Session:
                     if not chat_function:
                         # Wrap up the previous assistant message
                         if mark.message.strip() != "":
-                            self.messages.append(assistant(mark.message))
+                            self.append(assistant(mark.message))
+                            # Make a new display area
                             mark = Markdown()
-                            mark.display()
+                            # We should not call `mark.display()` because we will display the function call
+                            # and new follow ons will be displayed with new chats. For type conformance,
+                            # we set mark to a new empty Markdown object.
 
                     function_call = delta['function_call']
                     if 'name' in function_call:
@@ -135,31 +141,24 @@ class Session:
             if 'finish_reason' in choice and choice['finish_reason'] == "function_call":
                 if chat_function is None:
                     raise ValueError("Function call finished without function name")
-                fn_messages = chat_function.call()
 
-                self.messages.extend(fn_messages)
+                # Record the attempted call from the LLM
+                self.append(
+                    assistant_function_call(name=chat_function.function_name, arguments=chat_function.function_args)
+                )
+                # Make the call
+                fn_message = chat_function.call()
+                # Include the response (or error) for the model
+                self.append(fn_message)
 
-                # In priority order:
-                #
-                # `auto_continue` argument
-                # `self.auto_continue`
-                #
-                # If `auto_continue` is False, then `self.auto_continue` is ignored
-                continuing = False
-
-                if auto_continue is not None:
-                    continuing = auto_continue
-                elif self.auto_continue:
-                    continuing = True
+                # Choose whether to let the LLM continue from our function response
+                continuing = auto_continue if auto_continue is not None else self.auto_continue
 
                 if continuing:
                     # Automatically let the LLM continue from our function result
                     self.chat()
 
                 return
-
-                # Reset to no function display for the next call
-                chat_function = None
 
             elif 'finish_reason' in choice and choice['finish_reason'] is not None:
                 if chat_function is not None:

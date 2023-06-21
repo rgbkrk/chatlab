@@ -17,7 +17,7 @@ from IPython.core import display_functions
 from IPython.core.getipython import get_ipython
 from vdom import details, div, span, style, summary
 
-from murkrow.registry import FunctionRegistry
+from murkrow.registry import FunctionArgumentError, FunctionRegistry, UnknownFunctionError
 
 from .messaging import Message, assistant_function_call, function_result, system
 
@@ -260,66 +260,30 @@ class ChatFunctionCall:
         """Force an update to all displays of this `ChatFunctionDisplay`."""
         display_functions.display(self, display_id=self._display_id, update=True)
 
-    def call(self) -> list[Message]:
+    def call(self) -> Message:
         """Call the function and return a stack of messages for LLM and human consumption."""
         function_name = self.function_name
         function_args = self.function_args
 
-        message_stack: list[Message] = []
-
-        # TODO: What I wish I had in this overall block was a way to `return` messages to the chat
-        # Include the attempt by the LLM.
-        message_stack.append(assistant_function_call(name=function_name, arguments=function_args))
-
         if function_name is None:
             self.set_state("Error")
-            message_stack.append(system("Function call message finished without function name"))
-            return message_stack
-
-        if function_name == "python":
-            ip = get_ipython()
-            if ip is None:
-                self.set_state("Error")
-                message_stack.append(system("Could not get IPython instance"))
-                return message_stack
-
-            try:
-                output = ip.run_cell(function_args, silent=True)
-                repr_llm = repr(output.result)
-
-                self.set_state("Finished")
-                self.set_finished(True)
-                self.append_result(repr_llm)
-
-                message_stack.append(function_result(name="python", content=repr_llm))
-                return message_stack
-
-            except Exception as e:
-                self.set_state("Error")
-                message_stack.append(system(f"Error running cell: {e}"))
-                return message_stack
+            return system("Function call message finished without function name")
 
         if function_name not in self.function_registry:
             self.set_state("Error")
-            message_stack.append(system(f"Function {function_name} not found in function registry"))
-            return message_stack
+            return system(f"Function {function_name} not found in function registry")
 
         self.set_state("Running")
-        arguments = None
-
-        if function_args is not None:
-            # Evaluate the arguments as a JSON
-            try:
-                arguments = json.loads(function_args)
-            except json.JSONDecodeError:
-                self.set_state("Error")
-                message_stack.append(system(f"Could not parse function arguments: {function_args}. They must be JSON."))
-                return message_stack
 
         # Execute the function and get the result
-        # TODO: Determine if we should do try/except or allow the developer to handle errors in their function
-        # Perhaps we should include handling as an additional option when registering a function?
-        output = self.function_registry.call(function_name, arguments)
+        try:
+            output = self.function_registry.call(function_name, function_args)
+        except FunctionArgumentError as e:
+            self.set_state("Error")
+            return system(f"Function arguments for {function_name} were invalid: {e}")
+        except UnknownFunctionError as e:
+            self.set_state("Error")
+            return system(f"Function {function_name} not found in function registry: {e}")
 
         repr_llm = repr(output)
 
@@ -327,8 +291,7 @@ class ChatFunctionCall:
         self.set_state("Ran")
         self.set_finished(True)
 
-        message_stack.append(function_result(name=function_name, content=repr_llm))
-        return message_stack
+        return function_result(name=function_name, content=repr_llm)
 
     def append_arguments(self, args: str):
         """Append more characters to the `function_args`."""
