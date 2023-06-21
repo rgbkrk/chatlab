@@ -108,7 +108,7 @@ def system(content: str) -> Message:
     }
 
 
-def assistant_function_call(name: str, arguments: str) -> Message:
+def assistant_function_call(name: str, arguments: Optional[str]) -> Message:
     """Create a function call message."""
     return {
         'role': 'assistant',
