@@ -8,12 +8,17 @@ a few extra features.
 
 """
 
+import json
 import os
 from binascii import hexlify
 from typing import Any, Dict, Iterator, Optional, Tuple, Union
 
 from IPython.core import display_functions
 from vdom import b, details, div, p, pre, span, style, summary
+
+from murkrow.registry import FunctionRegistry
+
+from .messaging import Message, assistant, assistant_function_call, function_result, human, system
 
 
 class Markdown:
@@ -227,7 +232,7 @@ def ChatFunctionComponent(
     )
 
 
-class ChatFunctionDisplay:
+class ChatFunctionCall:
     """Operates like the Markdown class, but with the ChatFunctionComponent."""
 
     function_name: str
@@ -240,9 +245,10 @@ class ChatFunctionDisplay:
 
     finished: bool = False
 
-    def __init__(self, function_name: str):
+    def __init__(self, function_name: str, function_registry: FunctionRegistry):
         """Initialize a `ChatFunctionDisplay` object with an optional message."""
         self.function_name = function_name
+        self.function_registry = function_registry
         self._display_id: str = hexlify(os.urandom(8)).decode('ascii')
 
     def display(self):
@@ -252,6 +258,50 @@ class ChatFunctionDisplay:
     def update_displays(self) -> None:
         """Force an update to all displays of this `ChatFunctionDisplay`."""
         display_functions.display(self, display_id=self._display_id, update=True)
+
+    def call(self) -> list[Message]:
+        """Call the function and return a stack of messages for LLM and human consumption."""
+        function_name = self.function_name
+        function_args = self.function_args
+
+        # TODO RETURN THE STACK, always
+        message_stack: list[Message] = []
+
+        # TODO: What I wish I had in this overall block was a way to `return` messages to the chat
+        # Include the attempt by the LLM.
+        message_stack.append(assistant_function_call(name=function_name, arguments=function_args))
+
+        if function_name is None:
+            self.set_state("Error")
+            message_stack.append(system("Function call message finished without function name"))
+            return message_stack
+
+        if function_name not in self.function_registry:
+            self.set_state("Error")
+            message_stack.append(system(f"Function {function_name} not found in function registry"))
+            return message_stack
+
+        self.set_state("Running")
+        arguments = None
+
+        if function_args is not None:
+            # Evaluate the arguments as a JSON
+            try:
+                arguments = json.loads(function_args)
+            except json.JSONDecodeError:
+                raise ValueError(f"Could not parse function arguments: {function_args}")
+
+        # Execute the function and get the result
+        output = self.function_registry.call(function_name, arguments)
+
+        repr_llm = repr(output)
+
+        self.append_result(repr_llm)
+        self.set_state("Ran")
+        self.set_finished()
+
+        message_stack.append(function_result(name=function_name, content=repr_llm))
+        return message_stack
 
     def append_arguments(self, args: str):
         """Append more characters to the `function_args`."""
