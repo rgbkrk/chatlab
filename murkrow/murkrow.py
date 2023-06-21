@@ -202,7 +202,9 @@ class Session:
             else:
                 self.messages.append(message)
 
-    def register(self, function: Callable, parameters_model: "BaseModel"):
+    def register(
+        self, function: Callable, parameters_model: Optional["BaseModel"] = None, json_schema: Optional[dict] = None
+    ):
         """Register a function with the Murkrow instance.
 
         Args:
@@ -210,4 +212,4 @@ class Session:
             parameters_model (BaseModel): The pydantic model to use for parameters.
 
         """
-        self.function_registry.register(function, parameters_model)
+        self.function_registry.register(function, parameters_model, json_schema)

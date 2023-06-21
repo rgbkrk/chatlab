@@ -40,14 +40,17 @@ Example usage:
 
 """
 
-from typing import Callable
+import inspect
+from typing import Callable, Optional
 
 from pydantic import BaseModel
 
+# Allowed types for auto-inferred schemas
+ALLOWED_TYPES = [int, str, bool, float, list, dict]
+
 
 class FunctionRegistry:
-    """Captures a function with schema both for sending to OpenAI and for
-    executing locally"""
+    """Captures a function with schema both for sending to OpenAI and for executing locally."""
 
     __functions: dict[str, Callable]
     __schemas: dict[str, dict]
@@ -57,9 +60,11 @@ class FunctionRegistry:
         self.__functions = {}
         self.__schemas = {}
 
-    def register(self, function: Callable, parameters_model: "BaseModel"):
+    def register(
+        self, function: Callable, parameters_model: Optional["BaseModel"] = None, json_schema: Optional[dict] = None
+    ):
         """Register a function with a schema for sending to OpenAI."""
-        doc = function.__doc__ or parameters_model.__doc__
+        doc = function.__doc__ or parameters_model.__doc__ if parameters_model else None
         name = function.__name__
 
         if not name:
@@ -70,10 +75,35 @@ class FunctionRegistry:
             raise Exception("Function or parameter model must have a docstring")
 
         self.__functions[function.__name__] = function
+
+        if json_schema:
+            schema = json_schema
+        elif parameters_model:
+            schema = parameters_model.schema()
+        else:
+            sig = inspect.signature(function)
+            for name, param in sig.parameters.items():
+                if param.annotation == inspect.Parameter.empty:
+                    raise Exception(f"Parameter {name} of function {function.__name__} must have a type annotation")
+                elif param.annotation not in ALLOWED_TYPES:
+                    raise Exception(
+                        f"Type annotation of parameter {name} in function {function.__name__} must"
+                        f" be a JSON serializable type ({ALLOWED_TYPES})"
+                    )
+            schema = {
+                "type": "object",
+                "properties": {
+                    name: {"type": str(param.annotation.__name__)} for name, param in sig.parameters.items()
+                },
+                "required": [
+                    name for name, param in sig.parameters.items() if param.default == inspect.Parameter.empty
+                ],
+            }
+
         self.__schemas[function.__name__] = {
             "name": name,
             "description": doc,
-            "parameters": parameters_model.schema(),
+            "parameters": schema,
         }
 
     def get(self, function_name):
