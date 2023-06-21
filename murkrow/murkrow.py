@@ -1,6 +1,7 @@
 """Simple chatterbox."""
 
 import json
+import logging
 from typing import Callable, List, Optional, Union
 
 import openai
@@ -10,6 +11,8 @@ from murkrow.registry import FunctionRegistry
 
 from .display import ChatFunctionDisplay, Markdown
 from .messaging import Message, assistant, assistant_function_call, function_result, human
+
+logger = logging.getLogger(__name__)
 
 
 class Session:
@@ -139,12 +142,24 @@ class Session:
                 function_name = chat_function_display.function_name
                 function_args = chat_function_display.function_args
 
-                if function_name and function_args and function_name in self.function_registry:
+                if function_name is None:
+                    raise ValueError("Function call finished without function name")
+
+                if function_name not in self.function_registry:
+                    raise ValueError(f"Function {function_name} not found in function registry")
+
+                if function_name and function_name in self.function_registry:
                     chat_function_display.set_state("Running")
                     self.messages.append(assistant_function_call(name=function_name, arguments=function_args))
 
-                    # Evaluate the arguments as a JSON
-                    arguments = json.loads(function_args)
+                    arguments = None
+
+                    if function_args is not None:
+                        # Evaluate the arguments as a JSON
+                        try:
+                            arguments = json.loads(function_args)
+                        except json.JSONDecodeError:
+                            raise ValueError(f"Could not parse function arguments: {function_args}")
 
                     # Execute the function and get the result
                     output = self.function_registry.call(function_name, arguments)
@@ -161,6 +176,7 @@ class Session:
                     chat_function_display = None
 
                     in_function = False
+
             elif 'finish_reason' in choice and choice['finish_reason'] is not None:
                 if not in_function:
                     # Wrap up the previous assistant
@@ -202,7 +218,9 @@ class Session:
             else:
                 self.messages.append(message)
 
-    def register(self, function: Callable, parameters_model: "BaseModel"):
+    def register(
+        self, function: Callable, parameters_model: Optional["BaseModel"] = None, json_schema: Optional[dict] = None
+    ):
         """Register a function with the Murkrow instance.
 
         Args:
@@ -210,4 +228,7 @@ class Session:
             parameters_model (BaseModel): The pydantic model to use for parameters.
 
         """
-        self.function_registry.register(function, parameters_model)
+        full_schema = self.function_registry.register(function, parameters_model, json_schema)
+
+        logger.debug("Created function with schema:")
+        logger.debug(json.dumps(full_schema, indent=2))

@@ -40,14 +40,100 @@ Example usage:
 
 """
 
-from typing import Callable
+import inspect
+from typing import Callable, Optional, Union, get_args, get_origin
 
 from pydantic import BaseModel
 
+# Allowed types for auto-inferred schemas
+ALLOWED_TYPES = [int, str, bool, float, list, dict]
+
+JSON_SCHEMA_TYPES = {
+    int: 'integer',
+    float: 'number',
+    str: 'string',
+    bool: 'boolean',
+    list: 'array',
+    dict: 'object',
+}
+
+
+def is_optional_type(t):
+    """Check if a type is Optional."""
+    return get_origin(t) is Union and len(get_args(t)) == 2 and type(None) in get_args(t)
+
+
+def generate_function_schema(
+    function: Callable, parameters_model: Optional["BaseModel"] = None, json_schema: Optional[dict] = None
+):
+    """Generate a function schema for sending to OpenAI."""
+    doc = function.__doc__ or (parameters_model.__doc__ if parameters_model else None)
+    func_name = function.__name__
+
+    if not func_name:
+        raise Exception("Function must have a name")
+    if func_name == "<lambda>":
+        raise Exception("Lambda functions can only be used if their __name__ is set")
+    if not doc:
+        raise Exception("Function or parameter model must have a docstring")
+
+    schema = None
+    if json_schema:
+        schema = json_schema
+    elif parameters_model:
+        schema = parameters_model.schema()
+    else:
+        schema_properties = {}
+        sig = inspect.signature(function)
+        for name, param in sig.parameters.items():
+            if param.annotation == inspect.Parameter.empty:
+                raise Exception(f"Parameter {name} of function {func_name} must have a type annotation")
+
+            if is_optional_type(param.annotation):
+                actual_type = get_args(param.annotation)[0]
+
+                if actual_type not in ALLOWED_TYPES:
+                    raise Exception(
+                        f"Type annotation of parameter {name} in function {func_name} "
+                        f"must be a JSON serializable type ({ALLOWED_TYPES})"
+                    )
+
+                schema_properties[name] = {
+                    "type": JSON_SCHEMA_TYPES[actual_type],
+                }
+
+            elif param.annotation in ALLOWED_TYPES:
+                schema_properties[name] = {
+                    "type": JSON_SCHEMA_TYPES[param.annotation],
+                }
+
+            else:
+                raise Exception(f"Type annotation of parameter {name} in function {func_name} is not allowed")
+
+        schema = {"type": "object", "properties": {}, "required": []}
+        if len(schema_properties) > 0:
+            schema = {
+                "type": "object",
+                "properties": schema_properties,
+                "required": [
+                    name
+                    for name, param in sig.parameters.items()
+                    if param.default == inspect.Parameter.empty and param.annotation != Optional
+                ],
+            }
+
+    if schema is None:
+        raise Exception(f"Could not generate schema for function {func_name}")
+
+    return {
+        "name": func_name,
+        "description": doc,
+        "parameters": schema,
+    }
+
 
 class FunctionRegistry:
-    """Captures a function with schema both for sending to OpenAI and for
-    executing locally"""
+    """Captures a function with schema both for sending to OpenAI and for executing locally."""
 
     __functions: dict[str, Callable]
     __schemas: dict[str, dict]
@@ -57,24 +143,16 @@ class FunctionRegistry:
         self.__functions = {}
         self.__schemas = {}
 
-    def register(self, function: Callable, parameters_model: "BaseModel"):
+    def register(
+        self, function: Callable, parameters_model: Optional["BaseModel"] = None, json_schema: Optional[dict] = None
+    ):
         """Register a function with a schema for sending to OpenAI."""
-        doc = function.__doc__ or parameters_model.__doc__
-        name = function.__name__
-
-        if not name:
-            raise Exception("Function must have a name")
-        if name == "<lambda>":
-            raise Exception("Lambda functions can only be used if their __name__ is set")
-        if not doc:
-            raise Exception("Function or parameter model must have a docstring")
+        schema = generate_function_schema(function, parameters_model, json_schema)
 
         self.__functions[function.__name__] = function
-        self.__schemas[function.__name__] = {
-            "name": name,
-            "description": doc,
-            "parameters": parameters_model.schema(),
-        }
+        self.__schemas[function.__name__] = schema
+
+        return schema
 
     def get(self, function_name):
         """Get a function by name."""
