@@ -265,7 +265,6 @@ class ChatFunctionCall:
         function_name = self.function_name
         function_args = self.function_args
 
-        # TODO RETURN THE STACK, always
         message_stack: list[Message] = []
 
         # TODO: What I wish I had in this overall block was a way to `return` messages to the chat
