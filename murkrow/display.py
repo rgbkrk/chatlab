@@ -1,4 +1,4 @@
-"""display.py!
+"""display.py
 
 This module provides a `Markdown` class that works similarly to `IPython.display.Markdown` with
 a few extra features.
@@ -14,11 +14,11 @@ from binascii import hexlify
 from typing import Any, Dict, Iterator, Optional, Tuple, Union
 
 from IPython.core import display_functions
-from vdom import b, details, div, p, pre, span, style, summary
+from vdom import details, div, span, style, summary
 
 from murkrow.registry import FunctionRegistry
 
-from .messaging import Message, assistant, assistant_function_call, function_result, human, system
+from .messaging import Message, assistant_function_call, function_result, system
 
 
 class Markdown:
@@ -289,9 +289,13 @@ class ChatFunctionCall:
             try:
                 arguments = json.loads(function_args)
             except json.JSONDecodeError:
-                raise ValueError(f"Could not parse function arguments: {function_args}")
+                self.set_state("Error")
+                message_stack.append(system(f"Could not parse function arguments: {function_args}. They must be JSON."))
+                return message_stack
 
         # Execute the function and get the result
+        # TODO: Determine if we should do try/except or allow the developer to handle errors in their function
+        # Perhaps we should include handling as an additional option when registering a function?
         output = self.function_registry.call(function_name, arguments)
 
         repr_llm = repr(output)

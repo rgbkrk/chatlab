@@ -31,7 +31,7 @@ class Session:
     >>> session.chat("How are you?")
     Hello!
     How are you?
-    >>> .chat("I'm fine, thanks.")
+    >>> session.chat("I'm fine, thanks.")
     Nice to hear!
 
     """
