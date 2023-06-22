@@ -1,12 +1,4 @@
-"""display.py
-
-This module provides a `Markdown` class that works similarly to `IPython.display.Markdown` with
-a few extra features.
-
-* The `Markdown`'s display updates in place while messages are appended to it
-* The `Markdown`'s display can be updated from an iterator
-
-"""
+"""Stylized representation of a Chat Function Call as we dance with the LLM."""
 
 import os
 from binascii import hexlify

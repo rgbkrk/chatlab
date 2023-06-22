@@ -28,15 +28,14 @@ Example usage:
     class WhatTime(BaseModel):
         timezone: Optional[str]
 
-    
     import murkrow
     registry = murkrow.FunctionRegistry()
 
-    session = murkrow.Session(
+    conversation = murkrow.Conversation(
         function_registry=registry,
     )
 
-    session.chat("What time is it?")
+    conversation.chat("What time is it?")
 
 """
 
@@ -154,11 +153,11 @@ class FunctionRegistry:
     __functions: dict[str, Callable]
     __schemas: dict[str, dict]
 
-    def __init__(self, include_builtin_python: bool = False):
+    def __init__(self, allow_hallucinated_python: bool = False):
         """Initialize a FunctionRegistry object."""
         self.__functions = {}
         self.__schemas = {}
-        self.include_builtin_python = include_builtin_python
+        self.allow_hallucinated_python = allow_hallucinated_python
 
     def register(
         self, function: Callable, parameters_model: Optional["BaseModel"] = None, json_schema: Optional[dict] = None
@@ -181,7 +180,7 @@ class FunctionRegistry:
         parameters: dict = {}
 
         # Handle the code interpreter hallucination
-        if name == "python" and self.include_builtin_python:
+        if name == "python" and self.allow_hallucinated_python:
             function = run_cell
             # The "hallucinated" python function takes raw plaintext
             # instead of a JSON object. We can just pass it through.

@@ -1,6 +1,6 @@
 # Murkrow
 
-## Supercharge Your Chat Sessions with _Functions_ Using Murkrow!
+## Supercharge Your AI Conversations with _Functions_ Using Murkrow!
 
 <img src="https://i.pinimg.com/originals/95/53/a9/9553a99cefa0b27f0d83dc0cbf358759.png" height="100" />
 <br />
@@ -10,9 +10,9 @@ Welcome to the exciting world of programmatic chat with OpenAI's chat models, us
 ```python
 import murkrow
 
-session = murkrow.Session()
+conversation = murkrow.Conversation()
 
-session.chat("How much wood could a")
+conversation.chat("How much wood could a")
 ```
 
 ```markdown
@@ -41,15 +41,15 @@ You'll need to set your `OPENAI_API_KEY` environment variable. You can find your
 
 On hosted environments like Noteable, set it in your Secrets to keep it safe from prying LLM eyes.
 
-## What can `Sessions` enable _you_ to do?
+## What can `Conversation`s enable _you_ to do?
 
 <center><img src="https://cdn.donmai.us/original/64/e7/64e78d7968c8317b84a95e152e4a087b.png" height="100" /></center>
 <br />
 
-Where `Session`s and OpenAI take it next level is with _Chat Functions_. You can
+Where `Conversation`s take it next level is with _Chat Functions_. You can
 
 -   declare a function with a schema
--   register the function in your chat `Session`
+-   register the function in your `Conversation`
 -   watch as Chat Models call your functions!
 
 You may recall this kind of behavior from [ChatGPT Plugins](https://noteable.io/chatgpt-plugin-for-notebook/). Now, you can take this even further with your own custom code.
@@ -84,13 +84,13 @@ Let's break this down.
 ```python
 import murkrow
 
-session = murkrow.Session()
+conversation = murkrow.Conversation()
 
 # Register our function
-session.register(what_time, WhatTime)
+conversation.register(what_time, WhatTime)
 
 # Pluck the chat function off for easy access
-chat = session.chat
+chat = conversation.chat
 ```
 
 After that, we can call `chat` with direct strings (which are turned into user messages) or using simple message makers from `murkrow` named `human`/`user` and `narrate`/`system`.
@@ -109,18 +109,18 @@ The current time is 11:47 PM.
 
 The `murkrow` package exports
 
-### `Session`
+### `Conversation`
 
-The `Session` class is the main way to chat using OpenAI's models. It keeps a history of your chat in `Session.messages`.
+The `Conversation` class is the main way to chat using OpenAI's models. It keeps a history of your chat in `Conversation.messages`.
 
-#### `Session.chat`
+#### `Conversation.chat`
 
 When you call `chat`, you're sending over messages to the chat model and getting back an updating `Markdown` display live.
 
 ```python
-session.chat("What would a parent who says "I have to play zone defense" mean? ")
+conversation.chat("What would a parent who says "I have to play zone defense" mean? ")
 # Markdown response inline
-session.messages
+conversation.messages
 ```
 
 ```js
@@ -130,9 +130,9 @@ session.messages
   'content': 'When a parent of three kids says "I have to play zone defense," it means that they...
 ```
 
-#### `Session.register`
+#### `Conversation.register`
 
-You can register functions with `Session.register` to make them available to the chat model. The function's docstring becomes the description of the function while the schema is derived from the `pydantic.BaseModel` passed in.
+You can register functions with `Conversation.register` to make them available to the chat model. The function's docstring becomes the description of the function while the schema is derived from the `pydantic.BaseModel` passed in.
 
 ```python
 from pydantic import BaseModel
@@ -151,15 +151,15 @@ def what_time(tz: Optional[str] = None):
 
     return datetime.now(tz).strftime('%I:%M %p')
 
-session.register(what_time, WhatTime)
+conversation.register(what_time, WhatTime)
 ```
 
-#### `Session.messages`
+#### `Conversation.messages`
 
 The raw messages sent and received to OpenAI. If you hit a token limit, you can remove old messages from the list to make room for more.
 
 ```python
-session.messages = session.messages[-100:]
+conversation.messages = conversation.messages[-100:]
 ```
 
 ### Messaging
@@ -180,7 +180,7 @@ human("How are you?")
 
 #### `narrate`/`system`
 
-`system` messages, also called `narrate` in `murkrow`, allow you to steer the model in a direction. You can use these to provide context without being seen by the user. One common use is to include it in the session to start with.
+`system` messages, also called `narrate` in `murkrow`, allow you to steer the model in a direction. You can use these to provide context without being seen by the user. One common use is to include it as initial context for the conversation.
 
 ```python
 from murkrow import narrate

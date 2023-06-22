@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--   Accept functions _without_ a model by using `inspect` to determine the signature
+-   Include a builtin `python` chat function to handle the model's hallucination of `python` being an available chat function. Enable it with `allow_hallucinated_python` to the `Conversation` or the `FunctionRegistry`. NOTE: it runs in the same runtime as the `Conversation` and _will_ be used to execute arbitrary code. Use with caution. Or delight.
+-   Accept functions _without_ a model. Just run `session.register(function)`. This is a great way to get started quickly. You may still get better results out of using pydantic models since those can have descriptions and other metadata in the resulting JSON schema.
 
 ## [0.12.3]
 
