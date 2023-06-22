@@ -104,6 +104,7 @@ class Session:
         )
 
         chat_function = None
+        finish_reason = None
 
         for result in resp:  # Go through the results of the stream
             # TODO: Move this setup back into deltas
@@ -137,36 +138,40 @@ class Session:
                         if chat_function is None:
                             raise ValueError("Function arguments provided without function name")
                         chat_function.append_arguments(function_call['arguments'])
+            if 'finish_reason' in choice and choice['finish_reason'] is not None:
+                finish_reason = choice['finish_reason']
+                break
 
-            if 'finish_reason' in choice and choice['finish_reason'] == "function_call":
-                if chat_function is None:
-                    raise ValueError("Function call finished without function name")
+        if finish_reason == "function_call":
+            if chat_function is None:
+                raise ValueError("Function call finished without function name")
 
-                # Record the attempted call from the LLM
-                self.append(
-                    assistant_function_call(name=chat_function.function_name, arguments=chat_function.function_args)
-                )
-                # Make the call
-                fn_message = chat_function.call()
-                # Include the response (or error) for the model
-                self.append(fn_message)
+            # Record the attempted call from the LLM
+            self.append(
+                assistant_function_call(name=chat_function.function_name, arguments=chat_function.function_args)
+            )
+            # Make the call
+            fn_message = chat_function.call()
+            # Include the response (or error) for the model
+            self.append(fn_message)
 
-                # Choose whether to let the LLM continue from our function response
-                continuing = auto_continue if auto_continue is not None else self.auto_continue
+            # Choose whether to let the LLM continue from our function response
+            continuing = auto_continue if auto_continue is not None else self.auto_continue
 
-                if continuing:
-                    # Automatically let the LLM continue from our function result
-                    self.chat()
+            if continuing:
+                # Automatically let the LLM continue from our function result
+                self.chat()
 
-                return
+            return
 
-            elif 'finish_reason' in choice and choice['finish_reason'] is not None:
-                if chat_function is None:
-                    # Wrap up the previous assistant
-                    self.messages.append(assistant(mark.message))
+        if finish_reason == 'stop':
+            # Wrap up the previous assistant
+            self.messages.append(assistant(mark.message))
 
-                if 'max_tokens' in choice['finish_reason']:
-                    mark.append("\n...MAX TOKENS REACHED...\n")
+        if finish_reason == 'max_tokens':
+            # Wrap up the previous assistant
+            self.messages.append(assistant(mark.message))
+            mark.append("\n...MAX TOKENS REACHED...\n")
 
     def append(self, *messages: Union[Message, str]):
         """Append messages to the conversation history.
