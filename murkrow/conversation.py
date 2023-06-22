@@ -126,7 +126,6 @@ class Conversation:
         finish_reason = None
 
         for result in resp:  # Go through the results of the stream
-            # TODO: Move this setup back into deltas
             choice = result['choices'][0]  # Get the first choice, since we're not doing bulk
 
             if 'delta' in choice:  # If there is a delta in the result

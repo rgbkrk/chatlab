@@ -43,31 +43,6 @@ StreamCompletion = TypedDict(
 )
 
 
-def deltas(completion: Iterator[StreamCompletion]) -> Iterator[str]:
-    """Extract the deltas from a stream completion.
-
-    >>> from murkrow import deltas
-    >>> deltas([{'choices': [{'delta': {'content': 'Hello'}}]}])
-    ['Hello']
-
-    """
-
-    for chunk in completion:
-        # Note that chunk has an ID for the completion. We're not using it yet
-        choice = chunk["choices"][0]
-
-        delta = choice["delta"]
-
-        if "finish_reason" in delta:
-            if delta["finish_reason"] == "stop":
-                break
-
-        elif "content" in delta and delta["content"] is not None:
-            yield delta["content"]
-        else:
-            pass
-
-
 Message = TypedDict(
     "Message",
     {
