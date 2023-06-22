@@ -131,10 +131,6 @@ class Conversation:
         finish_reason = None
 
         for result in resp:  # Go through the results of the stream
-            if type(result) != dict:
-                logger.warning(f"Unexpected result type: {type(result)}")
-                continue
-
             choices: list = result.get('choices', [])
 
             if len(choices) == 0:
