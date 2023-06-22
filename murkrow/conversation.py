@@ -95,6 +95,11 @@ class Conversation:
     def submit(self, *messages: Union[Message, str], auto_continue: Optional[bool] = None):
         """Send messages to the chat model and display the response.
 
+        Side effects:
+            - Messages are sent to OpenAI Chat Models.
+            - The response(s) are displayed in the output area. Markdown for assistant messages, collapsible display for function calls.
+            - conversation.messages is updated with response(s).
+
         Args:
             messages (str | Message): One or more messages to send to the chat, can be strings or Message objects.
 
@@ -198,8 +203,7 @@ class Conversation:
 
         if finish_reason == 'stop':
             return
-
-        if finish_reason == 'max_tokens' or finish_reason == 'length':
+        elif finish_reason == 'max_tokens' or finish_reason == 'length':
             mark.append("\n...max tokens or overall length is too high...\n")
         elif finish_reason == 'content_filter':
             mark.append("\n...Content omitted due to OpenAI content filters...\n")
