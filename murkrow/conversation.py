@@ -179,20 +179,22 @@ class Conversation:
             if continuing:
                 # Automatically let the LLM continue from our function result
                 self.submit()
+            return
 
-        elif finish_reason == 'stop':
-            # Wrap up the previous assistant
-            self.messages.append(assistant(mark.message))
+        # All other finish reasons are valid for regular assistant messages
 
-        elif finish_reason == 'max_tokens' or finish_reason == 'length':
-            # Wrap up the previous assistant
-            self.messages.append(assistant(mark.message))
-            mark.append("\n...MAX TOKENS REACHED...\n")
+        # Wrap up the previous assistant
+        self.messages.append(assistant(mark.message))
 
+        if finish_reason == 'stop':
+            return
+
+        if finish_reason == 'max_tokens' or finish_reason == 'length':
+            mark.append("\n...max tokens or overall length is too high...\n")
         elif finish_reason == 'content_filter':
-            # Wrap up the previous assistant
-            self.messages.append(assistant(mark.message))
-            mark.append("\nContent omitted due to OpenAI content filters \n")
+            mark.append("\n...Content omitted due to OpenAI content filters...\n")
+        else:
+            mark.append(f"\n...UNKNOWN FINISH REASON: {finish_reason}...\n")
 
     def append(self, *messages: Union[Message, str]):
         """Append messages to the conversation history.
