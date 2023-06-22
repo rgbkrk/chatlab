@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 from murkrow.registry import FunctionRegistry
 
+from ._version import __version__
 from .display import ChatFunctionCall, Markdown
 from .messaging import Message, assistant, assistant_function_call, human
 
@@ -81,7 +82,9 @@ class Conversation:
         else:
             self.function_registry = function_registry
 
-    @deprecated(deprecated_in="0.13.0", removed_in="1.0.0", details="Use `submit` instead.")
+    @deprecated(
+        deprecated_in="0.13.0", removed_in="1.0.0", current_version=__version__, details="Use `submit` instead."
+    )
     def chat(self, *messages: Union[Message, str], auto_continue: Optional[bool] = None):
         """Send messages to the chat model and display the response.
 
