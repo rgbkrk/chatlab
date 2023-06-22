@@ -9,8 +9,8 @@ from pydantic import BaseModel
 
 from murkrow.registry import FunctionRegistry
 
-from .display import ChatFunctionDisplay, Markdown
-from .messaging import Message, assistant, assistant_function_call, function_result, human
+from .display import ChatFunctionCall, Markdown
+from .messaging import Message, assistant, assistant_function_call, human
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class Session:
     >>> session.chat("How are you?")
     Hello!
     How are you?
-    >>> .chat("I'm fine, thanks.")
+    >>> session.chat("I'm fine, thanks.")
     Nice to hear!
 
     """
@@ -47,6 +47,7 @@ class Session:
         model="gpt-3.5-turbo-0613",
         function_registry: Optional[FunctionRegistry] = None,
         auto_continue: bool = True,
+        include_builtin_python: bool = False,
     ):
         """Initialize a `Murkrow` object with an optional initial context of messages.
 
@@ -65,8 +66,10 @@ class Session:
         self.model = model
         self.auto_continue = auto_continue
 
+        self.include_builtin_python = include_builtin_python
+
         if function_registry is None:
-            self.function_registry = FunctionRegistry()
+            self.function_registry = FunctionRegistry(include_builtin_python=self.include_builtin_python)
         else:
             self.function_registry = function_registry
 
@@ -100,10 +103,7 @@ class Session:
             stream=True,
         )
 
-        chat_function_display = None
-
-        in_function = False
-        # We can replace in_function with chat_function_display is not None
+        chat_function = None
 
         for result in resp:  # Go through the results of the stream
             # TODO: Move this setup back into deltas
@@ -116,91 +116,57 @@ class Session:
 
                 elif 'function_call' in delta:  # If the delta contains a function call
                     # Previous message finished
-                    if not in_function:
+                    if not chat_function:
                         # Wrap up the previous assistant message
                         if mark.message.strip() != "":
-                            self.messages.append(assistant(mark.message))
+                            self.append(assistant(mark.message))
+                            # Make a new display area
                             mark = Markdown()
-                            mark.display()
-
-                        in_function = True
+                            # We should not call `mark.display()` because we will display the function call
+                            # and new follow ons will be displayed with new chats. For type conformance,
+                            # we set mark to a new empty Markdown object.
 
                     function_call = delta['function_call']
                     if 'name' in function_call:
-                        chat_function_display = ChatFunctionDisplay(function_call["name"])
-                        chat_function_display.display()
+                        chat_function = ChatFunctionCall(
+                            function_call["name"], function_registry=self.function_registry
+                        )
+                        chat_function.display()
 
                     if 'arguments' in function_call:
-                        if chat_function_display is None:
+                        if chat_function is None:
                             raise ValueError("Function arguments provided without function name")
-                        chat_function_display.append_arguments(function_call['arguments'])
+                        chat_function.append_arguments(function_call['arguments'])
 
             if 'finish_reason' in choice and choice['finish_reason'] == "function_call":
-                if chat_function_display is None:
+                if chat_function is None:
                     raise ValueError("Function call finished without function name")
 
-                function_name = chat_function_display.function_name
-                function_args = chat_function_display.function_args
+                # Record the attempted call from the LLM
+                self.append(
+                    assistant_function_call(name=chat_function.function_name, arguments=chat_function.function_args)
+                )
+                # Make the call
+                fn_message = chat_function.call()
+                # Include the response (or error) for the model
+                self.append(fn_message)
 
-                if function_name is None:
-                    raise ValueError("Function call finished without function name")
+                # Choose whether to let the LLM continue from our function response
+                continuing = auto_continue if auto_continue is not None else self.auto_continue
 
-                if function_name not in self.function_registry:
-                    raise ValueError(f"Function {function_name} not found in function registry")
+                if continuing:
+                    # Automatically let the LLM continue from our function result
+                    self.chat()
 
-                if function_name and function_name in self.function_registry:
-                    chat_function_display.set_state("Running")
-                    self.messages.append(assistant_function_call(name=function_name, arguments=function_args))
-
-                    arguments = None
-
-                    if function_args is not None:
-                        # Evaluate the arguments as a JSON
-                        try:
-                            arguments = json.loads(function_args)
-                        except json.JSONDecodeError:
-                            raise ValueError(f"Could not parse function arguments: {function_args}")
-
-                    # Execute the function and get the result
-                    output = self.function_registry.call(function_name, arguments)
-
-                    repr_llm = repr(output)
-
-                    chat_function_display.append_result(repr_llm)
-                    chat_function_display.set_state("Ran")
-                    chat_function_display.set_finished()
-
-                    self.messages.append(function_result(name=function_name, content=repr_llm))
-
-                    # Reset to no function display for the next call
-                    chat_function_display = None
-
-                    in_function = False
+                return
 
             elif 'finish_reason' in choice and choice['finish_reason'] is not None:
-                if not in_function:
+                if chat_function is None:
                     # Wrap up the previous assistant
                     self.messages.append(assistant(mark.message))
 
                 if 'max_tokens' in choice['finish_reason']:
                     mark.append("\n...MAX TOKENS REACHED...\n")
-
-        # In priority order:
-        #
-        # `auto_continue` argument
-        # `self.auto_continue`
-        #
-        # If `auto_continue` is False, then `self.auto_continue` is ignored
-        continuing = False
-
-        if auto_continue is not None:
-            continuing = auto_continue
-        elif self.auto_continue:
-            continuing = True
-
-        if continuing and self.messages[-1]['role'] == 'function':
-            # Automatically let the LLM continue from our function result
-            self.chat()
 
     def append(self, *messages: Union[Message, str]):
         """Append messages to the conversation history.
@@ -225,7 +191,10 @@ class Session:
 
         Args:
             function (Callable): The function to register.
-            parameters_model (BaseModel): The pydantic model to use for parameters.
+
+            parameters_model (BaseModel): The pydantic model to use for the function's parameters.
+
+            json_schema (dict): The JSON schema to use for the function's parameters.
 
         """
         full_schema = self.function_registry.register(function, parameters_model, json_schema)

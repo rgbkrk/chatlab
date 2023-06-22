@@ -41,9 +41,25 @@ Example usage:
 """
 
 import inspect
+import json
 from typing import Callable, Optional, Union, get_args, get_origin
 
 from pydantic import BaseModel
+
+from murkrow.builtins import run_cell
+
+
+class FunctionArgumentError(Exception):
+    """Exception raised when a function is called with invalid arguments."""
+
+    pass
+
+
+class UnknownFunctionError(Exception):
+    """Exception raised when a function is called that is not registered."""
+
+    pass
+
 
 # Allowed types for auto-inferred schemas
 ALLOWED_TYPES = [int, str, bool, float, list, dict]
@@ -138,10 +154,11 @@ class FunctionRegistry:
     __functions: dict[str, Callable]
     __schemas: dict[str, dict]
 
-    def __init__(self):
+    def __init__(self, include_builtin_python: bool = False):
         """Initialize a FunctionRegistry object."""
         self.__functions = {}
         self.__schemas = {}
+        self.include_builtin_python = include_builtin_python
 
     def register(
         self, function: Callable, parameters_model: Optional["BaseModel"] = None, json_schema: Optional[dict] = None
@@ -156,12 +173,30 @@ class FunctionRegistry:
 
     def get(self, function_name):
         """Get a function by name."""
-        return self.__functions[function_name]
+        return self.__functions.get(function_name)
 
-    def call(self, name, arguments):
+    def call(self, name: str, arguments: Optional[str] = None):
         """Call a function by name with the given parameters."""
         function = self.get(name)
-        parameters = arguments
+        parameters: dict = {}
+
+        # Handle the code interpreter hallucination
+        if name == "python" and self.include_builtin_python:
+            function = run_cell
+            # The "hallucinated" python function takes raw plaintext
+            # instead of a JSON object. We can just pass it through.
+            parameters = {"code": arguments}
+        elif function is None:
+            raise UnknownFunctionError(f"Function {name} is not registered")
+        elif arguments is None or arguments == "":
+            parameters = {}
+        else:
+            try:
+                parameters = json.loads(arguments)
+                # TODO: Validate parameters against schema
+            except json.JSONDecodeError:
+                raise FunctionArgumentError(f"Invalid JSON for parameters of function {name}")
+
         return function(**parameters)
 
     def __contains__(self, name):
