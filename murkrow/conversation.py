@@ -126,7 +126,17 @@ class Conversation:
         finish_reason = None
 
         for result in resp:  # Go through the results of the stream
-            choice = result['choices'][0]  # Get the first choice, since we're not doing bulk
+            if type(result) != dict:
+                logger.warning(f"Unexpected result type: {type(result)}")
+                continue
+
+            choices = result.get('choices', [])
+
+            if len(choices) == 0:
+                logger.warning(f"Unexpected result: {result}")
+                continue
+
+            choice = choices[0]
 
             if 'delta' in choice:  # If there is a delta in the result
                 delta = choice['delta']

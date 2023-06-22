@@ -159,7 +159,6 @@ class FunctionRegistry:
         self, function: Callable, parameters_model: Optional["BaseModel"] = None, json_schema: Optional[dict] = None
     ):
         """Register a function with a schema for sending to OpenAI."""
-
         if parameters_model is not None and json_schema is not None:
             raise Exception("Cannot specify both parameters_model and json_schema")
 
