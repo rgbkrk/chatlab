@@ -203,8 +203,7 @@ class Conversation:
 
         if finish_reason == 'stop':
             return
-
-        if finish_reason == 'max_tokens' or finish_reason == 'length':
+        elif finish_reason == 'max_tokens' or finish_reason == 'length':
             mark.append("\n...max tokens or overall length is too high...\n")
         elif finish_reason == 'content_filter':
             mark.append("\n...Content omitted due to OpenAI content filters...\n")
