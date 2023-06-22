@@ -172,20 +172,18 @@ class ChatFunctionCall:
             self.set_state("Error")
             return system("Function call message finished without function name")
 
-        if function_name not in self.function_registry:
-            self.set_state("Error")
-            return system(f"Function {function_name} not found in function registry")
-
         self.set_state("Running")
 
         # Execute the function and get the result
         try:
             output = self.function_registry.call(function_name, function_args)
         except FunctionArgumentError as e:
-            self.set_state("Error")
+            self.finished = True
+            self.set_state("Errored")
             return system(f"Function arguments for {function_name} were invalid: {e}")
         except UnknownFunctionError as e:
-            self.set_state("Error")
+            self.finished = True
+            self.set_state("No function named")
             return system(f"Function {function_name} not found in function registry: {e}")
 
         repr_llm = repr(output)
