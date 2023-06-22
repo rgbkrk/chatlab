@@ -31,7 +31,7 @@ class Conversation:
 
         auto_continue (bool): Whether to automatically continue the conversation after each message.
 
-        include_builtin_python (bool): Whether to include the built-in Python functions in the function registry.
+        allow_hallucinated_python (bool): Whether to include the built-in Python function when hallucinated by the model.
 
     Examples:
         >>> from murkrow import Conversation, narrate
@@ -46,7 +46,7 @@ class Conversation:
     model: str
     function_registry: FunctionRegistry
     auto_continue: bool
-    include_builtin_python: bool
+    allow_hallucinated_python: bool
 
     def __init__(
         self,
@@ -54,7 +54,7 @@ class Conversation:
         model="gpt-3.5-turbo-0613",
         function_registry: Optional[FunctionRegistry] = None,
         auto_continue: bool = True,
-        include_builtin_python: bool = False,
+        allow_hallucinated_python: bool = False,
     ):
         """Initialize a `Murkrow` object with an optional initial context of messages.
 
@@ -73,10 +73,10 @@ class Conversation:
         self.model = model
         self.auto_continue = auto_continue
 
-        self.include_builtin_python = include_builtin_python
+        self.allow_hallucinated_python = allow_hallucinated_python
 
         if function_registry is None:
-            self.function_registry = FunctionRegistry(include_builtin_python=self.include_builtin_python)
+            self.function_registry = FunctionRegistry(allow_hallucinated_python=self.allow_hallucinated_python)
         else:
             self.function_registry = function_registry
 
