@@ -28,15 +28,14 @@ Example usage:
     class WhatTime(BaseModel):
         timezone: Optional[str]
 
-    
     import murkrow
     registry = murkrow.FunctionRegistry()
 
-    session = murkrow.Session(
+    conversation = murkrow.Conversation(
         function_registry=registry,
     )
 
-    session.chat("What time is it?")
+    conversation.chat("What time is it?")
 
 """
 

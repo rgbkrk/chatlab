@@ -18,12 +18,13 @@ __email__ = 'rgbkrk@gmail.com'
 __version__ = '0.12.3'
 
 
-# Export Markdown from display
-
+from .conversation import Conversation
 from .display import Markdown
 from .messaging import ai, assistant, assistant_function_call, function_result, human, narrate, system, user
-from .murkrow import Session
 from .registry import FunctionRegistry
+
+# Maintain backwards compatibility
+Session = Conversation
 
 __all__ = [
     "Markdown",
@@ -36,5 +37,6 @@ __all__ = [
     "assistant_function_call",
     "function_result",
     "Session",
+    "Conversation",
     "FunctionRegistry",
 ]
