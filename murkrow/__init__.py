@@ -15,9 +15,9 @@ I am the king of the skies, the lord of the avian realm. Squawk!
 
 __author__ = """Kyle Kelley"""
 __email__ = 'rgbkrk@gmail.com'
-__version__ = '0.12.3'
 
 
+from ._version import __version__
 from .conversation import Conversation
 from .display import Markdown
 from .messaging import ai, assistant, assistant_function_call, function_result, human, narrate, system, user

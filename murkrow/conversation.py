@@ -5,6 +5,7 @@ import logging
 from typing import Callable, List, Optional, Union
 
 import openai
+from deprecation import deprecated
 from pydantic import BaseModel
 
 from murkrow.registry import FunctionRegistry
@@ -80,7 +81,15 @@ class Conversation:
         else:
             self.function_registry = function_registry
 
+    @deprecated(deprecated_in="0.13.0", removed_in="1.0.0", details="Use `submit` instead.")
     def chat(self, *messages: Union[Message, str], auto_continue: Optional[bool] = None):
+        """Send messages to the chat model and display the response.
+
+        Deprecated in 0.13.0, removed in 1.0.0. Use `submit` instead.
+        """
+        return self.submit(*messages, auto_continue=auto_continue)
+
+    def submit(self, *messages: Union[Message, str], auto_continue: Optional[bool] = None):
         """Send messages to the chat model and display the response.
 
         Args:
