@@ -78,9 +78,7 @@ def is_optional_type(t):
     return get_origin(t) is Union and len(get_args(t)) == 2 and type(None) in get_args(t)
 
 
-def generate_function_schema(
-    function: Callable, parameters_model: Optional["BaseModel"] = None, json_schema: Optional[dict] = None
-):
+def generate_function_schema(function: Callable, parameters_model: Optional["BaseModel"] = None):
     """Generate a function schema for sending to OpenAI."""
     doc = function.__doc__
     func_name = function.__name__
@@ -93,9 +91,7 @@ def generate_function_schema(
         raise Exception("Only functions with docstrings can be registered")
 
     schema = None
-    if json_schema:
-        schema = json_schema
-    elif parameters_model:
+    if parameters_model is not None:
         schema = parameters_model.schema()
     else:
         schema_properties = {}
@@ -163,7 +159,15 @@ class FunctionRegistry:
         self, function: Callable, parameters_model: Optional["BaseModel"] = None, json_schema: Optional[dict] = None
     ):
         """Register a function with a schema for sending to OpenAI."""
-        schema = generate_function_schema(function, parameters_model, json_schema)
+
+        if parameters_model is not None and json_schema is not None:
+            raise Exception("Cannot specify both parameters_model and json_schema")
+
+        # Assume that if json_schema is passed, it is valid and complete
+        # json_schema takes precedence over parameters_model and auto-inferred schema
+        schema = json_schema
+        if schema is None:
+            schema = generate_function_schema(function, parameters_model)
 
         self.__functions[function.__name__] = function
         self.__schemas[function.__name__] = schema
