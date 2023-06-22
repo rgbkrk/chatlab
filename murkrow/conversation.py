@@ -58,7 +58,7 @@ class Conversation:
         auto_continue: bool = True,
         allow_hallucinated_python: bool = False,
     ):
-        """Initialize a `Murkrow` object with an optional initial context of messages.
+        """Initialize a Conversation with an optional initial context of messages.
 
         >>> from murkrow import Murkrow, narrate
         >>> murkrow = Murkrow(narrate("You are a large bird"))
