@@ -5,10 +5,12 @@ import logging
 from typing import Callable, List, Optional, Union
 
 import openai
+from deprecation import deprecated
 from pydantic import BaseModel
 
 from murkrow.registry import FunctionRegistry
 
+from ._version import __version__
 from .display import ChatFunctionCall, Markdown
 from .messaging import Message, assistant, assistant_function_call, human
 
@@ -37,7 +39,7 @@ class Conversation:
         >>> from murkrow import Conversation, narrate
 
         >>> conversation = Conversation(narrate("You are a large bird"))
-        >>> conversation.chat("What are you?")
+        >>> conversation.submit("What are you?")
         I am a large bird.
 
     """
@@ -56,11 +58,11 @@ class Conversation:
         auto_continue: bool = True,
         allow_hallucinated_python: bool = False,
     ):
-        """Initialize a `Murkrow` object with an optional initial context of messages.
+        """Initialize a Conversation with an optional initial context of messages.
 
-        >>> from murkrow import Murkrow, narrate
-        >>> murkrow = Murkrow(narrate("You are a large bird"))
-        >>> murkrow.chat("What are you?")
+        >>> from murkrow import Conversation, narrate
+        >>> convo = Conversation(narrate("You are a large bird"))
+        >>> convo.submit("What are you?")
         I am a large bird.
 
         """
@@ -80,7 +82,17 @@ class Conversation:
         else:
             self.function_registry = function_registry
 
+    @deprecated(
+        deprecated_in="0.13.0", removed_in="1.0.0", current_version=__version__, details="Use `submit` instead."
+    )
     def chat(self, *messages: Union[Message, str], auto_continue: Optional[bool] = None):
+        """Send messages to the chat model and display the response.
+
+        Deprecated in 0.13.0, removed in 1.0.0. Use `submit` instead.
+        """
+        return self.submit(*messages, auto_continue=auto_continue)
+
+    def submit(self, *messages: Union[Message, str], auto_continue: Optional[bool] = None):
         """Send messages to the chat model and display the response.
 
         Args:
@@ -114,8 +126,17 @@ class Conversation:
         finish_reason = None
 
         for result in resp:  # Go through the results of the stream
-            # TODO: Move this setup back into deltas
-            choice = result['choices'][0]  # Get the first choice, since we're not doing bulk
+            if type(result) != dict:
+                logger.warning(f"Unexpected result type: {type(result)}")
+                continue
+
+            choices: list = result.get('choices', [])
+
+            if len(choices) == 0:
+                logger.warning(f"Unexpected result: {result}")
+                continue
+
+            choice = choices[0]
 
             if 'delta' in choice:  # If there is a delta in the result
                 delta = choice['delta']
@@ -167,18 +188,23 @@ class Conversation:
 
             if continuing:
                 # Automatically let the LLM continue from our function result
-                self.chat()
-
+                self.submit()
             return
 
-        if finish_reason == 'stop':
-            # Wrap up the previous assistant
-            self.messages.append(assistant(mark.message))
+        # All other finish reasons are valid for regular assistant messages
 
-        if finish_reason == 'max_tokens':
-            # Wrap up the previous assistant
-            self.messages.append(assistant(mark.message))
-            mark.append("\n...MAX TOKENS REACHED...\n")
+        # Wrap up the previous assistant
+        self.messages.append(assistant(mark.message))
+
+        if finish_reason == 'stop':
+            return
+
+        if finish_reason == 'max_tokens' or finish_reason == 'length':
+            mark.append("\n...max tokens or overall length is too high...\n")
+        elif finish_reason == 'content_filter':
+            mark.append("\n...Content omitted due to OpenAI content filters...\n")
+        else:
+            mark.append(f"\n...UNKNOWN FINISH REASON: {finish_reason}...\n")
 
     def append(self, *messages: Union[Message, str]):
         """Append messages to the conversation history.
