@@ -35,7 +35,7 @@ Example usage:
         function_registry=registry,
     )
 
-    conversation.chat("What time is it?")
+    conversation.submit("What time is it?")
 
 """
 

@@ -12,7 +12,7 @@ import murkrow
 
 conversation = murkrow.Conversation()
 
-conversation.chat("How much wood could a")
+conversation.submit("How much wood could a")
 ```
 
 ```markdown
@@ -118,7 +118,7 @@ The `Conversation` class is the main way to chat using OpenAI's models. It keeps
 When you call `chat`, you're sending over messages to the chat model and getting back an updating `Markdown` display live.
 
 ```python
-conversation.chat("What would a parent who says "I have to play zone defense" mean? ")
+conversation.submit("What would a parent who says "I have to play zone defense" mean? ")
 # Markdown response inline
 conversation.messages
 ```

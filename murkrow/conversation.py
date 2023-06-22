@@ -39,7 +39,7 @@ class Conversation:
         >>> from murkrow import Conversation, narrate
 
         >>> conversation = Conversation(narrate("You are a large bird"))
-        >>> conversation.chat("What are you?")
+        >>> conversation.submit("What are you?")
         I am a large bird.
 
     """
@@ -60,9 +60,9 @@ class Conversation:
     ):
         """Initialize a Conversation with an optional initial context of messages.
 
-        >>> from murkrow import Murkrow, narrate
-        >>> murkrow = Murkrow(narrate("You are a large bird"))
-        >>> murkrow.chat("What are you?")
+        >>> from murkrow import Conversation, narrate
+        >>> convo = Conversation(narrate("You are a large bird"))
+        >>> convo.submit("What are you?")
         I am a large bird.
 
         """

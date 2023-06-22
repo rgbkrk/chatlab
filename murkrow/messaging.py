@@ -2,7 +2,7 @@
 
 >>> from murkrow import Murkrow, ai, human, system
 >>> murkrow = Murkrow(system("You are a large bird"))
->>> murkrow.chat(human("What are you?"))
+>>> murkrow.submit(human("What are you?"))
 I am a large bird.
 
 """
