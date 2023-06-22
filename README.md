@@ -89,8 +89,8 @@ conversation = murkrow.Conversation()
 # Register our function
 conversation.register(what_time, WhatTime)
 
-# Pluck the chat function off for easy access
-chat = conversation.chat
+# Pluck the submit off for easy access as chat
+chat = conversation.submit
 ```
 
 After that, we can call `chat` with direct strings (which are turned into user messages) or using simple message makers from `murkrow` named `human`/`user` and `narrate`/`system`.
@@ -113,9 +113,9 @@ The `murkrow` package exports
 
 The `Conversation` class is the main way to chat using OpenAI's models. It keeps a history of your chat in `Conversation.messages`.
 
-#### `Conversation.chat`
+#### `Conversation.submit`
 
-When you call `chat`, you're sending over messages to the chat model and getting back an updating `Markdown` display live.
+When you call `submit`, you're sending over messages to the chat model and getting back an updating `Markdown` display live as well as a interactive details area for any function calls.
 
 ```python
 conversation.submit("What would a parent who says "I have to play zone defense" mean? ")
