@@ -130,7 +130,7 @@ class Conversation:
                 logger.warning(f"Unexpected result type: {type(result)}")
                 continue
 
-            choices = result.get('choices', [])
+            choices: list = result.get('choices', [])
 
             if len(choices) == 0:
                 logger.warning(f"Unexpected result: {result}")
