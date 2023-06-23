@@ -24,19 +24,36 @@ conversation.register(flip_a_coin)
 conversation.submit("Please flip a coin for me")
 ```
 
-```markdown
-▶ 𝑓 Ran `flip_a_coin`
+<details style="background:#DDE6ED;color:#27374D;padding:.5rem 1rem;borderRadius:5px">
+<summary>&nbsp;𝑓&nbsp; Ran `flip_a_coin`
+</summary>
+<br />
 
-heads
+Input:
+
+```json
+{}
+```
+
+Output:
+
+```json
+"tails"
+```
+
+</details>
+
+```markdown
+It landed on tails!
 ```
 
 In the notebook, text will stream into a Markdown output.
 
-![image](https://github.com/rgbkrk/chatlab/assets/836375/81b2837c-430c-42eb-ae60-0c3a91ae26b6)
+![image](https://github.com/rgbkrk/murkrow/assets/836375/81b2837c-430c-42eb-ae60-0c3a91ae26b6)
 
 When using chat functions in the notebook\*, you'll get a nice collapsible display of inputs and outputs.
 
-![click](https://github.com/rgbkrk/chatlab/assets/836375/21c6bd4c-cd3b-48b9-812a-2b86a05c20da)
+![click](https://github.com/rgbkrk/murkrow/assets/836375/21c6bd4c-cd3b-48b9-812a-2b86a05c20da)
 
 \* Tested in JupyterLab and Noteable
 
@@ -54,8 +71,7 @@ On hosted environments like Noteable, set it in your Secrets to keep it safe fro
 
 ## What can `Conversation`s enable _you_ to do?
 
-<center><img src="https://cdn.donmai.us/original/64/e7/64e78d7968c8317b84a95e152e4a087b.png" height="100" /></center>
-<br />
+💬
 
 Where `Conversation`s take it next level is with _Chat Functions_. You can
 
@@ -104,16 +120,33 @@ conversation.register(what_time, WhatTime)
 chat = conversation.submit
 ```
 
-After that, we can call `chat` with direct strings (which are turned into user messages) or using simple message makers from `chatlab` named `human`/`user` and `narrate`/`system`.
+After that, we can call `chat` with direct strings (which are turned into user messages) or using simple message makers from `chatlab` named `user` and `system`.
 
 ```python
 chat("What time is it?")
 ```
 
-```markdown
-▶ 𝑓 Ran `what_time`
+<details style="background:#DDE6ED;color:#27374D;padding:.5rem 1rem;borderRadius:5px">
+<summary>&nbsp;𝑓&nbsp; Ran `what_time`
+</summary>
+<br />
 
-The current time is 11:47 PM.
+Input:
+
+```json
+{}
+```
+
+Output:
+
+```json
+"11:19 AM"
+```
+
+</details>
+
+```markdown
+The current time is 11:19 AM.
 ```
 
 ## Interface
@@ -129,7 +162,7 @@ The `Conversation` class is the main way to chat using OpenAI's models. It keeps
 When you call `submit`, you're sending over messages to the chat model and getting back an updating `Markdown` display live as well as a interactive details area for any function calls.
 
 ```python
-conversation.submit("What would a parent who says "I have to play zone defense" mean? ")
+conversation.submit('What would a parent who says "I have to play zone defense" mean? ')
 # Markdown response inline
 conversation.messages
 ```
