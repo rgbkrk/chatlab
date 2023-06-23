@@ -4,9 +4,10 @@ import os
 from binascii import hexlify
 from typing import Optional
 
-from chatlab.registry import FunctionArgumentError, FunctionRegistry, UnknownFunctionError
 from IPython.core import display_functions
 from vdom import details, div, span, style, summary
+
+from chatlab.registry import FunctionArgumentError, FunctionRegistry, UnknownFunctionError
 
 # Importing for the sake of backwards compatibility
 from .markdown import Markdown  # noqa: F401
@@ -181,7 +182,7 @@ class ChatFunctionCall:
 
         self.function_result = repr_llm
         self.finished = True
-        self.state = "Finished"
+        self.state = "Ran"
         self.update_displays()
 
         return function_result(name=function_name, content=repr_llm)

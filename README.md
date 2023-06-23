@@ -4,22 +4,30 @@
 
 💬🔬
 
-Chatlab is where chat conversations take shape. It’s your laboratory for experimenting with and crafting intelligent conversations using OpenAI’s chat models.
+ChatLab is a Python package that makes it easy to experiment with OpenAI's chat models. It provides a simple interface for chatting with the models and a way to register functions that can be called from the chat model.
+
+Best yet, it's interactive in the notebook!
 
 ## Introduction
 
-Welcome to Chatlab, your personal workshop for chat innovation. Are you intrigued by conversational AI? Chatlab empowers developers to mold conversations according to their vision. Whether you are an AI enthusiast, researcher, or developer, Chatlab provides you with the building blocks and tools necessary for crafting intelligent conversations seamlessly. 🧪💬
-
 ```python
 import chatlab
+import random
+
+def flip_a_coin():
+    '''Returns heads or tails'''
+    return random.choice(['heads', 'tails'])
 
 conversation = chatlab.Conversation()
+conversation.register(flip_a_coin)
 
-conversation.submit("How much wood could a")
+conversation.submit("Please flip a coin for me")
 ```
 
 ```markdown
-woodchuck chuck if a woodchuck could chuck wood?
+▶ 𝑓 Ran `flip_a_coin`
+
+heads
 ```
 
 In the notebook, text will stream into a Markdown output.
