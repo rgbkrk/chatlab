@@ -1,8 +1,8 @@
 [tool]
 [tool.poetry]
-name = "murkrow"
+name = "chatlab"
 version = "0.13.0"
-homepage = "https://github.com/rgbkrk/murkrow"
+homepage = "https://github.com/rgbkrk/chatlab"
 description = "Markdown for LLMs."
 authors = ["Kyle Kelley <rgbkrk@gmail.com>"]
 readme = "README.md"
@@ -17,7 +17,7 @@ classifiers=[
     'Programming Language :: Python :: 3.9',
 ]
 packages = [
-    { include = "murkrow" },
+    { include = "chatlab" },
     { include = "tests", format = "sdist" },
 ]
 

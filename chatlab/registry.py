@@ -2,7 +2,7 @@
 
 Example usage:
 
-    from murkrow import FunctionRegistry
+    from chatlab import FunctionRegistry
     from pydantic import BaseModel
 
     registry = FunctionRegistry()
@@ -28,10 +28,10 @@ Example usage:
     class WhatTime(BaseModel):
         timezone: Optional[str]
 
-    import murkrow
-    registry = murkrow.FunctionRegistry()
+    import chatlab
+    registry = chatlab.FunctionRegistry()
 
-    conversation = murkrow.Conversation(
+    conversation = chatlab.Conversation(
         function_registry=registry,
     )
 
@@ -45,7 +45,7 @@ from typing import Callable, Optional, Union, get_args, get_origin
 
 from pydantic import BaseModel
 
-from murkrow.builtins import run_cell
+from chatlab.builtins import run_cell
 
 
 class FunctionArgumentError(Exception):

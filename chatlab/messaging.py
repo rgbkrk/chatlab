@@ -1,8 +1,8 @@
-"""Little messaging helpers for Murkrow.
+"""Little messaging helpers for ChatLab.
 
->>> from murkrow import Murkrow, ai, human, system
->>> murkrow = Murkrow(system("You are a large bird"))
->>> murkrow.submit(human("What are you?"))
+>>> from chatlab import ChatLab, ai, human, system
+>>> chatlab = ChatLab(system("You are a large bird"))
+>>> chatlab.submit(human("What are you?"))
 I am a large bird.
 
 """
@@ -57,7 +57,7 @@ Message = TypedDict(
 def assistant(content: str) -> Message:
     """Create a message from the assistant.
 
-    >>> from murkrow import assistant
+    >>> from chatlab import assistant
     >>> assistant("Hello!")
     {'role': 'assistant', 'content': 'Hello!'}
     """

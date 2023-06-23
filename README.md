@@ -1,16 +1,19 @@
-# Murkrow
+# ChatLab
 
-## Supercharge Your AI Conversations with _Functions_ Using Murkrow!
+**Chat Experiments, Simplified**
 
-<img src="https://i.pinimg.com/originals/95/53/a9/9553a99cefa0b27f0d83dc0cbf358759.png" height="100" />
-<br />
+💬🔬
 
-Welcome to the exciting world of programmatic chat with OpenAI's chat models, using the `murkrow` Python package. At its simplest, you can install `murkrow`, set your `OPENAI_API_KEY`, and begin some simple chats:
+Chatlab is where chat conversations take shape. It’s your laboratory for experimenting with and crafting intelligent conversations using OpenAI’s chat models.
+
+## Introduction
+
+Welcome to Chatlab, your personal workshop for chat innovation. Are you intrigued by conversational AI? Chatlab empowers developers to mold conversations according to their vision. Whether you are an AI enthusiast, researcher, or developer, Chatlab provides you with the building blocks and tools necessary for crafting intelligent conversations seamlessly. 🧪💬
 
 ```python
-import murkrow
+import chatlab
 
-conversation = murkrow.Conversation()
+conversation = chatlab.Conversation()
 
 conversation.submit("How much wood could a")
 ```
@@ -21,18 +24,18 @@ woodchuck chuck if a woodchuck could chuck wood?
 
 In the notebook, text will stream into a Markdown output.
 
-![image](https://github.com/rgbkrk/murkrow/assets/836375/81b2837c-430c-42eb-ae60-0c3a91ae26b6)
+![image](https://github.com/rgbkrk/chatlab/assets/836375/81b2837c-430c-42eb-ae60-0c3a91ae26b6)
 
 When using chat functions in the notebook\*, you'll get a nice collapsible display of inputs and outputs.
 
-![click](https://github.com/rgbkrk/murkrow/assets/836375/21c6bd4c-cd3b-48b9-812a-2b86a05c20da)
+![click](https://github.com/rgbkrk/chatlab/assets/836375/21c6bd4c-cd3b-48b9-812a-2b86a05c20da)
 
 \* Tested in JupyterLab and Noteable
 
 ### Installation
 
 ```bash
-pip install murkrow
+pip install chatlab
 ```
 
 ### Configuration
@@ -82,9 +85,9 @@ Let's break this down.
 `what_time` is the function we're going to provide access to. Its docstring forms the `description` for the model while the schema comes from the pydantic `BaseModel` called `WhatTime`.
 
 ```python
-import murkrow
+import chatlab
 
-conversation = murkrow.Conversation()
+conversation = chatlab.Conversation()
 
 # Register our function
 conversation.register(what_time, WhatTime)
@@ -93,7 +96,7 @@ conversation.register(what_time, WhatTime)
 chat = conversation.submit
 ```
 
-After that, we can call `chat` with direct strings (which are turned into user messages) or using simple message makers from `murkrow` named `human`/`user` and `narrate`/`system`.
+After that, we can call `chat` with direct strings (which are turned into user messages) or using simple message makers from `chatlab` named `human`/`user` and `narrate`/`system`.
 
 ```python
 chat("What time is it?")
@@ -107,7 +110,7 @@ The current time is 11:47 PM.
 
 ## Interface
 
-The `murkrow` package exports
+The `chatlab` package exports
 
 ### `Conversation`
 
@@ -169,7 +172,7 @@ conversation.messages = conversation.messages[-100:]
 These functions create a message from the user to the chat model.
 
 ```python
-from murkrow import human
+from chatlab import human
 
 human("How are you?")
 ```
@@ -180,10 +183,10 @@ human("How are you?")
 
 #### `narrate`/`system`
 
-`system` messages, also called `narrate` in `murkrow`, allow you to steer the model in a direction. You can use these to provide context without being seen by the user. One common use is to include it as initial context for the conversation.
+`system` messages, also called `narrate` in `chatlab`, allow you to steer the model in a direction. You can use these to provide context without being seen by the user. One common use is to include it as initial context for the conversation.
 
 ```python
-from murkrow import narrate
+from chatlab import narrate
 
 narrate("You are a large bird")
 ```

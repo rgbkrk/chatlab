@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-"""Tests for `murkrow` package."""
+"""Tests for `chatlab` package."""
 
-from murkrow import ai, assistant, human, narrate, system, user
+from chatlab import ai, assistant, human, narrate, system, user
 
 
 def test_messaging():

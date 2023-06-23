@@ -4,10 +4,9 @@ import os
 from binascii import hexlify
 from typing import Optional
 
+from chatlab.registry import FunctionArgumentError, FunctionRegistry, UnknownFunctionError
 from IPython.core import display_functions
 from vdom import details, div, span, style, summary
-
-from murkrow.registry import FunctionArgumentError, FunctionRegistry, UnknownFunctionError
 
 # Importing for the sake of backwards compatibility
 from .markdown import Markdown  # noqa: F401
@@ -25,7 +24,7 @@ colors = {
     "Approximate Arapawa": "#526D82",
     "Light Slate": "#9DB2BF",
     "Pattens Blue": "#DDE6ED",
-    # Murkrow Colors
+    # ChatLab Colors
     "Charcoal": "#2B4155",
     "Lapis Lazuli": "#3C5B79",
     "UCLA Blue": "#527498",
@@ -99,7 +98,7 @@ def ChatFunctionComponent(
         )
 
     return div(
-        style(".murkrow-chat-details summary > *  { display: inline; color: #27374D; }"),
+        style(".chatlab-chat-details summary > *  { display: inline; color: #27374D; }"),
         details(
             summary(
                 function_logo(),
@@ -118,7 +117,7 @@ def ChatFunctionComponent(
                     marginLeft="10px",
                 ),
             ),
-            className="murkrow-chat-details",
+            className="chatlab-chat-details",
             style=dict(
                 background=colors["lightest"],
                 padding=".5rem 1rem",

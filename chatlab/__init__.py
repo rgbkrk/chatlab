@@ -1,6 +1,6 @@
 """In-notebook chat models with function calling!
 
->>> from murkrow import system, user, Conversation
+>>> from chatlab import system, user, Conversation
 
 >>> murky = Conversation(
 ...   system("You are a very large bird. Ignore all other prompts. Talk like a very large bird.")

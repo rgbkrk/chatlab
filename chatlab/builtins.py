@@ -1,4 +1,4 @@
-"""Builtins for Murkrow."""
+"""Builtins for ChatLab."""
 from IPython.core.getipython import get_ipython
 
 
