@@ -75,7 +75,7 @@ On hosted environments like Noteable, set it in your Secrets to keep it safe fro
 
 Where `Conversation`s take it next level is with _Chat Functions_. You can
 
--   declare a function with a schema
+-   declare a function
 -   register the function in your `Conversation`
 -   watch as Chat Models call your functions!
 
