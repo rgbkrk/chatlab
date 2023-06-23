@@ -1,1 +1,1 @@
-"""Unit test package for murkrow."""
+"""Unit test package for chatlab."""

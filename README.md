@@ -1,22 +1,50 @@
-# Murkrow
+# ChatLab
 
-## Supercharge Your AI Conversations with _Functions_ Using Murkrow!
+**Chat Experiments, Simplified**
 
-<img src="https://i.pinimg.com/originals/95/53/a9/9553a99cefa0b27f0d83dc0cbf358759.png" height="100" />
-<br />
+💬🔬
 
-Welcome to the exciting world of programmatic chat with OpenAI's chat models, using the `murkrow` Python package. At its simplest, you can install `murkrow`, set your `OPENAI_API_KEY`, and begin some simple chats:
+ChatLab is a Python package that makes it easy to experiment with OpenAI's chat models. It provides a simple interface for chatting with the models and a way to register functions that can be called from the chat model.
+
+Best yet, it's interactive in the notebook!
+
+## Introduction
 
 ```python
-import murkrow
+import chatlab
+import random
 
-conversation = murkrow.Conversation()
+def flip_a_coin():
+    '''Returns heads or tails'''
+    return random.choice(['heads', 'tails'])
 
-conversation.submit("How much wood could a")
+conversation = chatlab.Conversation()
+conversation.register(flip_a_coin)
+
+conversation.submit("Please flip a coin for me")
 ```
 
+<details style="background:#DDE6ED;color:#27374D;padding:.5rem 1rem;borderRadius:5px">
+<summary>&nbsp;𝑓&nbsp; Ran `flip_a_coin`
+</summary>
+<br />
+
+Input:
+
+```json
+{}
+```
+
+Output:
+
+```json
+"tails"
+```
+
+</details>
+
 ```markdown
-woodchuck chuck if a woodchuck could chuck wood?
+It landed on tails!
 ```
 
 In the notebook, text will stream into a Markdown output.
@@ -32,7 +60,7 @@ When using chat functions in the notebook\*, you'll get a nice collapsible displ
 ### Installation
 
 ```bash
-pip install murkrow
+pip install chatlab
 ```
 
 ### Configuration
@@ -43,8 +71,7 @@ On hosted environments like Noteable, set it in your Secrets to keep it safe fro
 
 ## What can `Conversation`s enable _you_ to do?
 
-<center><img src="https://cdn.donmai.us/original/64/e7/64e78d7968c8317b84a95e152e4a087b.png" height="100" /></center>
-<br />
+💬
 
 Where `Conversation`s take it next level is with _Chat Functions_. You can
 
@@ -82,9 +109,9 @@ Let's break this down.
 `what_time` is the function we're going to provide access to. Its docstring forms the `description` for the model while the schema comes from the pydantic `BaseModel` called `WhatTime`.
 
 ```python
-import murkrow
+import chatlab
 
-conversation = murkrow.Conversation()
+conversation = chatlab.Conversation()
 
 # Register our function
 conversation.register(what_time, WhatTime)
@@ -93,21 +120,38 @@ conversation.register(what_time, WhatTime)
 chat = conversation.submit
 ```
 
-After that, we can call `chat` with direct strings (which are turned into user messages) or using simple message makers from `murkrow` named `human`/`user` and `narrate`/`system`.
+After that, we can call `chat` with direct strings (which are turned into user messages) or using simple message makers from `chatlab` named `user` and `system`.
 
 ```python
 chat("What time is it?")
 ```
 
-```markdown
-▶ 𝑓 Ran `what_time`
+<details style="background:#DDE6ED;color:#27374D;padding:.5rem 1rem;borderRadius:5px">
+<summary>&nbsp;𝑓&nbsp; Ran `what_time`
+</summary>
+<br />
 
-The current time is 11:47 PM.
+Input:
+
+```json
+{}
+```
+
+Output:
+
+```json
+"11:19 AM"
+```
+
+</details>
+
+```markdown
+The current time is 11:19 AM.
 ```
 
 ## Interface
 
-The `murkrow` package exports
+The `chatlab` package exports
 
 ### `Conversation`
 
@@ -118,7 +162,7 @@ The `Conversation` class is the main way to chat using OpenAI's models. It keeps
 When you call `submit`, you're sending over messages to the chat model and getting back an updating `Markdown` display live as well as a interactive details area for any function calls.
 
 ```python
-conversation.submit("What would a parent who says "I have to play zone defense" mean? ")
+conversation.submit('What would a parent who says "I have to play zone defense" mean? ')
 # Markdown response inline
 conversation.messages
 ```
@@ -169,7 +213,7 @@ conversation.messages = conversation.messages[-100:]
 These functions create a message from the user to the chat model.
 
 ```python
-from murkrow import human
+from chatlab import human
 
 human("How are you?")
 ```
@@ -180,10 +224,10 @@ human("How are you?")
 
 #### `narrate`/`system`
 
-`system` messages, also called `narrate` in `murkrow`, allow you to steer the model in a direction. You can use these to provide context without being seen by the user. One common use is to include it as initial context for the conversation.
+`system` messages, also called `narrate` in `chatlab`, allow you to steer the model in a direction. You can use these to provide context without being seen by the user. One common use is to include it as initial context for the conversation.
 
 ```python
-from murkrow import narrate
+from chatlab import narrate
 
 narrate("You are a large bird")
 ```

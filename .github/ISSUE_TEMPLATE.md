@@ -1,6 +1,6 @@
-* Murkrow version:
-* Python version:
-* Operating System:
+-   ChatLab version:
+-   Python version:
+-   Operating System:
 
 ### Description
 

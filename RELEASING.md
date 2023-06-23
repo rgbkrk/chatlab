@@ -7,4 +7,4 @@ Releasing is automated with GitHub actions, so long as a tag is created with v*.
 -   Verify that it changed what we expected it to
 -   `git push && git push --tags`
 
-Then go check on the [Actions](https://github.com/rgbkrk/murkrow/actions), namely the release & publish workflow.
+Then go check on the [Actions](https://github.com/rgbkrk/chatlab/actions), namely the release & publish workflow.

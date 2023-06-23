@@ -5,10 +5,9 @@ import logging
 from typing import Callable, List, Optional, Union
 
 import openai
+from chatlab.registry import FunctionRegistry
 from deprecation import deprecated
 from pydantic import BaseModel
-
-from murkrow.registry import FunctionRegistry
 
 from ._version import __version__
 from .display import ChatFunctionCall, Markdown
@@ -36,7 +35,7 @@ class Conversation:
         allow_hallucinated_python (bool): Whether to include the built-in Python function when hallucinated by the model.
 
     Examples:
-        >>> from murkrow import Conversation, narrate
+        >>> from chatlab import Conversation, narrate
 
         >>> conversation = Conversation(narrate("You are a large bird"))
         >>> conversation.submit("What are you?")
@@ -60,7 +59,7 @@ class Conversation:
     ):
         """Initialize a Conversation with an optional initial context of messages.
 
-        >>> from murkrow import Conversation, narrate
+        >>> from chatlab import Conversation, narrate
         >>> convo = Conversation(narrate("You are a large bird"))
         >>> convo.submit("What are you?")
         I am a large bird.
@@ -225,7 +224,7 @@ class Conversation:
     def register(
         self, function: Callable, parameters_model: Optional["BaseModel"] = None, json_schema: Optional[dict] = None
     ):
-        """Register a function with the Murkrow instance.
+        """Register a function with the ChatLab instance.
 
         Args:
             function (Callable): The function to register.

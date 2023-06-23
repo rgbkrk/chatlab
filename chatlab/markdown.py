@@ -23,7 +23,7 @@ class Markdown:
         message (str): The Markdown string to display
 
     Example:
-        >>> from murkrow import Markdown
+        >>> from chatlab import Markdown
         ...
         >>> markdown = Markdown()
         >>> markdown.append("Hello")
@@ -76,7 +76,7 @@ class Markdown:
     def metadata(self) -> Dict[str, Any]:
         """Return the metadata for the `Markdown`."""
         return {
-            "murkrow": {
+            "chatlab": {
                 "default": True,
             }
         }

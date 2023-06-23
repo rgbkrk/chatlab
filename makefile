@@ -1,4 +1,4 @@
-sources = murkrow
+sources = chatlab
 
 .PHONY: test format lint unittest coverage pre-commit clean
 test: format lint unittest
