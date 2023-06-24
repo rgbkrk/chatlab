@@ -33,6 +33,7 @@ FunctionCallMessage = TypedDict(
     "FunctionCallMessage",
     {
         "role": str,
+        "content": Optional[str],
         "function_call": FunctionCall,
     },
 )
@@ -134,6 +135,7 @@ def assistant_function_call(name: str, arguments: Optional[str] = None) -> Funct
     """
     return {
         'role': 'assistant',
+        'content': None,
         'function_call': {
             'name': name,
             'arguments': arguments,
