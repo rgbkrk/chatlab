@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 -   🐛 Fix the `run_cell` builtin to actually return the result. This does however bring back side effects of display output.
+-   𝌭 Extend type for `parameters_model` is now correctly `Optional[Type["BaseModel"]]` so that you can extend a model for parameters in your own typed Python code. ✅ mypy
 
 ### Changed
 
