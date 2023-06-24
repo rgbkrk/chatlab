@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+-   🐛 Fix the `run_cell` builtin to actually return the result. This does however bring back side effects of display output.
+
+### Changed
+
+-   💬🔬 Package is now called `chatlab`!
+-   💪🏻 Improved typing for messaging
+
 ## [0.13.0]
 
 ### Added
