@@ -16,7 +16,9 @@ def run_cell(code: str):
         raise Exception("Could not get IPython instance")
 
     try:
-        output = ip.run_cell(code, silent=True)
+        # Note: Any side effects, including display calls will end up in the notebook
+        # We cannot use `silent=True` because then `output.result` will be `None`
+        output = ip.run_cell(code)
         return output.result
     except Exception as e:
         # We want the exception to be returned to the LLM
