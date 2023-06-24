@@ -2,12 +2,13 @@
 
 import json
 import logging
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Optional, Type, Union
 
 import openai
-from chatlab.registry import FunctionRegistry
 from deprecation import deprecated
 from pydantic import BaseModel
+
+from chatlab.registry import FunctionRegistry
 
 from ._version import __version__
 from .display import ChatFunctionCall, Markdown
@@ -222,7 +223,10 @@ class Conversation:
                 self.messages.append(message)
 
     def register(
-        self, function: Callable, parameters_model: Optional["BaseModel"] = None, json_schema: Optional[dict] = None
+        self,
+        function: Callable,
+        parameters_model: Optional[Type["BaseModel"]] = None,
+        json_schema: Optional[dict] = None,
     ):
         """Register a function with the ChatLab instance.
 
