@@ -41,7 +41,7 @@ Example usage:
 
 import inspect
 import json
-from typing import Callable, Optional, Union, get_args, get_origin
+from typing import Callable, Optional, Type, Union, get_args, get_origin
 
 from pydantic import BaseModel
 
@@ -78,7 +78,7 @@ def is_optional_type(t):
     return get_origin(t) is Union and len(get_args(t)) == 2 and type(None) in get_args(t)
 
 
-def generate_function_schema(function: Callable, parameters_model: Optional["BaseModel"] = None):
+def generate_function_schema(function: Callable, parameters_model: Optional[Type["BaseModel"]] = None):
     """Generate a function schema for sending to OpenAI."""
     doc = function.__doc__
     func_name = function.__name__
@@ -119,7 +119,10 @@ def generate_function_schema(function: Callable, parameters_model: Optional["Bas
                 }
 
             else:
-                raise Exception(f"Type annotation of parameter {name} in function {func_name} is not allowed")
+                raise Exception(
+                    f"Type annotation of parameter {name} in function {func_name} "
+                    f"must be a JSON serializable type ({ALLOWED_TYPES})"
+                )
 
         schema = {"type": "object", "properties": {}, "required": []}
         if len(schema_properties) > 0:
@@ -156,7 +159,10 @@ class FunctionRegistry:
         self.allow_hallucinated_python = allow_hallucinated_python
 
     def register(
-        self, function: Callable, parameters_model: Optional["BaseModel"] = None, json_schema: Optional[dict] = None
+        self,
+        function: Callable,
+        parameters_model: Optional[Type["BaseModel"]] = None,
+        json_schema: Optional[dict] = None,
     ):
         """Register a function with a schema for sending to OpenAI."""
         if parameters_model is not None and json_schema is not None:
