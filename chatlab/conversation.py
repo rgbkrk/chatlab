@@ -222,23 +222,16 @@ class Conversation:
             else:
                 self.messages.append(message)
 
-    def register(
-        self,
-        function: Callable,
-        parameters_model: Optional[Type["BaseModel"]] = None,
-        json_schema: Optional[dict] = None,
-    ):
+    def register(self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None):
         """Register a function with the ChatLab instance.
 
         Args:
             function (Callable): The function to register.
 
-            parameters_model (BaseModel): The pydantic model to use for the function's parameters.
-
-            json_schema (dict): The JSON schema to use for the function's parameters.
+            schema (BaseModel or dict): The pydantic model or JSON schema to use for the function's parameters.
 
         """
-        full_schema = self.function_registry.register(function, parameters_model, json_schema)
+        full_schema = self.function_registry.register(function, parameter_schema)
 
         logger.debug("Created function with schema:")
         logger.debug(json.dumps(full_schema, indent=2))

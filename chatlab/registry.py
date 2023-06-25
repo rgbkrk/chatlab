@@ -161,23 +161,42 @@ class FunctionRegistry:
     def register(
         self,
         function: Callable,
-        parameters_model: Optional[Type["BaseModel"]] = None,
-        json_schema: Optional[dict] = None,
+        parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
     ):
-        """Register a function with a schema for sending to OpenAI."""
-        if parameters_model is not None and json_schema is not None:
-            raise Exception("Cannot specify both parameters_model and json_schema")
+        """Register a function for use in `Conversation`s."""
+        # Distinguish between model and JSON schema
+        parameters_model = None
+        json_schema = None
+        if isinstance(parameter_schema, dict):
+            json_schema = parameter_schema
+        else:
+            parameters_model = parameter_schema
 
         # Assume that if json_schema is passed, it is valid and complete
         # json_schema takes precedence over parameters_model and auto-inferred schema
-        schema = json_schema
-        if schema is None:
-            schema = generate_function_schema(function, parameters_model)
+        if json_schema is not None:
+            # TODO: Share this code with generate_function_schema
+            doc = function.__doc__
+            func_name = function.__name__
+
+            if not func_name:
+                raise Exception("Function must have a name")
+            if func_name == "<lambda>":
+                raise Exception("Lambdas cannot be registered. Use `def` instead.")
+            if not doc:
+                raise Exception("Only functions with docstrings can be registered")
+            final_schema = {
+                "name": func_name,
+                "description": doc,
+                "parameters": json_schema,
+            }
+        else:
+            final_schema = generate_function_schema(function, parameters_model)
 
         self.__functions[function.__name__] = function
-        self.__schemas[function.__name__] = schema
+        self.__schemas[function.__name__] = final_schema
 
-        return schema
+        return final_schema
 
     def get(self, function_name):
         """Get a function by name."""
