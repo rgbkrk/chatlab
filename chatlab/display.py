@@ -7,11 +7,10 @@ from typing import Optional
 from IPython.core import display_functions
 from vdom import details, div, span, style, summary
 
-from chatlab.registry import FunctionArgumentError, FunctionRegistry, UnknownFunctionError
-
 # Importing for the sake of backwards compatibility
 from .markdown import Markdown  # noqa: F401
 from .messaging import Message, function_result, system
+from .registry import FunctionArgumentError, FunctionRegistry, UnknownFunctionError
 
 # Palette used here is https://colorhunt.co/palette/27374d526d829db2bfdde6ed
 colors = {

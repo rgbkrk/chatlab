@@ -8,17 +8,13 @@ import openai
 from deprecation import deprecated
 from pydantic import BaseModel
 
-from chatlab.registry import FunctionRegistry
-
 from ._version import __version__
 from .display import ChatFunctionCall, Markdown
+from .errors import ChatLabError
 from .messaging import Message, assistant, assistant_function_call, human
+from .registry import FunctionRegistry
 
 logger = logging.getLogger(__name__)
-
-
-class ChatLabError(Exception):
-    pass
 
 
 class Conversation:

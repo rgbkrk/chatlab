@@ -45,7 +45,7 @@ from typing import Callable, Optional, Type, Union, get_args, get_origin
 
 from pydantic import BaseModel
 
-from chatlab.builtins import run_cell
+from .builtins import run_cell
 
 
 class FunctionArgumentError(Exception):
