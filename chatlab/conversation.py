@@ -31,8 +31,6 @@ class Conversation:
 
         function_registry (FunctionRegistry): The function registry to use for the conversation.
 
-        auto_continue (bool): Whether to automatically continue the conversation after each message.
-
         allow_hallucinated_python (bool): Whether to include the built-in Python function when hallucinated by the model.
 
     Examples:
@@ -47,7 +45,6 @@ class Conversation:
     messages: List[Message]
     model: str
     function_registry: FunctionRegistry
-    auto_continue: bool
     allow_hallucinated_python: bool
 
     def __init__(
@@ -55,7 +52,6 @@ class Conversation:
         *initial_context: Union[Message, str],
         model="gpt-3.5-turbo-0613",
         function_registry: Optional[FunctionRegistry] = None,
-        auto_continue: bool = True,
         allow_hallucinated_python: bool = False,
     ):
         """Initialize a Conversation with an optional initial context of messages.
@@ -86,7 +82,6 @@ class Conversation:
 
         self.append(*initial_context)
         self.model = model
-        self.auto_continue = auto_continue
 
         self.allow_hallucinated_python = allow_hallucinated_python
 
@@ -98,14 +93,17 @@ class Conversation:
     @deprecated(
         deprecated_in="0.13.0", removed_in="1.0.0", current_version=__version__, details="Use `submit` instead."
     )
-    def chat(self, *messages: Union[Message, str], auto_continue: Optional[bool] = None):
+    def chat(
+        self,
+        *messages: Union[Message, str],
+    ):
         """Send messages to the chat model and display the response.
 
         Deprecated in 0.13.0, removed in 1.0.0. Use `submit` instead.
         """
-        return self.submit(*messages, auto_continue=auto_continue)
+        return self.submit(*messages)
 
-    def submit(self, *messages: Union[Message, str], auto_continue: Optional[bool] = None):
+    def submit(self, *messages: Union[Message, str]):
         """Send messages to the chat model and display the response.
 
         Side effects:
@@ -115,8 +113,6 @@ class Conversation:
 
         Args:
             messages (str | Message): One or more messages to send to the chat, can be strings or Message objects.
-
-            auto_continue (bool): Whether to continue the conversation after the messages are sent. Defaults to the
 
         """
         self.append(*messages)
