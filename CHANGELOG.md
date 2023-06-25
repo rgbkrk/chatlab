@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0]
+
 ### Added
 
 -   🏷️ New `expose_exception_to_llm` decorator allows function exceptions to be exposed to the local language model. This is useful for when the model is running code via IPython's `run_cell` or any other interpreter where the model needs feedback on exceptions.
