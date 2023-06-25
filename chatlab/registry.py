@@ -41,9 +41,11 @@ Example usage:
 
 import inspect
 import json
-from typing import Callable, Optional, Type, Union, get_args, get_origin
+from typing import Any, Callable, Optional, Type, Union, get_args, get_origin
 
 from pydantic import BaseModel
+
+from chatlab.annotate import ChatlabMetadata
 
 from .builtins import run_cell
 
@@ -167,7 +169,7 @@ class FunctionRegistry:
         self,
         function: Callable,
         parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
-    ):
+    ) -> dict:
         """Register a function for use in `Conversation`s."""
         final_schema = generate_function_schema(function, parameter_schema)
 
@@ -176,11 +178,21 @@ class FunctionRegistry:
 
         return final_schema
 
-    def get(self, function_name):
+    def get(self, function_name) -> Optional[Callable]:
         """Get a function by name."""
         return self.__functions.get(function_name)
 
-    def call(self, name: str, arguments: Optional[str] = None):
+    def get_chatlab_metadata(self, function_name) -> ChatlabMetadata:
+        """Get the chatlab metadata for a function by name."""
+        function = self.get(function_name)
+
+        if function is None:
+            raise UnknownFunctionError(f"Function {function_name} is not registered")
+
+        chatlab_metadata = getattr(function, "chatlab_metadata", ChatlabMetadata())
+        return chatlab_metadata
+
+    def call(self, name: str, arguments: Optional[str] = None) -> Any:
         """Call a function by name with the given parameters."""
         function = self.get(name)
         parameters: dict = {}
@@ -202,9 +214,10 @@ class FunctionRegistry:
             except json.JSONDecodeError:
                 raise FunctionArgumentError(f"Invalid JSON for parameters of function {name}")
 
-        return function(**parameters)
+        result = function(**parameters)
+        return result
 
-    def __contains__(self, name):
+    def __contains__(self, name) -> bool:
         """Check if a function is registered by name."""
         return name in self.__functions
 
