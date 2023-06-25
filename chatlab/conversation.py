@@ -197,18 +197,15 @@ class Conversation:
             # Include the response (or error) for the model
             self.append(fn_message)
 
-            # Choose whether to let the LLM continue from our function response
-            continuing = auto_continue if auto_continue is not None else self.auto_continue
-
-            if continuing:
-                # Automatically let the LLM continue from our function result
-                self.submit()
+            # Automatically let the LLM continue from our function result
+            self.submit()
             return
 
         # All other finish reasons are valid for regular assistant messages
 
         # Wrap up the previous assistant
-        self.messages.append(assistant(mark.message))
+        if mark is not None and mark.message.strip() != "":
+            self.messages.append(assistant(mark.message))
 
         if finish_reason == 'stop':
             return
