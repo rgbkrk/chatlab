@@ -244,3 +244,11 @@ class Conversation:
         full_schema = self.function_registry.register(function, parameter_schema)
 
         return full_schema
+
+    def get_history(self):
+        """Returns the conversation history as a list of messages."""
+        return self.messages
+
+    def clear_history(self):
+        """Clears the conversation history."""
+        self.messages = []
