@@ -61,9 +61,6 @@ class Markdown:
         for delta in delta_generator:
             self.append(delta)
 
-    # Alias consume
-    consume = extend
-
     def display(self) -> None:
         """Display the `Markdown` with a display ID for receiving updates."""
         display_functions.display(self, display_id=self._display_id)
