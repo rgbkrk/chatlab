@@ -20,6 +20,7 @@ from deprecation import deprecated
 from . import models
 from ._version import __version__
 from .conversation import Conversation
+from .decorators import ChatlabMetadata, expose_exception_to_llm
 from .display import Markdown
 from .messaging import ai, assistant, assistant_function_call, function_result, human, narrate, system, user
 from .registry import FunctionRegistry
@@ -56,4 +57,6 @@ __all__ = [
     "Session",
     "Conversation",
     "FunctionRegistry",
+    "ChatlabMetadata",
+    "expose_exception_to_llm",
 ]
