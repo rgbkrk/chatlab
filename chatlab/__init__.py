@@ -17,6 +17,7 @@ __email__ = 'rgbkrk@gmail.com'
 
 from deprecation import deprecated
 
+from . import models
 from ._version import __version__
 from .conversation import Conversation
 from .display import Markdown
@@ -51,6 +52,7 @@ __all__ = [
     "assistant",
     "assistant_function_call",
     "function_result",
+    "models",
     "Session",
     "Conversation",
     "FunctionRegistry",
