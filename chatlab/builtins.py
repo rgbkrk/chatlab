@@ -1,9 +1,27 @@
 """Builtins for ChatLab."""
+import json
 from typing import Optional
 
-from IPython.core.formatters import DisplayFormatter
+from IPython.core.formatters import BaseFormatter, DisplayFormatter
 from IPython.core.interactiveshell import InteractiveShell
 from IPython.utils.capture import capture_output
+from traitlets import ObjectName, Unicode
+
+
+class LLMFormatter(BaseFormatter):
+    """A formatter for producing text content for LLMs.
+
+    To define the callables that compute the LLM representation of your
+    objects, define a :meth:`_repr_llm_` method or use the :meth:`for_type`
+    or :meth:`for_type_by_name` methods to register functions that handle
+    this.
+
+    The return value of this formatter should be plaintext.
+    """
+
+    format_type = Unicode('text/llm+plain')  # type: ignore
+
+    print_method = ObjectName('_repr_markdown_')  # type: ignore
 
 
 class LLMDisplayFormatter(DisplayFormatter):
@@ -18,7 +36,7 @@ class LLMDisplayFormatter(DisplayFormatter):
         'application/vnd.plotly.v1+json',
         'application/vdom.v1+json',
         'application/json',
-        'text/vnd.plotly.v1+html',
+        # 'text/vnd.plotly.v1+html',
         'application/javascript',
         'text/latex',
         'text/html',
@@ -27,35 +45,33 @@ class LLMDisplayFormatter(DisplayFormatter):
         'text/plain',
     ]
 
+    def __init__(self, *args, **kwargs):
+        """Create a new LLMDisplayFormatter."""
+        super().__init__(*args, **kwargs)
+
+        self.active_types = self.richest_formats
+
+        # Register the LLM formatter
+        # self.formatters.set('text/llm+plain', LLMFormatter(parent=self))
+
     def format(self, obj, include=None, exclude=None):
-        if hasattr(obj, '_repr_llm_'):
-            return obj._repr_llm_(), {}
+        """Format an object as rich text."""
+        data, metadata = super().format(obj, include, exclude)
 
-        formats = super().format(obj, include, exclude)
-
-        richest_format = self._find_richest_format(formats)
+        richest_format = self._find_richest_format(data)
 
         if richest_format:
-            data, metadata = formats.pop(richest_format)
-            richest_data = self._extract_richest_data(data)
-            return richest_data, metadata
+            d = data.pop(richest_format, None)
+            m = metadata.pop(richest_format, None)
 
-        return None, {}
+            return d, m
+
+        return "no rich", {}
 
     def _find_richest_format(self, formats):
         for format in self.richest_formats:
             if format in formats:
                 return format
-
-        return None
-
-    def _extract_richest_data(self, data):
-        for format in self.richest_formats:
-            richest_data = data.get(format)
-            if richest_data:
-                if format == 'application/json':
-                    return json.dumps(richest_data, indent=2)
-                return richest_data
 
         return None
 
@@ -78,7 +94,7 @@ class ChatLabShell:
 
         self.shell = shell
 
-        self.display_formatter = LLMDisplayFormatter()
+        self.display_formatter = LLMDisplayFormatter(parent=self.shell)
 
     def run_cell(self, code: str):
         """Execute code in python and return the result."""
