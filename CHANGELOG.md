@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--   🔄 Package named changed from `murkrow` to `chatlab`! 💬🔬
+-   🔄 Package name changed from `murkrow` to `chatlab`! 💬🔬
 -   🤓 Simplified the `register` methods of the `Conversation` and `FunctionRegistry` classes. The parameters `parameters_model` and `json_schema` are replaced by a single parameter `parameter_schema`, which can be a pydantic model or a JSON schema. This streamlines and simplifies the function registration process by accepting both pydantic models and JSON schema as parameter schemas in a single argument instead of two separate arguments. This reduces ambiguity and simplifies the implementation.
 -   💪🏻 Improved typing for messaging
 -   📝 Documentation improvements
