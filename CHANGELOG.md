@@ -7,17 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-
--   🐛 Fix the `run_cell` builtin to actually return the result. This does however bring back side effects of display output.
--   𝌭 Extend type for `parameters_model` is now correctly `Optional[Type["BaseModel"]]` so that you can extend a model for parameters in your own typed Python code. ✅ mypy
-
 ### Changed
 
--   💬🔬 Package is now called `chatlab`!
+-   🔄 Package named changed from `murkrow` to `chatlab`! 💬🔬
+-   🤓 Simplified the `register` methods of the `Conversation` and `FunctionRegistry` classes. The parameters `parameters_model` and `json_schema` are replaced by a single parameter `parameter_schema`, which can be a pydantic model or a JSON schema. This streamlines and simplifies the function registration process by accepting both pydantic models and JSON schema as parameter schemas in a single argument instead of two separate arguments. This reduces ambiguity and simplifies the implementation.
 -   💪🏻 Improved typing for messaging
 -   📝 Documentation improvements
 -   📜 When outputs and inputs are too big, allow scrolling instead of overflowing
+
+### Fixed
+
+-   🐛 Fixed the run_cell builtin to actually return the result. This reintroduces side effects of display output, meaning outputs from run_cell will now appear in the notebook and be visible to the Language Model as part of the run.
+-   ✅ Extended type for parameters_model is now correctly `Optional[Type["BaseModel"]]` so that you can extend a model for parameters in your own typed Python code. This is now mypy compliant.
 
 ## [0.13.0]
 

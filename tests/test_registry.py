@@ -1,4 +1,7 @@
 # flake8: noqa
+from unittest import mock
+from unittest.mock import MagicMock, patch
+
 import pytest
 from pydantic import BaseModel
 
@@ -18,7 +21,7 @@ class SimpleModel(BaseModel):
 
 
 # Test the function generation schema
-def test_generate_function_schema_no_args():
+def test_generate_function_schema_lambda():
     with pytest.raises(Exception, match="Lambdas cannot be registered. Use `def` instead."):
         generate_function_schema(lambda x: x)
 
@@ -98,3 +101,100 @@ def test_function_registry_call():
     registry.register(simple_func, SimpleModel)
     result = registry.call("simple_func", arguments='{"x": 1, "y": "str", "z": true}')
     assert result == "1, str, True"
+
+
+# Testing for registry's register method with an invalid function
+def test_function_registry_register_invalid_function():
+    registry = FunctionRegistry()
+    with pytest.raises(Exception, match="Lambdas cannot be registered. Use `def` instead."):
+        registry.register(lambda x: x)
+
+
+# Testing for registry's get method
+def test_function_registry_get():
+    registry = FunctionRegistry()
+    registry.register(simple_func, SimpleModel)
+    assert registry.get("simple_func") == simple_func
+
+
+# Testing for registry's __contains__ method
+def test_function_registry_contains():
+    registry = FunctionRegistry()
+    registry.register(simple_func, SimpleModel)
+    assert "simple_func" in registry
+    assert "unknown" not in registry
+
+
+# Testing for registry's function_definitions property
+def test_function_registry_function_definitions():
+    registry = FunctionRegistry()
+    registry.register(simple_func, SimpleModel)
+    function_definitions = registry.function_definitions
+    assert len(function_definitions) == 1
+    assert function_definitions[0]["name"] == "simple_func"
+
+
+# Testing for registry's call method with a valid python hallucination
+# Note that unlike all other functions, we allow the LLM to pass us a string
+# likely containing newlines. No JSON here.
+@patch('chatlab.builtins.get_ipython')
+def test_function_registry_call_python_hallucination_valid(mock_get_ipython):
+    # Set up the mock
+    mock_ipython_instance = MagicMock()
+    mock_run_cell = MagicMock()
+    mock_run_cell.return_value.result = 5
+    mock_ipython_instance.run_cell = mock_run_cell
+    mock_get_ipython.return_value = mock_ipython_instance
+
+    registry = FunctionRegistry(allow_hallucinated_python=True)
+    result = registry.call("python", arguments='2+3')
+
+    # Assert the result and that the mock was called correctly
+    mock_get_ipython.assert_called_once()
+    mock_run_cell.assert_called_once_with("2+3")
+    assert result == 5
+
+
+# Test that we do not allow python hallucination when False
+def test_function_registry_call_python_hallucination_invalid():
+    registry = FunctionRegistry(allow_hallucinated_python=False)
+    with pytest.raises(Exception, match="Function python is not registered"):
+        registry.call("python", arguments='1 + 4')
+
+
+def test_ensure_python_hallucination_not_enabled_by_default():
+    registry = FunctionRegistry()
+    with pytest.raises(Exception, match="Function python is not registered"):
+        registry.call("python", arguments='123 + 456')
+
+
+# Test the generate_function_schema for function with optional arguments
+def test_generate_function_schema_optional_args():
+    def func_with_optional_args(x: int, y: str, z: bool = False):
+        '''A function with optional arguments'''
+        return f"{x}, {y}, {z}"
+
+    schema = generate_function_schema(func_with_optional_args)
+    assert "z" in schema["parameters"]["properties"]
+    assert "z" not in schema["parameters"]["required"]
+
+
+# Test the generate_function_schema for function with no arguments
+def test_generate_function_schema_no_args():
+    def func_no_args():
+        """A function with no arguments"""
+        pass
+
+    schema = generate_function_schema(func_no_args)
+    assert schema["parameters"]["properties"] == {}
+    assert schema["parameters"]["required"] == []
+
+
+# Testing edge cases with call method
+def test_function_registry_call_edge_cases():
+    registry = FunctionRegistry()
+    with pytest.raises(UnknownFunctionError):
+        registry.call("totes_not_real", arguments='{"x": 1, "y": "str", "z": true}')
+
+    with pytest.raises(UnknownFunctionError):
+        registry.call(None)  # type: ignore
