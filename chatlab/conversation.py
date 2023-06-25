@@ -1,6 +1,5 @@
 """The lightweight conversational toolkit for computational notebooks."""
 
-import json
 import logging
 from typing import Callable, List, Optional, Type, Union
 
@@ -138,7 +137,7 @@ class Conversation:
             choices: list = result.get('choices', [])
 
             if len(choices) == 0:
-                logger.warning(f"Unexpected result: {result}")
+                logger.warning(f"Result has no choices: {result}")
                 continue
 
             choice = choices[0]
@@ -237,5 +236,4 @@ class Conversation:
         """
         full_schema = self.function_registry.register(function, parameter_schema)
 
-        logger.debug("Created function with schema:")
-        logger.debug(json.dumps(full_schema, indent=2))
+        return full_schema
