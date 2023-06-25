@@ -197,7 +197,7 @@ class Conversation:
             # Include the response (or error) for the model
             self.append(fn_message)
 
-            # Automatically let the LLM continue from our function result
+            # Reply back to the LLM with the result of the function call, allow it to continue
             self.submit()
             return
 
