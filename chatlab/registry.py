@@ -45,9 +45,8 @@ from typing import Any, Callable, Optional, Type, Union, get_args, get_origin
 
 from pydantic import BaseModel
 
-from chatlab.annotate import ChatlabMetadata
-
 from .builtins import run_cell
+from .decorators import ChatlabMetadata
 
 
 class FunctionArgumentError(Exception):

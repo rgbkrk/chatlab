@@ -1,4 +1,33 @@
-"""ChatLab annotations for functions."""
+"""ChatLab decorators.
+
+This module lets you augment your functions before you register them with a ChatLab conversation.
+
+Examples:
+    >>> from chatlab import Conversation
+    >>> from chatlab.decorators import expose_exception_to_llm
+
+    >>> class PokemonFetchError(Exception):
+    ...   def __init__(self, pokemon_name):
+    ...     self.pokemon_name = pokemon_name
+    ...     self.message = f"Failed to fetch information for Pokemon '{self.pokemon_name}'."
+    ...     super().__init__(self.message)
+
+    >>> @expose_exception_to_llm
+    ... def fetch_pokemon(name: str):
+    ...     '''Fetch information about a pokemon by name'''
+    ...     url = f"https://pokeapi.co/api/v2/pokemon/{name}"
+    ...     try:
+    ...         response = requests.get(url)
+    ...         response.raise_for_status()
+    ...         return response.json()
+    ...     except requests.HTTPError:
+    ...         raise PokemonFetchError(name)
+
+    >>> conversation = Conversation()
+    >>> conversation.submit("Get pikachu")
+    Failed to fetch information for Pokemon 'pikachu'.
+
+"""
 
 
 class ChatlabMetadata:
