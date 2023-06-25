@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   💪🏻 Improved typing for messaging
 -   📝 Documentation improvements
 -   📜 When outputs and inputs are too big, allow scrolling instead of overflowing
+-   🔐 Check for `OPENAI_API_KEY` on `Conversation` creation
 
 ### Fixed
 
