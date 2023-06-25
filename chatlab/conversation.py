@@ -1,6 +1,7 @@
 """The lightweight conversational toolkit for computational notebooks."""
 
 import logging
+import os
 from typing import Callable, List, Optional, Type, Union
 
 import openai
@@ -14,6 +15,10 @@ from .display import ChatFunctionCall, Markdown
 from .messaging import Message, assistant, assistant_function_call, human
 
 logger = logging.getLogger(__name__)
+
+
+class ChatLabError(Exception):
+    pass
 
 
 class Conversation:
@@ -65,6 +70,19 @@ class Conversation:
         I am a large bird.
 
         """
+        openai_api_key = os.getenv('OPENAI_API_KEY')
+        if openai_api_key is None:
+            raise ChatLabError(
+                "You must set the environment variable `OPENAI_API_KEY` to use this package.\n"
+                "This key allows chatlab to communicate with OpenAI servers.\n\n"
+                "You can generate API keys in the OpenAI web interface. "
+                "See https://platform.openai.com/account/api-keys for details.\n\n"
+                # TODO: An actual docs page
+                "If you have any questions, tweet at us at https://twitter.com/chatlablib."
+            )
+        else:
+            pass
+
         if initial_context is None:
             initial_context = []  # type: ignore
 
