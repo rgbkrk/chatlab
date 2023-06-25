@@ -78,7 +78,10 @@ def is_optional_type(t):
     return get_origin(t) is Union and len(get_args(t)) == 2 and type(None) in get_args(t)
 
 
-def generate_function_schema(function: Callable, parameters_model: Optional[Type["BaseModel"]] = None):
+def generate_function_schema(
+    function: Callable,
+    parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
+):
     """Generate a function schema for sending to OpenAI."""
     doc = function.__doc__
     func_name = function.__name__
@@ -91,8 +94,10 @@ def generate_function_schema(function: Callable, parameters_model: Optional[Type
         raise Exception("Only functions with docstrings can be registered")
 
     schema = None
-    if parameters_model is not None:
-        schema = parameters_model.schema()
+    if isinstance(parameter_schema, dict):
+        schema = parameter_schema
+    elif parameter_schema is not None:
+        schema = parameter_schema.schema()
     else:
         schema_properties = {}
         sig = inspect.signature(function)
@@ -164,34 +169,7 @@ class FunctionRegistry:
         parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
     ):
         """Register a function for use in `Conversation`s."""
-        # Distinguish between model and JSON schema
-        parameters_model = None
-        json_schema = None
-        if isinstance(parameter_schema, dict):
-            json_schema = parameter_schema
-        else:
-            parameters_model = parameter_schema
-
-        # Assume that if json_schema is passed, it is valid and complete
-        # json_schema takes precedence over parameters_model and auto-inferred schema
-        if json_schema is not None:
-            # TODO: Share this code with generate_function_schema
-            doc = function.__doc__
-            func_name = function.__name__
-
-            if not func_name:
-                raise Exception("Function must have a name")
-            if func_name == "<lambda>":
-                raise Exception("Lambdas cannot be registered. Use `def` instead.")
-            if not doc:
-                raise Exception("Only functions with docstrings can be registered")
-            final_schema = {
-                "name": func_name,
-                "description": doc,
-                "parameters": json_schema,
-            }
-        else:
-            final_schema = generate_function_schema(function, parameters_model)
+        final_schema = generate_function_schema(function, parameter_schema)
 
         self.__functions[function.__name__] = function
         self.__schemas[function.__name__] = final_schema

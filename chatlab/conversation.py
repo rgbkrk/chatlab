@@ -228,7 +228,7 @@ class Conversation:
         Args:
             function (Callable): The function to register.
 
-            schema (BaseModel or dict): The pydantic model or JSON schema to use for the function's parameters.
+            parameter_schema (BaseModel or dict): The pydantic model or JSON schema for the function's parameters.
 
         """
         full_schema = self.function_registry.register(function, parameter_schema)
