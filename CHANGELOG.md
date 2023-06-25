@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   💬🔬 Package is now called `chatlab`!
 -   💪🏻 Improved typing for messaging
+-   📝 Documentation improvements
+-   📜 When outputs and inputs are too big, allow scrolling instead of overflowing
 
 ## [0.13.0]
 

@@ -73,6 +73,7 @@ def raw_function_interface(text: str):
             unicodeBidi="embed",
             fontFamily="monospace",
             whiteSpace="pre",
+            overflow="scroll",
         ),
     )
 
