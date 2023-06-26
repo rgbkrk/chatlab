@@ -1,11 +1,14 @@
 """Builtins for ChatLab."""
 from typing import Any
 
+from chatlab.decorators import expose_exception_to_llm
+
 # __shell: Optional[ChatLabShell] = None
 
 __shell: Any = None
 
 
+@expose_exception_to_llm
 def run_cell(code: str):
     """Execute code in python and return the result."""
     global __shell
