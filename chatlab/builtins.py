@@ -1,14 +1,14 @@
 """Builtins for ChatLab."""
-import json
 from typing import Optional
 
-from IPython.core.formatters import BaseFormatter, DisplayFormatter
+from IPython.core.formatters import DisplayFormatter, PlainTextFormatter
 from IPython.core.interactiveshell import InteractiveShell
 from IPython.utils.capture import capture_output
 from traitlets import ObjectName, Unicode
 
 
-class LLMFormatter(BaseFormatter):
+# TODO: Figure out how to register this as a formatter for LLM consumers.
+class LLMFormatter(PlainTextFormatter):
     """A formatter for producing text content for LLMs.
 
     To define the callables that compute the LLM representation of your
@@ -34,9 +34,10 @@ class LLMDisplayFormatter(DisplayFormatter):
         'application/vnd.jupyter.error+json',
         'application/vnd.dataresource+json',
         'application/vnd.plotly.v1+json',
+        # Too big for LLMs.
+        # 'text/vnd.plotly.v1+html',
         'application/vdom.v1+json',
         'application/json',
-        # 'text/vnd.plotly.v1+html',
         'application/javascript',
         'text/latex',
         'text/html',
@@ -50,12 +51,19 @@ class LLMDisplayFormatter(DisplayFormatter):
         super().__init__(*args, **kwargs)
 
         self.active_types = self.richest_formats
-
-        # Register the LLM formatter
-        # self.formatters.set('text/llm+plain', LLMFormatter(parent=self))
+        self.format_types.append("text/llm+plain")
+        # No idea how to set this in traitlets to pick up the formatter for _repr_llm_.
+        # self.formatters["text/llm+plain"] = LLMFormatter(parent=self.shell)
 
     def format(self, obj, include=None, exclude=None):
         """Format an object as rich text."""
+        if hasattr(obj, '_repr_llm_'):
+            return obj._repr_llm_(), {}
+
+        # TODO: If the object is a pandas DataFrame or Series, use the to_markdown
+        #       method to get a markdown representation of the object. We can pluck
+        #       this from genai's code. This will be a lot more useful than the
+        #       default html repr or even the data explorer (dataresource+json).
         data, metadata = super().format(obj, include, exclude)
 
         richest_format = self._find_richest_format(data)
@@ -66,7 +74,7 @@ class LLMDisplayFormatter(DisplayFormatter):
 
             return d, m
 
-        return "no rich", {}
+        return None, {}
 
     def _find_richest_format(self, formats):
         for format in self.richest_formats:
@@ -95,6 +103,11 @@ class ChatLabShell:
         self.shell = shell
 
         self.display_formatter = LLMDisplayFormatter(parent=self.shell)
+        # self.shell.display_formatter.formatters.set('text/llm+plain', LLMFormatter(parent=self.shell))
+
+        # = self.display_formatter.format_types[
+        #     'text/llm+plain'
+        # ]
 
     def run_cell(self, code: str):
         """Execute code in python and return the result."""
@@ -115,13 +128,14 @@ class ChatLabShell:
 
                 if captured.outputs is not None:
                     for output in captured.outputs:
-                        data, metadata = self.display_formatter.format(output)
-                        outputs.append({'data': data, 'metadata': metadata})
+                        # Dropping metadata and only showing that richest type
+                        data, _ = self.display_formatter.format(output)
+                        outputs.append(data)
 
                 if result.result is not None:
                     outputs.append({'result': self.display_formatter.format(result.result)})
 
-                return outputs
+                return {'outputs': outputs}
 
         except Exception as e:
             return e
