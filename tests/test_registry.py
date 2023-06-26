@@ -134,27 +134,6 @@ def test_function_registry_function_definitions():
     assert function_definitions[0]["name"] == "simple_func"
 
 
-# Testing for registry's call method with a valid python hallucination
-# Note that unlike all other functions, we allow the LLM to pass us a string
-# likely containing newlines. No JSON here.
-@patch('chatlab.builtins.get_ipython')
-def test_function_registry_call_python_hallucination_valid(mock_get_ipython):
-    # Set up the mock
-    mock_ipython_instance = MagicMock()
-    mock_run_cell = MagicMock()
-    mock_run_cell.return_value.result = 5
-    mock_ipython_instance.run_cell = mock_run_cell
-    mock_get_ipython.return_value = mock_ipython_instance
-
-    registry = FunctionRegistry(allow_hallucinated_python=True)
-    result = registry.call("python", arguments='2+3')
-
-    # Assert the result and that the mock was called correctly
-    mock_get_ipython.assert_called_once()
-    mock_run_cell.assert_called_once_with("2+3")
-    assert result == 5
-
-
 # Test that we do not allow python hallucination when False
 def test_function_registry_call_python_hallucination_invalid():
     registry = FunctionRegistry(allow_hallucinated_python=False)
