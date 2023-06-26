@@ -6,6 +6,14 @@ from IPython.core.interactiveshell import InteractiveShell
 from IPython.utils.capture import capture_output
 from traitlets import ObjectName, Unicode
 
+try:
+    import numpy as np
+    import pandas as pd
+
+    PANDAS_INSTALLED = True
+except ImportError:
+    PANDAS_INSTALLED = False
+
 
 # TODO: Figure out how to register this as a formatter for LLM consumers.
 class LLMFormatter(PlainTextFormatter):

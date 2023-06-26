@@ -1,9 +1,9 @@
 """Builtins for ChatLab."""
-from typing import Optional
+from typing import Any
 
-from .shells.python import ChatLabShell
+# __shell: Optional[ChatLabShell] = None
 
-__shell: Optional[ChatLabShell] = None
+__shell: Any = None
 
 
 def run_cell(code: str):
@@ -11,7 +11,9 @@ def run_cell(code: str):
     global __shell
 
     if __shell is None:
-        from chatlab.shells.python import ChatLabShell
+        # Since ChatLabShell has imports that are "costly" (e.g. IPython, numpy, pandas),
+        # we only import it on the first call to run_cell.
+        from .shells.python import ChatLabShell
 
         __shell = ChatLabShell()
 
