@@ -84,6 +84,20 @@ class LLMDisplayFormatter(DisplayFormatter):
         return None
 
 
+def get_or_create_ipython() -> InteractiveShell:
+    """Get the current IPython shell or create a new one."""
+    shell = None
+    # This is what `get_ipython` does. For type inference to work, we need to
+    # do it manually.
+    if InteractiveShell.initialized():
+        shell = InteractiveShell.instance()
+
+    if not shell:
+        shell = InteractiveShell()
+
+    return shell
+
+
 class ChatLabShell:
     """A custom shell for ChatLab that uses the current IPython shell and formats outputs for LLMs."""
 
@@ -92,15 +106,7 @@ class ChatLabShell:
 
     def __init__(self, shell: Optional[InteractiveShell] = None):
         """Create a new ChatLabShell."""
-        # This is what `get_ipython` does. For type inference to work, we need to
-        # do it manually.
-        if InteractiveShell.initialized():
-            shell = InteractiveShell.instance()
-
-        if not shell:
-            shell = InteractiveShell()
-
-        self.shell = shell
+        self.shell = get_or_create_ipython()
 
         self.display_formatter = LLMDisplayFormatter(parent=self.shell)
         # self.shell.display_formatter.formatters.set('text/llm+plain', LLMFormatter(parent=self.shell))
