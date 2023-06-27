@@ -197,8 +197,6 @@ class ChatLabShell:
 
         if captured.outputs is not None:
             for output in captured.outputs:
-                # Dropping metadata and only showing that richest type
-
                 # If image/* are in the output, redisplay it
                 # then include a text/plain version of the object, telling the llm
                 # that the image is displayed for the user
