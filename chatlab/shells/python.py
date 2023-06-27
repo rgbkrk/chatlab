@@ -1,70 +1,22 @@
 """Builtins for ChatLab."""
 import json
-from typing import Any, Optional
+from typing import Optional
 
-from IPython.core.formatters import BaseFormatter, DisplayFormatter
+from IPython.core.formatters import DisplayFormatter
 from IPython.core.interactiveshell import InteractiveShell
 from IPython.display import display
 from IPython.utils.capture import RichOutput, capture_output
-from traitlets import ObjectName, Unicode
+from repr_llm import register_llm_formatter
+from repr_llm.pandas import format_dataframe_for_llm, format_series_for_llm
 
-try:
-    # Defer loading of numpy and pandas unless installed
-    import numpy as np  # noqa: F401
-    import pandas as pd
-
-    from chatlab.repr_llm.pandas import summarize_dataframe, summarize_series
-
-    PANDAS_INSTALLED = True
-except ImportError:
-    PANDAS_INSTALLED = False
-
-
-def preprocess_pandas(output: Any) -> Any:
-    """Create representations of known objects for Large Language Model consumption.
-
-    Currently this handles only Pandas and Series.
-
-    If the object is not a DataFrame or Series, return the object.
-    """
-    with pd.option_context('display.max_rows', 5, 'display.html.table_schema', False, 'display.max_columns', 20):
-        if isinstance(output, pd.DataFrame):
-            df = output
-            num_columns = min(pd.options.display.max_columns, df.shape[1])
-            num_rows = min(pd.options.display.max_rows, df.shape[0])
-            return summarize_dataframe(df, sample_rows=num_rows, sample_columns=num_columns)
-        elif isinstance(output, pd.Series):
-            series = output
-            num_rows = min(pd.options.display.max_rows, series.shape[0])
-            return summarize_series(series, sample_size=num_rows)
-        else:
-            raise ValueError("Unknown type for preprocess_pandas")
-
-
-class LLMFormatter(BaseFormatter):
-    """A formatter for producing text content for LLMs.
-
-    To define the callables that compute the LLM representation of your
-    objects, define a :meth:`_repr_llm_` method or use the :meth:`for_type`
-    or :meth:`for_type_by_name` methods to register functions that handle
-    this.
-
-    The return value of this formatter should be plaintext.
-    """
-
-    format_type = Unicode('text/llm+plain')  # type: ignore
-
-    print_method = ObjectName('_repr_llm_')  # type: ignore
-
-
+# Formats to show to large language models
 formats_for_llm = [
-    # Repr LLM
+    # Repr LLM is the richest text
     'text/llm+plain',
     # All the normal ones
     'application/vnd.jupyter.error+json',
     'application/vdom.v1+json',
     'application/json',
-    'application/javascript',
     'text/latex',
     'text/html',
     'text/markdown',
@@ -72,6 +24,7 @@ formats_for_llm = [
     'text/plain',
 ]
 
+# Formats to redisplay for the user, since we capture the output during execution
 formats_to_redisplay = [
     'application/vnd.jupyter.widget-view+json',
     'application/vnd.dex.v1+json',
@@ -142,12 +95,10 @@ def __find_richest_format(payload: dict, formats: list[str]) -> Optional[str]:
 
 def apply_llm_formatter(shell: InteractiveShell):
     """Apply the LLM formatter to the given shell."""
-    llm_formatter = LLMFormatter(parent=shell)
+    llm_formatter = register_llm_formatter(shell)
 
-    shell.display_formatter.formatters[llm_formatter.format_type] = llm_formatter  # type: ignore
-
-    llm_formatter.for_type_by_name('pandas.core.frame', 'DataFrame', preprocess_pandas)
-    llm_formatter.for_type_by_name('pandas.core.series', 'Series', preprocess_pandas)
+    llm_formatter.for_type_by_name('pandas.core.frame', 'DataFrame', format_dataframe_for_llm)
+    llm_formatter.for_type_by_name('pandas.core.series', 'Series', format_series_for_llm)
 
 
 def get_or_create_ipython() -> InteractiveShell:

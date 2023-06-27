@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
--   🐍 Greatly enhanced Python interpreter that displays images inline and provides a trimmed down representation of objects for Large Language Model Consumption using `_repr_llm_`.
+-   🐍 Greatly enhanced Python interpreter that displays images inline and provides a trimmed down representation of objects for Large Language Model Consumption, relying on [repr_llm](https://github.com/rgbkrk/repr_llm)
 
 ## [0.14.1]
 
