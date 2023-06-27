@@ -172,10 +172,12 @@ class ChatFunctionCall:
         except FunctionArgumentError as e:
             self.finished = True
             self.set_state("Errored")
+            self.function_result = repr(e)
             return system(f"Function arguments for {function_name} were invalid: {e}")
         except UnknownFunctionError as e:
             self.finished = True
             self.set_state("No function named")
+            self.function_result = repr(e)
             return system(f"Function {function_name} not found in function registry: {e}")
         except Exception as e:
             # Check to see if the user has requested that the exception be exposed to LLM.
@@ -195,7 +197,13 @@ class ChatFunctionCall:
 
             return function_result(name=function_name, content=repr_llm)
 
-        repr_llm = repr(output)
+        repr_llm = ""
+        if isinstance(output, str):
+            repr_llm = output
+        elif getattr(output, "_repr_llm_", None) is not None:
+            repr_llm = output._repr_llm_()
+        else:
+            repr_llm = repr(output)
 
         self.function_result = repr_llm
         self.finished = True

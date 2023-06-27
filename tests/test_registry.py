@@ -92,7 +92,9 @@ def test_function_registry_unknown_function():
 def test_function_registry_function_argument_error():
     registry = FunctionRegistry()
     registry.register(simple_func, SimpleModel)
-    with pytest.raises(FunctionArgumentError, match="Invalid JSON for parameters of function simple_func"):
+    with pytest.raises(
+        FunctionArgumentError, match="Invalid Function call on simple_func. Arguments must be a valid JSON object"
+    ):
         registry.call("simple_func", arguments="not json")
 
 

@@ -211,7 +211,7 @@ class FunctionRegistry:
                 parameters = json.loads(arguments)
                 # TODO: Validate parameters against schema
             except json.JSONDecodeError:
-                raise FunctionArgumentError(f"Invalid JSON for parameters of function {name}")
+                raise FunctionArgumentError(f"Invalid Function call on {name}. Arguments must be a valid JSON object")
 
         if function is None:
             raise UnknownFunctionError(f"Function {name} is not registered")
