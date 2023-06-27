@@ -103,6 +103,10 @@ def redisplay_superrich(output: RichOutput):
         data.pop(richest_format, None)
         metadata.pop(richest_format, None)
 
+        # Check to see if it already has a text/llm+plain representation
+        if 'text/llm+plain' in data:
+            return
+
         # Allow the LLM to see that we displayed for the user
         data['text/llm+plain'] = f"[displayed {richest_format} inline for user]"
 
