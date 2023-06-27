@@ -213,6 +213,9 @@ class FunctionRegistry:
             except json.JSONDecodeError:
                 raise FunctionArgumentError(f"Invalid JSON for parameters of function {name}")
 
+        if function is None:
+            raise UnknownFunctionError(f"Function {name} is not registered")
+
         result = function(**parameters)
         return result
 

@@ -1,25 +1,23 @@
 """Builtins for ChatLab."""
-from IPython.core.getipython import get_ipython
+from typing import Any
+
+from chatlab.decorators import expose_exception_to_llm
+
+# __shell: Optional[ChatLabShell] = None
+
+__shell: Any = None
 
 
+@expose_exception_to_llm
 def run_cell(code: str):
-    """Run Python code in the IPython kernel.
+    """Execute code in python and return the result."""
+    global __shell
 
-    Sometimes the GPT Models hallucinate a function called `python`. This is a
-    rudimentary implementation of that function relying on IPython.
+    if __shell is None:
+        # Since ChatLabShell has imports that are "costly" (e.g. IPython, numpy, pandas),
+        # we only import it on the first call to run_cell.
+        from .shells.python import ChatLabShell
 
-    This could be further expanded to match what is in dangermode for an IPythonic combination
-    of stdout, stderr, exceptions, and rich output.
-    """
-    ip = get_ipython()
-    if ip is None:
-        raise Exception("Could not get IPython instance")
+        __shell = ChatLabShell()
 
-    try:
-        # Note: Any side effects, including display calls will end up in the notebook
-        # We cannot use `silent=True` because then `output.result` will be `None`
-        output = ip.run_cell(code)
-        return output.result
-    except Exception as e:
-        # We want the exception to be returned to the LLM
-        return e
+    return __shell.run_cell(code)
