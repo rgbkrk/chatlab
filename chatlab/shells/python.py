@@ -61,8 +61,11 @@ def redisplay_superrich(output: RichOutput):
         if 'text/llm+plain' in data:
             return
 
-        # Allow the LLM to see that we displayed for the user
-        data['text/llm+plain'] = f"Displayed {richest_format} inline for user"
+        if richest_format.startswith('image/'):
+            # Allow the LLM to see that we displayed for the user
+            data['text/llm+plain'] = data['text/plain']
+        else:
+            data['text/llm+plain'] = f"<Displayed {richest_format}>"
 
 
 def pluck_richest_text(output: RichOutput):
