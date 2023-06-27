@@ -1,4 +1,5 @@
 """Builtins for ChatLab."""
+import json
 from typing import Any, Optional
 
 from IPython.core.formatters import BaseFormatter, DisplayFormatter
@@ -108,7 +109,7 @@ def redisplay_superrich(output: RichOutput):
             return
 
         # Allow the LLM to see that we displayed for the user
-        data['text/llm+plain'] = f"[displayed {richest_format} inline for user]"
+        data['text/llm+plain'] = f"Displayed {richest_format} inline for user"
 
 
 def pluck_richest_text(output: RichOutput):
@@ -121,6 +122,9 @@ def pluck_richest_text(output: RichOutput):
     if richest_format:
         d = data.pop(richest_format, None)
         m = metadata.pop(richest_format, None)
+
+        if isinstance(d, dict):
+            d = json.dumps(d, indent=2)
 
         # TODO: Reduce the size of the data if it's too big for LLMs.
         return d, m
@@ -183,7 +187,7 @@ class ChatLabShell:
         if not result.success:
             return result
 
-        outputs = []
+        outputs = ""
 
         if captured.stdout is not None and captured.stdout.strip() != '':
             stdout = captured.stdout
@@ -191,13 +195,13 @@ class ChatLabShell:
             if len(stdout) > 1000:
                 stdout = stdout[:500] + '...[TRUNCATED]...' + stdout[-500:]
 
-            outputs.append({'stdout': stdout})
+            outputs += f"STDOUT:\n{stdout}\n\n"
 
         if captured.stderr is not None and captured.stderr.strip() != '':
             stderr = captured.stderr
             if len(stderr) > 1000:
                 stdout = stderr[:500] + '...[TRUNCATED]...' + stderr[-500:]
-            outputs.append({'stderr': stderr})
+            outputs += f"STDERR:\n{stderr}\n\n"
 
         if captured.outputs is not None:
             for output in captured.outputs:
@@ -207,12 +211,24 @@ class ChatLabShell:
                 redisplay_superrich(output)
 
                 # Now for text for the llm
-                data, _ = pluck_richest_text(output)
-                outputs.append(data)
+                text, _ = pluck_richest_text(output)
+
+                if text is None:
+                    continue
+
+                outputs += f"OUTPUT:\n{text}\n\n"
 
         if result.result is not None:
-            data, _ = pluck_richest_text(result.result)
-            outputs.append({'result': data})
+            output = result.result
+            # If image/* are in the output, redisplay it
+            # then include a text/plain version of the object, telling the llm
+            # that the image is displayed for the user
+            redisplay_superrich(result.result)
 
-        return outputs
+            # Now for text for the llm
+            text, _ = pluck_richest_text(result.result)
+
+            if text is not None:
+                outputs += f"RESULT:\n{text}\n\n"
+
         return outputs
