@@ -1942,6 +1942,20 @@ files = [
 ]
 
 [[package]]
+name = "pyte"
+version = "0.8.1"
+description = "Simple VTXXX-compatible terminal emulator."
+optional = false
+python-versions = "*"
+files = [
+    {file = "pyte-0.8.1-py3-none-any.whl", hash = "sha256:d760ea9a7d455d179d9d7a4288fac3d231190b5226715f1fe8c62547bed9b9aa"},
+    {file = "pyte-0.8.1.tar.gz", hash = "sha256:b9bfd1b781759e7572a6e553c010cc93eef58a19d8d1590446d84c19b1b097b0"},
+]
+
+[package.dependencies]
+wcwidth = "*"
+
+[[package]]
 name = "pytest"
 version = "7.2.2"
 description = "pytest: simple powerful testing with Python"
@@ -2692,4 +2706,4 @@ test = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9.0,<3.12"
-content-hash = "d2f50cc73891ce2e401129be303def340e53d190a69c22103fd723ce8e7cae38"
+content-hash = "24dd520c9d8e7f7620472e86072dd44b67defbf001db9c94e2b0478ce163dd39"

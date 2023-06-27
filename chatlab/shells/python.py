@@ -1,12 +1,11 @@
 """Builtins for ChatLab."""
 from typing import Any, Optional
 
-from IPython.core.formatters import BaseFormatter, DisplayFormatter, FormatterABC
+from IPython.core.formatters import BaseFormatter, DisplayFormatter
 from IPython.core.interactiveshell import InteractiveShell
+from IPython.display import display
 from IPython.utils.capture import RichOutput, capture_output
 from traitlets import ObjectName, Unicode
-
-from chatlab.repr_llm.base import LLMPlain
 
 try:
     # Defer loading of numpy and pandas unless installed
@@ -16,7 +15,7 @@ try:
     from chatlab.repr_llm.pandas import summarize_dataframe, summarize_series
 
     PANDAS_INSTALLED = True
-except ImportError as ie:
+except ImportError:
     PANDAS_INSTALLED = False
 
 
@@ -41,7 +40,6 @@ def preprocess_pandas(output: Any) -> Any:
             raise ValueError("Unknown type for preprocess_pandas")
 
 
-# TODO: Figure out how to register this as a formatter for LLM consumers.
 class LLMFormatter(BaseFormatter):
     """A formatter for producing text content for LLMs.
 
@@ -62,13 +60,7 @@ formats_for_llm = [
     # Repr LLM
     'text/llm+plain',
     # All the normal ones
-    'application/vnd.dex.v1+json',
-    'application/vnd.jupyter.widget-view+json',
     'application/vnd.jupyter.error+json',
-    'application/vnd.dataresource+json',
-    'application/vnd.plotly.v1+json',
-    # Too big for LLMs.
-    # 'text/vnd.plotly.v1+html',
     'application/vdom.v1+json',
     'application/json',
     'application/javascript',
@@ -79,28 +71,65 @@ formats_for_llm = [
     'text/plain',
 ]
 
+formats_to_redisplay = [
+    'application/vnd.jupyter.widget-view+json',
+    'application/vnd.dex.v1+json',
+    'application/vnd.dataresource+json',
+    'application/vnd.plotly.v1+json',
+    'text/vnd.plotly.v1+html',
+    'application/vdom.v1+json',
+    'application/json',
+    'application/javascript',
+    'image/svg+xml',
+    'image/png',
+    'image/jpeg',
+    'image/gif',
+]
+
+
+def redisplay_superrich(output: RichOutput):
+    """Redisplay an image."""
+    data = output.data
+    metadata = output.metadata
+
+    richest_format = __find_richest_format(data, formats_to_redisplay)
+
+    if richest_format:
+        display(
+            data,
+            raw=True,
+        )
+
+        data.pop(richest_format, None)
+        metadata.pop(richest_format, None)
+
+        # Allow the LLM to see that we displayed for the user
+        data['text/llm+plain'] = f"[displayed {richest_format} inline for user]"
+
 
 def pluck_richest_text(output: RichOutput):
     """Format an object as rich text."""
     data = output.data
     metadata = output.metadata
-    richest_format = __find_richest_format(data)
+
+    richest_format = __find_richest_format(data, formats_for_llm)
 
     if richest_format:
         d = data.pop(richest_format, None)
         m = metadata.pop(richest_format, None)
 
+        # TODO: Reduce the size of the data if it's too big for LLMs.
         return d, m
 
     return None, {}
 
 
-def __find_richest_format(formats):
-    for format in formats_for_llm:
-        if format in formats:
+def __find_richest_format(payload: dict, formats: list[str]) -> Optional[str]:
+    for format in formats:
+        if format in payload:
             return format
 
-        return None
+    return None
 
 
 def apply_llm_formatter(shell: InteractiveShell):
@@ -108,12 +137,9 @@ def apply_llm_formatter(shell: InteractiveShell):
     llm_formatter = LLMFormatter(parent=shell)
 
     shell.display_formatter.formatters[llm_formatter.format_type] = llm_formatter  # type: ignore
-    FormatterABC.register(LLMFormatter)
 
     llm_formatter.for_type_by_name('pandas.core.frame', 'DataFrame', preprocess_pandas)
     llm_formatter.for_type_by_name('pandas.core.series', 'Series', preprocess_pandas)
-
-    # shell.display_formatter.formatters['text/llm+plain'] = llm_formatter
 
 
 def get_or_create_ipython() -> InteractiveShell:
@@ -156,14 +182,29 @@ class ChatLabShell:
         outputs = []
 
         if captured.stdout is not None and captured.stdout.strip() != '':
-            outputs.append({'stdout': captured.stdout})
+            stdout = captured.stdout
+            # Truncate stdout if it's too long
+            if len(stdout) > 1000:
+                stdout = stdout[:500] + '...[TRUNCATED]...' + stdout[-500:]
+
+            outputs.append({'stdout': stdout})
 
         if captured.stderr is not None and captured.stderr.strip() != '':
-            outputs.append({'stderr': captured.stderr})
+            stderr = captured.stderr
+            if len(stderr) > 1000:
+                stdout = stderr[:500] + '...[TRUNCATED]...' + stderr[-500:]
+            outputs.append({'stderr': stderr})
 
         if captured.outputs is not None:
             for output in captured.outputs:
                 # Dropping metadata and only showing that richest type
+
+                # If image/* are in the output, redisplay it
+                # then include a text/plain version of the object, telling the llm
+                # that the image is displayed for the user
+                redisplay_superrich(output)
+
+                # Now for text for the llm
                 data, _ = pluck_richest_text(output)
                 outputs.append(data)
 
@@ -171,4 +212,5 @@ class ChatLabShell:
             data, _ = pluck_richest_text(result.result)
             outputs.append({'result': data})
 
-        return {'outputs': outputs}
+        return outputs
+        return outputs
