@@ -109,7 +109,7 @@ def redisplay_superrich(output: RichOutput):
             return
 
         # Allow the LLM to see that we displayed for the user
-        data['text/llm+plain'] = f"[displayed {richest_format} inline for user]"
+        data['text/llm+plain'] = f"Displayed {richest_format} inline for user"
 
 
 def pluck_richest_text(output: RichOutput):
