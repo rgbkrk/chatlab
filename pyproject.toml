@@ -1,7 +1,7 @@
 [tool]
 [tool.poetry]
 name = "chatlab"
-version = "0.15.0"
+version = "0.15.1"
 homepage = "https://github.com/rgbkrk/chatlab"
 description = "Markdown for LLMs."
 authors = ["Kyle Kelley <rgbkrk@gmail.com>"]
