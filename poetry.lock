@@ -2214,18 +2214,18 @@ md = ["cmarkgfm (>=0.8.0)"]
 
 [[package]]
 name = "repr-llm"
-version = "0.1.0"
+version = "0.2.0"
 description = "Creating lightweight representations of objects for Large Language Model consumption"
 optional = false
 python-versions = ">=3.9,<4.0"
 files = [
-    {file = "repr_llm-0.1.0-py3-none-any.whl", hash = "sha256:67c1fda603232332f98f9226d843cee3d098982ce3656e864af907cc3877b777"},
-    {file = "repr_llm-0.1.0.tar.gz", hash = "sha256:4d5a4006ed00a50f6f518198a86ea30ad324394fe1a0d54cfabe474b2d7e9924"},
+    {file = "repr_llm-0.2.0-py3-none-any.whl", hash = "sha256:60b74c3670f505e66c897debf688d7151edf22d5f6ce1f2b97a889533985073c"},
+    {file = "repr_llm-0.2.0.tar.gz", hash = "sha256:1f171acf53e0a447d359bcdf399510a54618bb4a44b5ac5cfde3f7472d573cde"},
 ]
 
 [package.extras]
-dev = ["ipython (>=8.14.0,<9.0.0)", "numpy[numfocus] (>=1.25.0,<2.0.0)", "pandas[numfocus] (>=2.0.2,<3.0.0)", "tabulate (>=0.9.0,<0.10.0)"]
-numfocus = ["numpy[numfocus] (>=1.25.0,<2.0.0)", "pandas[numfocus] (>=2.0.2,<3.0.0)"]
+dev = ["ipython (>=7.0.0,<9.0.0)", "numpy[numfocus] (>=1.16.0)", "pandas[numfocus] (>=1.0.0,<3.0.0)", "tabulate[numfocus] (>=0.8.3,<0.10.0)"]
+numfocus = ["numpy[numfocus] (>=1.16.0)", "pandas[numfocus] (>=1.0.0,<3.0.0)"]
 
 [[package]]
 name = "requests"
@@ -2721,4 +2721,4 @@ test = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9.0,<3.12"
-content-hash = "964b5454a7bbdfa76b3716cf613c3a29cacffa51bf8b3273a2e5a6fc56187b78"
+content-hash = "dad138d0d6c2a035dcd3da792abdd81e40cfc0e27188f038a1872f75b577c315"
