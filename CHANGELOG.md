@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.1]
+
+### Changed
+
+- 📦 Loosened the requirements for IPython and ipykernel to allow jupyterlite and pyodide to use this package
+
 ## [0.15.0]
+
+### Changed
 
 -   🐍 Greatly enhanced Python interpreter that displays images inline and provides a trimmed down representation of objects for Large Language Model Consumption, relying on [repr_llm](https://github.com/rgbkrk/repr_llm)
 
