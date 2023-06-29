@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.3]
+
+-   📦 Update description and classifiers for PyPI
+-   ❌ Remove unused packages
+
 ## [0.15.2]
 
 -   📦 Include universal wheels in build
