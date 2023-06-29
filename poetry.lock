@@ -1942,20 +1942,6 @@ files = [
 ]
 
 [[package]]
-name = "pyte"
-version = "0.8.1"
-description = "Simple VTXXX-compatible terminal emulator."
-optional = false
-python-versions = "*"
-files = [
-    {file = "pyte-0.8.1-py3-none-any.whl", hash = "sha256:d760ea9a7d455d179d9d7a4288fac3d231190b5226715f1fe8c62547bed9b9aa"},
-    {file = "pyte-0.8.1.tar.gz", hash = "sha256:b9bfd1b781759e7572a6e553c010cc93eef58a19d8d1590446d84c19b1b097b0"},
-]
-
-[package.dependencies]
-wcwidth = "*"
-
-[[package]]
 name = "pytest"
 version = "7.2.2"
 description = "pytest: simple powerful testing with Python"
@@ -2367,20 +2353,6 @@ pure-eval = "*"
 tests = ["cython", "littleutils", "pygments", "pytest", "typeguard"]
 
 [[package]]
-name = "tabulate"
-version = "0.9.0"
-description = "Pretty-print tabular data"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "tabulate-0.9.0-py3-none-any.whl", hash = "sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f"},
-    {file = "tabulate-0.9.0.tar.gz", hash = "sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c"},
-]
-
-[package.extras]
-widechars = ["wcwidth"]
-
-[[package]]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
@@ -2721,4 +2693,4 @@ test = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9.0,<3.12"
-content-hash = "dad138d0d6c2a035dcd3da792abdd81e40cfc0e27188f038a1872f75b577c315"
+content-hash = "0c8a1f8130b1861330cfe47a30af6be4f0a977180fb9db27a5019d23bf211ac8"
