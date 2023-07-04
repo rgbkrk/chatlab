@@ -3,7 +3,6 @@ import json
 from traceback import TracebackException
 from typing import Optional
 
-from IPython.core.formatters import DisplayFormatter
 from IPython.core.interactiveshell import InteractiveShell
 from IPython.display import display
 from IPython.utils.capture import RichOutput, capture_output
@@ -125,7 +124,6 @@ class ChatLabShell:
     """A custom shell for ChatLab that uses the current IPython shell and formats outputs for LLMs."""
 
     shell: InteractiveShell
-    display_formatter: DisplayFormatter
 
     def __init__(self, shell: Optional[InteractiveShell] = None):
         """Create a new ChatLabShell."""
