@@ -2200,13 +2200,13 @@ md = ["cmarkgfm (>=0.8.0)"]
 
 [[package]]
 name = "repr-llm"
-version = "0.2.0"
+version = "0.2.1"
 description = "Creating lightweight representations of objects for Large Language Model consumption"
 optional = false
 python-versions = ">=3.9,<4.0"
 files = [
-    {file = "repr_llm-0.2.0-py3-none-any.whl", hash = "sha256:60b74c3670f505e66c897debf688d7151edf22d5f6ce1f2b97a889533985073c"},
-    {file = "repr_llm-0.2.0.tar.gz", hash = "sha256:1f171acf53e0a447d359bcdf399510a54618bb4a44b5ac5cfde3f7472d573cde"},
+    {file = "repr_llm-0.2.1-py3-none-any.whl", hash = "sha256:0df19f96c6a6b03143cdb65179bb95041ced9b85955e3ed6e74954f7b10e4f83"},
+    {file = "repr_llm-0.2.1.tar.gz", hash = "sha256:6762ae7d20c64c507af6084f9ca565ddfbc6b5bf771558dd2b3fda4d220c8aa7"},
 ]
 
 [package.extras]

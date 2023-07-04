@@ -3,7 +3,6 @@ import json
 from traceback import TracebackException
 from typing import Optional
 
-from IPython.core.formatters import DisplayFormatter
 from IPython.core.interactiveshell import InteractiveShell
 from IPython.display import display
 from IPython.utils.capture import RichOutput, capture_output
@@ -125,7 +124,6 @@ class ChatLabShell:
     """A custom shell for ChatLab that uses the current IPython shell and formats outputs for LLMs."""
 
     shell: InteractiveShell
-    display_formatter: DisplayFormatter
 
     def __init__(self, shell: Optional[InteractiveShell] = None):
         """Create a new ChatLabShell."""
@@ -134,9 +132,18 @@ class ChatLabShell:
     def run_cell(self, code: str):
         """Execute code in python and return the result."""
         try:
+            # Since we include the traceback inside the ChatLab display, we
+            # don't want to show it inline.
+            # Sadly `capture_output` doesn't grab the show traceback side effect,
+            # so we have to do it manually.
+            original_showtraceback = self.shell.showtraceback
             with capture_output() as captured:
+                # HACK: don't show the exception inline if the LLM is running it
+                self.shell.showtraceback = lambda *args, **kwargs: None  # type: ignore
                 result = self.shell.run_cell(code)
+                self.shell.showtraceback = original_showtraceback  # type: ignore
         except Exception as e:
+            self.shell.showtraceback = original_showtraceback  # type: ignore
             formatted = TracebackException.from_exception(e, limit=3).format(chain=True)
             plaintext_traceback = '\n'.join(formatted)
 
