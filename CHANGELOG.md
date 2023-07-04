@@ -7,12 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0]
+
+### Changed
+
+-   🐍🔙 Send a traceback to the LLM when an exception occurs in the builtin python interpreter
+
 ## [0.15.3]
+
+### Changed
 
 -   📦 Update description and classifiers for PyPI
 -   ❌ Remove unused packages
 
 ## [0.15.2]
+
+### Changed
 
 -   📦 Include universal wheels in build
 

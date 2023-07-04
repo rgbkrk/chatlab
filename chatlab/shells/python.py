@@ -1,5 +1,6 @@
 """Builtins for ChatLab."""
 import json
+from traceback import TracebackException
 from typing import Optional
 
 from IPython.core.formatters import DisplayFormatter
@@ -136,10 +137,26 @@ class ChatLabShell:
             with capture_output() as captured:
                 result = self.shell.run_cell(code)
         except Exception as e:
-            return e
+            formatted = TracebackException.from_exception(e, limit=3).format(chain=True)
+            plaintext_traceback = '\n'.join(formatted)
+
+            return plaintext_traceback
 
         if not result.success:
-            return result
+            # Grab which exception was raised
+            exception = result.error_before_exec or result.error_in_exec
+
+            # If success was False and yet neither of these are set, then
+            # something went wrong in the IPython internals
+            if exception is None:
+                raise Exception("Unknown IPython error for result", result)
+
+            # Create a formatted traceback that includes the last 3 frames
+            # and the exception message
+            formatted = TracebackException.from_exception(exception, limit=3).format(chain=True)
+            plaintext_traceback = '\n'.join(formatted)
+
+            return plaintext_traceback
 
         outputs = ""
 
