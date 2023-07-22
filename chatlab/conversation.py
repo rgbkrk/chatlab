@@ -277,12 +277,17 @@ class Chat:
 
     def __repr__(self):
         """Return a representation of the ChatLab instance."""
+        # Get the grammar right.
+        num_messages = len(self.messages)
+        if num_messages == 1:
+            return "<ChatLab 1 message>"
+
         return f"<ChatLab {len(self.messages)} messages>"
 
     def ipython_magic_submit(self, line, cell: Optional[str] = None):
         """Submit a cell to the ChatLab instance."""
         # Line is currently unused, allowing for future expansion into allowing
-        # system commands to be run as magics.
+        # sending messages with other roles.
 
         if cell is None:
             return
@@ -294,6 +299,8 @@ class Chat:
         if ip is None:
             raise Exception("IPython is not available.")
 
+        # HACK: We need to run the submit in a thread because IPython doesn't
+        # support async magics yet. See https://github.com/ipython/ipython/issues/11314
         with ThreadPoolExecutor(1) as pool:
             pool.submit(lambda: asyncio.run(self.submit(cell))).result()
 
