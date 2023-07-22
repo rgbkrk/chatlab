@@ -31,7 +31,7 @@ Example usage:
     import chatlab
     registry = chatlab.FunctionRegistry()
 
-    conversation = chatlab.Conversation(
+    conversation = chatlab.Chat(
         function_registry=registry,
     )
 
@@ -171,7 +171,7 @@ class FunctionRegistry:
         function: Callable,
         parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
     ) -> dict:
-        """Register a function for use in `Conversation`s."""
+        """Register a function for use in `Chat`s."""
         final_schema = generate_function_schema(function, parameter_schema)
 
         self.__functions[function.__name__] = function

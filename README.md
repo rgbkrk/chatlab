@@ -18,7 +18,7 @@ def flip_a_coin():
     '''Returns heads or tails'''
     return random.choice(['heads', 'tails'])
 
-conversation = chatlab.Conversation()
+conversation = chatlab.Chat()
 conversation.register(flip_a_coin)
 
 conversation.submit("Please flip a coin for me")
@@ -75,14 +75,14 @@ You'll need to set your `OPENAI_API_KEY` environment variable. You can find your
 
 On hosted environments like Noteable, set it in your Secrets to keep it safe from prying LLM eyes.
 
-## What can `Conversation`s enable _you_ to do?
+## What can `Chat`s enable _you_ to do?
 
 💬
 
-Where `Conversation`s take it next level is with _Chat Functions_. You can
+Where `Chat`s take it next level is with _Chat Functions_. You can
 
 -   declare a function
--   register the function in your `Conversation`
+-   register the function in your `Chat`
 -   watch as Chat Models call your functions!
 
 You may recall this kind of behavior from [ChatGPT Plugins](https://noteable.io/chatgpt-plugin-for-notebook/). Now, you can take this even further with your own custom code.
@@ -117,7 +117,7 @@ Let's break this down.
 ```python
 import chatlab
 
-conversation = chatlab.Conversation()
+conversation = chatlab.Chat()
 
 # Register our function
 conversation.register(what_time, WhatTime)
@@ -159,11 +159,11 @@ The current time is 11:19 AM.
 
 The `chatlab` package exports
 
-### `Conversation`
+### `Chat`
 
-The `Conversation` class is the main way to chat using OpenAI's models. It keeps a history of your chat in `Conversation.messages`.
+The `Chat` class is the main way to chat using OpenAI's models. It keeps a history of your chat in `Chat.messages`.
 
-#### `Conversation.submit`
+#### `Chat.submit`
 
 When you call `submit`, you're sending over messages to the chat model and getting back an updating `Markdown` display live as well as a interactive details area for any function calls.
 
@@ -180,9 +180,9 @@ conversation.messages
   'content': 'When a parent of three kids says "I have to play zone defense," it means that they...
 ```
 
-#### `Conversation.register`
+#### `Chat.register`
 
-You can register functions with `Conversation.register` to make them available to the chat model. The function's docstring becomes the description of the function while the schema is derived from the `pydantic.BaseModel` passed in.
+You can register functions with `Chat.register` to make them available to the chat model. The function's docstring becomes the description of the function while the schema is derived from the `pydantic.BaseModel` passed in.
 
 ```python
 from pydantic import BaseModel
@@ -204,7 +204,7 @@ def what_time(tz: Optional[str] = None):
 conversation.register(what_time, WhatTime)
 ```
 
-#### `Conversation.messages`
+#### `Chat.messages`
 
 The raw messages sent and received to OpenAI. If you hit a token limit, you can remove old messages from the list to make room for more.
 
