@@ -186,8 +186,8 @@ class Chat:
 
                         if function_call['name'] not in self.function_registry:
                             # Append a system message for the model, then allow it to continue
-                            self.append(assistant_function_call(name=function_call['name']))
-                            self.append(system(f"Function call for {function_call['name']} not in function registry."))
+                            self.append(assistant_function_call(name=function_call['name'], arguments='...'))
+                            self.append(system(f"Function `{function_call['name']}` not registered."))
                             # The odd thing here is that ChatGPT will still be emitting. We need to tell it to stop.
                             # Our only choice is to break, which interrupts the stream. This is the only way to
                             # stop the model from continuing to emit.
