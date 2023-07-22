@@ -46,7 +46,6 @@ from typing import Any, Callable, Optional, Type, Union, get_args, get_origin
 
 from pydantic import BaseModel
 
-from .builtins import run_cell
 from .decorators import ChatlabMetadata
 
 
@@ -153,17 +152,23 @@ def generate_function_schema(
     }
 
 
+# Declare the type for the python hallucination
+PythonHallucinationFunction = Callable[[str], Any]
+
+
 class FunctionRegistry:
     """Captures a function with schema both for sending to OpenAI and for executing locally."""
 
     __functions: dict[str, Callable]
     __schemas: dict[str, dict]
 
-    def __init__(self, allow_hallucinated_python: bool = False):
+    # Allow passing in a callable that accepts a single string for the python
+    # hallucination function. This is useful for testing.
+    def __init__(self, python_hallucination_function: Optional[PythonHallucinationFunction] = None):
         """Initialize a FunctionRegistry object."""
         self.__functions = {}
         self.__schemas = {}
-        self.allow_hallucinated_python = allow_hallucinated_python
+        self.python_hallucination_function = python_hallucination_function
 
     def register(
         self,
@@ -198,8 +203,8 @@ class FunctionRegistry:
         parameters: dict = {}
 
         # Handle the code interpreter hallucination
-        if name == "python" and self.allow_hallucinated_python:
-            function = run_cell
+        if name == "python" and self.python_hallucination_function:
+            function = self.python_hallucination_function
             # The "hallucinated" python function takes raw plaintext
             # instead of a JSON object. We can just pass it through.
             parameters = {"code": arguments}
@@ -218,14 +223,14 @@ class FunctionRegistry:
             raise UnknownFunctionError(f"Function {name} is not registered")
 
         if asyncio.iscoroutinefunction(function):
-            result = await function(**parameters)
+            result = await function(**parameters)  # type: ignore
         else:
-            result = function(**parameters)
+            result = function(**parameters)  # type: ignore
         return result
 
     def __contains__(self, name) -> bool:
         """Check if a function is registered by name."""
-        if name == "python" and self.allow_hallucinated_python:
+        if name == "python" and self.python_hallucination_function:
             return True
         return name in self.__functions
 

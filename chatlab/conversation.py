@@ -13,8 +13,8 @@ from pydantic import BaseModel
 from ._version import __version__
 from .display import ChatFunctionCall, Markdown
 from .errors import ChatLabError
-from .messaging import Message, assistant, assistant_function_call, human, system
-from .registry import FunctionRegistry
+from .messaging import Message, assistant, assistant_function_call, human
+from .registry import FunctionRegistry, PythonHallucinationFunction
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +57,7 @@ class Chat:
         model="gpt-3.5-turbo-0613",
         function_registry: Optional[FunctionRegistry] = None,
         allow_hallucinated_python: bool = False,
+        python_hallucination_function: Optional[PythonHallucinationFunction] = None,
     ):
         """Initialize a Chat with an optional initial context of messages.
 
@@ -87,10 +88,13 @@ class Chat:
         self.append(*initial_context)
         self.model = model
 
-        self.allow_hallucinated_python = allow_hallucinated_python
-
         if function_registry is None:
-            self.function_registry = FunctionRegistry(allow_hallucinated_python=self.allow_hallucinated_python)
+            if allow_hallucinated_python and python_hallucination_function is None:
+                from .builtins import run_cell
+
+                python_hallucination_function = run_cell
+
+            self.function_registry = FunctionRegistry(python_hallucination_function=python_hallucination_function)
         else:
             self.function_registry = function_registry
 
@@ -281,6 +285,21 @@ class Chat:
 
     def register_function(self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None):
         """Register a function with the ChatLab instance.
+
+        Args:
+            function (Callable): The function to register.
+
+            parameter_schema (BaseModel or dict): The pydantic model or JSON schema for the function's parameters.
+
+        """
+        full_schema = self.function_registry.register(function, parameter_schema)
+
+        return full_schema
+
+    def replace_hallucinated_python(
+        self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None
+    ):
+        """Replace the hallucinated python function with a custom function.
 
         Args:
             function (Callable): The function to register.
