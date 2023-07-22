@@ -39,6 +39,7 @@ Example usage:
 
 """
 
+import asyncio
 import inspect
 import json
 from typing import Any, Callable, Optional, Type, Union, get_args, get_origin
@@ -216,7 +217,11 @@ class FunctionRegistry:
         if function is None:
             raise UnknownFunctionError(f"Function {name} is not registered")
 
-        result = function(**parameters)
+        if asyncio.iscoroutinefunction(function):
+            loop = asyncio.get_event_loop()
+            result = loop.run_until_complete(function(**parameters))
+        else:
+            result = function(**parameters)
         return result
 
     def __contains__(self, name) -> bool:
