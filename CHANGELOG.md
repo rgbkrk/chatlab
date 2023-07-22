@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+-   ⚠️ `submit` is now an async function in order to allow registering functions
 -   📜 Only show scrollbars of function inputs and outputs on x-axis when content too big
 -   🛑🔙 Stop showing the python interpreter traceback in the notebook when including it in the ChatLab output pane.
 
