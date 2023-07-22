@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   📜 Improved UI: Scrollbars for function inputs and outputs now only appear on the x-axis when content is too large
 -   🛑🔙 Enhanced error handling: Python interpreter traceback is no longer displayed in the notebook when it is included in the ChatLab output pane.
 
+### Deprecated
+
+-   ⚠️ Both `chatlab.Session` and `chatlab.Conversation` are now deprecated in favor of `chatlab.Chat`
+
 ## [0.16.0]
 
 ### Changed
