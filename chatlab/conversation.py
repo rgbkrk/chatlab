@@ -103,7 +103,7 @@ class Conversation:
         """
         return self.submit(*messages)
 
-    def submit(self, *messages: Union[Message, str]):
+    async def submit(self, *messages: Union[Message, str]):
         """Send messages to the chat model and display the response.
 
         Side effects:
@@ -193,12 +193,12 @@ class Conversation:
                 assistant_function_call(name=chat_function.function_name, arguments=chat_function.function_args)
             )
             # Make the call
-            fn_message = chat_function.call()
+            fn_message = await chat_function.call()
             # Include the response (or error) for the model
             self.append(fn_message)
 
             # Reply back to the LLM with the result of the function call, allow it to continue
-            self.submit()
+            await self.submit()
             return
 
         # All other finish reasons are valid for regular assistant messages

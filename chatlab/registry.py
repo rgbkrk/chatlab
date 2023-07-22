@@ -193,7 +193,7 @@ class FunctionRegistry:
         chatlab_metadata = getattr(function, "chatlab_metadata", ChatlabMetadata())
         return chatlab_metadata
 
-    def call(self, name: str, arguments: Optional[str] = None) -> Any:
+    async def call(self, name: str, arguments: Optional[str] = None) -> Any:
         """Call a function by name with the given parameters."""
         function = self.get(name)
         parameters: dict = {}
@@ -219,14 +219,7 @@ class FunctionRegistry:
             raise UnknownFunctionError(f"Function {name} is not registered")
 
         if asyncio.iscoroutinefunction(function):
-            # To get around issues with asyncio.run() not being able to be used in an IPython session,
-            # we use a ThreadPoolExecutor to run the coroutine in a separate thread.
-            with ThreadPoolExecutor(1) as pool:
-
-                def function_wrapper():
-                    return asyncio.run(function(**parameters))
-
-                result = pool.submit(function_wrapper).result()
+            result = await function(**parameters)
         else:
             result = function(**parameters)
         return result
