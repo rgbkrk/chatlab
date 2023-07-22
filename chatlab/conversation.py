@@ -179,19 +179,23 @@ class Chat:
 
                     function_call = delta['function_call']
                     if 'name' in function_call:
-                        if function_call['name'] not in self.function_registry:
-                            # Append a system message for the model, then allow it to continue
-                            self.append(system(f"Function call for {function_call['name']} not in function registry."))
-                            # Break?
-                            # The odd thing here is that ChatGPT will still be emitting and we need to "cut it off" and send
-                            # this system message.
-                            finish_reason = CHATLAB_EXIT_BAD_CALL
-                            break
-
                         chat_function = ChatFunctionCall(
                             function_call["name"], function_registry=self.function_registry
                         )
                         chat_function.display()
+
+                        if function_call['name'] not in self.function_registry:
+                            # Append a system message for the model, then allow it to continue
+                            self.append(assistant_function_call(name=function_call['name']))
+                            self.append(system(f"Function call for {function_call['name']} not in function registry."))
+                            # The odd thing here is that ChatGPT will still be emitting. We need to tell it to stop.
+                            # Our only choice is to break, which interrupts the stream. This is the only way to
+                            # stop the model from continuing to emit.
+                            finish_reason = CHATLAB_EXIT_BAD_CALL
+
+                            chat_function.finished = True
+                            chat_function.set_state("Errored")
+                            break
 
                     if 'arguments' in function_call:
                         if chat_function is None:
