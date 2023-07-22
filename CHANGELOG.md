@@ -7,10 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+-   📚 Documentation now available at [chatlab.dev](https://chatlab.dev)
+-   🔄 Replaced `chatlab.Chat` with `chatlab.Conversation` to improve readability
+-   🎛️ New option `replace_hallucinated_python` to replace any hallucinated python function with a custom one. This allows you to create notebook cells, run IPython, or even shell out to a regular python interpreter.
+-   🪄 Introduced `make_magic` on a `Chat` so that you can use a current chat as a cell magic in IPython and Jupyter notebooks
+-   ⏩ Accept async functions as chat functions
+
 ### Changed
 
--   📜 Only show scrollbars of function inputs and outputs on x-axis when content too big
--   🛑🔙 Stop showing the python interpreter traceback in the notebook when including it in the ChatLab output pane.
+-   ⚠️ Deprecated `chatlab.Conversation` in favor of `chatlab.Chat`
+-   🔄 `submit` is now an async function to allow registering functions
+-   📜 Improved UI: Scrollbars for function inputs and outputs now only appear on the x-axis when content is too large
+-   🛑🔙 Enhanced error handling: Python interpreter traceback is no longer displayed in the notebook when it is included in the ChatLab output pane.
+
+### Deprecated
+
+-   ⚠️ Both `chatlab.Session` and `chatlab.Conversation` are now deprecated in favor of `chatlab.Chat`
 
 ## [0.16.0]
 

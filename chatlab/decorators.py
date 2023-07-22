@@ -3,7 +3,7 @@
 This module lets you augment your functions before you register them with a ChatLab conversation.
 
 Examples:
-    >>> from chatlab import Conversation
+    >>> from chatlab import Chat
     >>> from chatlab.decorators import expose_exception_to_llm
 
     >>> class PokemonFetchError(Exception):
@@ -23,7 +23,7 @@ Examples:
     ...     except requests.HTTPError:
     ...         raise PokemonFetchError(name)
 
-    >>> conversation = Conversation()
+    >>> conversation = Chat()
     >>> conversation.submit("Get pikachu")
     Failed to fetch information for Pokemon 'pikachu'.
 
@@ -56,7 +56,7 @@ def expose_exception_to_llm(func):
         ...     if roll == 1:
         ...         raise Exception("The die rolled a 1!")
         ...     return roll
-        >>> conversation = chatlab.Conversation()
+        >>> conversation = chatlab.Chat()
         >>> conversation.submit("Roll the dice!")
         The die rolled a 1!
 

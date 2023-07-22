@@ -155,7 +155,7 @@ class ChatFunctionCall:
         """Force an update to all displays of this `ChatFunctionCall`."""
         display_functions.display(self, display_id=self._display_id, update=True)
 
-    def call(self) -> Message:
+    async def call(self) -> Message:
         """Call the function and return a stack of messages for LLM and human consumption."""
         function_name = self.function_name
         function_args = self.function_args
@@ -168,7 +168,7 @@ class ChatFunctionCall:
 
         # Execute the function and get the result
         try:
-            output = self.function_registry.call(function_name, function_args)
+            output = await self.function_registry.call(function_name, function_args)
         except FunctionArgumentError as e:
             self.finished = True
             self.set_state("Errored")
