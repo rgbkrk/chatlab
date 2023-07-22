@@ -48,7 +48,7 @@ class Conversation(Chat):
     Conversation is deprecated. Use `Chat` instead.
     """
 
-    @deprecated(removed_in="1.0.0", current_version=__version__, details="Use `Chat` instead.")
+    @deprecated(deprecated_in="1.0.0", removed_in="1.1.0", current_version=__version__, details="Use `Chat` instead.")
     def __init__(self, *args, **kwargs):
         """Initialize a Session with an optional initial context of messages.
 
