@@ -272,3 +272,13 @@ class Chat:
     def clear_history(self):
         """Clears the conversation history."""
         self.messages = []
+
+    def register_magic(self, name):
+        """Register a function as an IPython magic with the given name."""
+        from IPython.core.getipython import get_ipython
+
+        ip = get_ipython()
+        if ip is None:
+            raise Exception("IPython is not available.")
+
+        ip.register_magic_function(self.submit, magic_kind="cell", magic_name=name)
