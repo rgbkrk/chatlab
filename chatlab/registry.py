@@ -185,6 +185,9 @@ class FunctionRegistry:
 
     def get(self, function_name) -> Optional[Callable]:
         """Get a function by name."""
+        if function_name == "python" and self.python_hallucination_function is not None:
+            return self.python_hallucination_function
+
         return self.__functions.get(function_name)
 
     def get_chatlab_metadata(self, function_name) -> ChatlabMetadata:
@@ -203,11 +206,13 @@ class FunctionRegistry:
         parameters: dict = {}
 
         # Handle the code interpreter hallucination
-        if name == "python" and self.python_hallucination_function:
+        if name == "python" and self.python_hallucination_function is not None:
             function = self.python_hallucination_function
+            if arguments is None:
+                arguments = ""
             # The "hallucinated" python function takes raw plaintext
             # instead of a JSON object. We can just pass it through.
-            parameters = {"code": arguments}
+            return self.python_hallucination_function(arguments)
         elif function is None:
             raise UnknownFunctionError(f"Function {name} is not registered")
         elif arguments is None or arguments == "":
@@ -223,9 +228,9 @@ class FunctionRegistry:
             raise UnknownFunctionError(f"Function {name} is not registered")
 
         if asyncio.iscoroutinefunction(function):
-            result = await function(**parameters)  # type: ignore
+            result = await function(**parameters)
         else:
-            result = function(**parameters)  # type: ignore
+            result = function(**parameters)
         return result
 
     def __contains__(self, name) -> bool:
