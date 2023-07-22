@@ -273,7 +273,7 @@ class Chat:
         """Clears the conversation history."""
         self.messages = []
 
-    def register_magic(self, name):
+    def magic(self, name):
         """Register a function as an IPython magic with the given name."""
         from IPython.core.getipython import get_ipython
 
