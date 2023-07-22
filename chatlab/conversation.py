@@ -107,7 +107,7 @@ class Chat:
 
     async def __call__(self, *messages: Union[Message, str]):
         """Send messages to the chat model and display the response."""
-        return self.submit(*messages)
+        return await self.submit(*messages)
 
     async def submit(self, *messages: Union[Message, str]):
         """Send messages to the chat model and display the response.
