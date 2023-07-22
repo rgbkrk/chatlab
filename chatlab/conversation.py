@@ -2,7 +2,7 @@
 
 import logging
 import os
-from typing import Callable, List, Optional, Type, Union
+from typing import Any, Callable, List, Optional, Type, Union
 
 import openai
 from deprecation import deprecated
@@ -101,6 +101,10 @@ class Conversation:
 
         Deprecated in 0.13.0, removed in 1.0.0. Use `submit` instead.
         """
+        return self.submit(*messages)
+
+    async def __call__(self, *messages: Union[Message, str]):
+        """Send messages to the chat model and display the response."""
         return self.submit(*messages)
 
     async def submit(self, *messages: Union[Message, str]):
