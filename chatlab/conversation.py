@@ -277,7 +277,7 @@ class Chat:
         """Return a representation of the ChatLab instance."""
         return f"<ChatLab {len(self.messages)} messages>"
 
-    async def ipython_magic_submit(self, line, cell: Optional[str] = None):
+    def ipython_magic_submit(self, line, cell: Optional[str] = None):
         """Submit a cell to the ChatLab instance."""
         # Line is currently unused, allowing for future expansion into allowing
         # system commands to be run as magics.
@@ -285,7 +285,13 @@ class Chat:
         if cell is None:
             return
 
-        await self.submit(cell)
+        from IPython.core.getipython import get_ipython
+
+        ip = get_ipython()
+        if ip is None:
+            raise Exception("IPython is not available.")
+
+        return ip.run_cell_async(f"await self.submit('{cell}')")
 
     def register_magic(self, name):
         """Register a function as an IPython magic with the given name."""
