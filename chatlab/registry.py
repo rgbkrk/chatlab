@@ -42,6 +42,7 @@ Example usage:
 import asyncio
 import inspect
 import json
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Callable, Optional, Type, Union, get_args, get_origin
 
 from pydantic import BaseModel
@@ -218,8 +219,14 @@ class FunctionRegistry:
             raise UnknownFunctionError(f"Function {name} is not registered")
 
         if asyncio.iscoroutinefunction(function):
-            loop = asyncio.get_event_loop()
-            result = loop.run_until_complete(function(**parameters))
+            # To get around issues with asyncio.run() not being able to be used in an IPython session,
+            # we use a ThreadPoolExecutor to run the coroutine in a separate thread.
+            with ThreadPoolExecutor(1) as pool:
+
+                def function_wrapper():
+                    return asyncio.run(function(**parameters))
+
+                result = pool.submit(function_wrapper).result()
         else:
             result = function(**parameters)
         return result
