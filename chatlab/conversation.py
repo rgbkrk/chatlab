@@ -273,7 +273,21 @@ class Chat:
         """Clears the conversation history."""
         self.messages = []
 
-    def magic(self, name):
+    def __repr__(self):
+        """Return a representation of the ChatLab instance."""
+        return f"<ChatLab {len(self.messages)} messages>"
+
+    async def ipython_magic_submit(self, line, cell: Optional[str] = None):
+        """Submit a cell to the ChatLab instance."""
+        # Line is currently unused, allowing for future expansion into allowing
+        # system commands to be run as magics.
+
+        if cell is None:
+            return
+
+        await self.submit(cell)
+
+    def register_magic(self, name):
         """Register a function as an IPython magic with the given name."""
         from IPython.core.getipython import get_ipython
 
@@ -281,4 +295,4 @@ class Chat:
         if ip is None:
             raise Exception("IPython is not available.")
 
-        ip.register_magic_function(self.submit, magic_kind="cell", magic_name=name)
+        ip.register_magic_function(self.ipython_magic_submit, magic_kind="line_cell", magic_name=name)
