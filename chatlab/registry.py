@@ -168,6 +168,7 @@ class FunctionRegistry:
         """Initialize a FunctionRegistry object."""
         self.__functions = {}
         self.__schemas = {}
+
         self.python_hallucination_function = python_hallucination_function
 
     def register(
@@ -210,9 +211,12 @@ class FunctionRegistry:
             function = self.python_hallucination_function
             if arguments is None:
                 arguments = ""
+
             # The "hallucinated" python function takes raw plaintext
             # instead of a JSON object. We can just pass it through.
-            return self.python_hallucination_function(arguments)
+            if asyncio.iscoroutinefunction(function):
+                return await function(arguments)
+            return function(arguments)
         elif function is None:
             raise UnknownFunctionError(f"Function {name} is not registered")
         elif arguments is None or arguments == "":
