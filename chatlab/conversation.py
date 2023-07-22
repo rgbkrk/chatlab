@@ -3,11 +3,11 @@
 import asyncio
 import logging
 import os
-from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Callable, List, Optional, Type, Union, cast
+from typing import Callable, List, Optional, Type, Union
 
 import openai
 from deprecation import deprecated
+from IPython.core.async_helpers import get_asyncio_loop
 from pydantic import BaseModel
 
 from ._version import __version__
@@ -35,7 +35,7 @@ class Chat:
 
         function_registry (FunctionRegistry): The function registry to use for the conversation.
 
-        allow_hallucinated_python (bool): Whether to include the built-in Python function when hallucinated by the model.
+        allow_hallucinated_python (bool): Include the built-in Python function when hallucinated by the model.
 
     Examples:
         >>> from chatlab import Chat, narrate
@@ -116,7 +116,7 @@ class Chat:
 
         Side effects:
             - Messages are sent to OpenAI Chat Models.
-            - The response(s) are displayed in the output area. Markdown for assistant messages, collapsible display for function calls.
+            - Response(s) are displayed in the output area as a combination of Markdown and chat function calls.
             - conversation.messages is updated with response(s).
 
         Args:
@@ -254,7 +254,17 @@ class Chat:
             else:
                 self.messages.append(message)
 
+    @deprecated(
+        deprecated_in="1.0", removed_in="2.0", current_version=__version__, details="Use `register_function` instead."
+    )
     def register(self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None):
+        """Register a function with the ChatLab instance.
+
+        Deprecated in 1.0.0, removed in 2.0.0. Use `register_function` instead.
+        """
+        return self.register_function(function, parameter_schema)
+
+    def register_function(self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None):
         """Register a function with the ChatLab instance.
 
         Args:
@@ -293,19 +303,20 @@ class Chat:
             return
         cell = cell.strip()
 
-        from IPython.core.getipython import get_ipython
+        asyncio.run_coroutine_threadsafe(self.submit(cell), get_asyncio_loop())
 
-        ip = get_ipython()
-        if ip is None:
-            raise Exception("IPython is not available.")
+    def make_magic(self, name):
+        """Register the chat as an IPython magic with the given name.
 
-        # HACK: We need to run the submit in a thread because IPython doesn't
-        # support async magics yet. See https://github.com/ipython/ipython/issues/11314
-        with ThreadPoolExecutor(1) as pool:
-            pool.submit(lambda: asyncio.run(self.submit(cell))).result()
+        In [1]: chat = Chat()
+        In [2]: chat.make_magic("chat")
+        In [3]: %%chat
+           ...:
+           ...: Lets chat!
+           ...:
+        Out[3]: Sure, I'd be happy to chat! What's on your mind?
 
-    def register_magic(self, name):
-        """Register a function as an IPython magic with the given name."""
+        """
         from IPython.core.getipython import get_ipython
 
         ip = get_ipython()

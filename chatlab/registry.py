@@ -42,7 +42,6 @@ Example usage:
 import asyncio
 import inspect
 import json
-from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Callable, Optional, Type, Union, get_args, get_origin
 
 from pydantic import BaseModel
