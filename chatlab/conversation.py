@@ -1,8 +1,10 @@
 """The lightweight conversational toolkit for computational notebooks."""
 
+import asyncio
 import logging
 import os
-from typing import Any, Callable, List, Optional, Type, Union
+from concurrent.futures import ThreadPoolExecutor
+from typing import Any, Callable, List, Optional, Type, Union, cast
 
 import openai
 from deprecation import deprecated
@@ -284,6 +286,7 @@ class Chat:
 
         if cell is None:
             return
+        cell = cell.strip()
 
         from IPython.core.getipython import get_ipython
 
@@ -291,8 +294,8 @@ class Chat:
         if ip is None:
             raise Exception("IPython is not available.")
 
-        # HACK: Work around IPython's builtin eventloop and lack of async magic function handling
-        ip.run_cell(f"await self.submit('{cell}')")
+        with ThreadPoolExecutor(1) as pool:
+            pool.submit(lambda: asyncio.run(self.submit(cell))).result()
 
     def register_magic(self, name):
         """Register a function as an IPython magic with the given name."""
