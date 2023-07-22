@@ -291,7 +291,8 @@ class Chat:
         if ip is None:
             raise Exception("IPython is not available.")
 
-        return ip.run_cell_async(f"await self.submit('{cell}')")
+        # HACK: Work around IPython's builtin eventloop and lack of async magic function handling
+        ip.run_cell(f"await self.submit('{cell}')")
 
     def register_magic(self, name):
         """Register a function as an IPython magic with the given name."""
