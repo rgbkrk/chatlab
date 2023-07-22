@@ -11,10 +11,12 @@ from pydantic import BaseModel
 from ._version import __version__
 from .display import ChatFunctionCall, Markdown
 from .errors import ChatLabError
-from .messaging import Message, assistant, assistant_function_call, human
+from .messaging import Message, assistant, assistant_function_call, human, system
 from .registry import FunctionRegistry
 
 logger = logging.getLogger(__name__)
+
+CHATLAB_EXIT_BAD_CALL = "chatlab_exit_for_bad_function_call"
 
 
 class Chat:
@@ -175,6 +177,15 @@ class Chat:
 
                     function_call = delta['function_call']
                     if 'name' in function_call:
+                        if function_call['name'] not in self.function_registry:
+                            # Append a system message for the model, then allow it to continue
+                            self.append(system(f"Function call for {function_call['name']} not in function registry."))
+                            # Break?
+                            # The odd thing here is that ChatGPT will still be emitting and we need to "cut it off" and send
+                            # this system message.
+                            finish_reason = CHATLAB_EXIT_BAD_CALL
+                            break
+
                         chat_function = ChatFunctionCall(
                             function_call["name"], function_registry=self.function_registry
                         )
@@ -210,6 +221,11 @@ class Chat:
         # Wrap up the previous assistant
         if mark is not None and mark.message.strip() != "":
             self.messages.append(assistant(mark.message))
+
+        if finish_reason == CHATLAB_EXIT_BAD_CALL:
+            # ChatLab asked the model to exit due to a bad call
+            await self.submit()
+            return
 
         if finish_reason == 'stop':
             return

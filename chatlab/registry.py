@@ -226,6 +226,8 @@ class FunctionRegistry:
 
     def __contains__(self, name) -> bool:
         """Check if a function is registered by name."""
+        if name == "python" and self.allow_hallucinated_python:
+            return True
         return name in self.__functions
 
     @property
