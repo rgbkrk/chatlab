@@ -11,12 +11,12 @@ import { OutputBlock } from "@site/src/components/cell";
 There is a builtin code interpreter that lets the assistant run code. It's not enabled by default.
 
 ```python cell count=1
-from chatlab import Conversation
+from chatlab import Chat
 from chatlab.builtins import run_cell
 
-conversation = Conversation()
-conversation.register(run_cell)
-conversation.submit("Please calculate sin(793.1)")
+chat = Chat()
+chat.register(run_cell)
+await chat("Please calculate sin(793.1)")
 ```
 
 <OutputBlock count={1}>
@@ -36,43 +36,43 @@ The value of sin(793.1) is approximately 0.9884482539459452.
 You can let ChatGPT take on a data persona with a `system` message and then have it work with `DataFrame`s you have in memory.
 
 ```python
-from chatlab import Conversation, system
+from chatlab import Chat, system
 from chatlab.builtins import run_cell
 import pandas as pd
 
 # The Chicago Public Library location dataset
 df = pd.read_json("https://data.cityofchicago.org/resource/x8fc-8rcq.json")
 
-conversation = Conversation(
+chat = Chat(
     system(
         "You are a data scientist running inside a Jupyter Notebook, "
         "collaborating with a data engineer."
     ),
 )
-conversation.register(run_cell)
-conversation.submit("Please tell me about what's in `df`")
+chat.register(run_cell)
+await chat("Please tell me about what's in `df`")
 ```
 
 ## The hidden `python` hallucination
 
-Sometimes GPT models will hallucinate a `python` tool that accepts a single string rather than the proper JSON object that `run_cell` requests. You can include it in your `Conversation` to handle these cases.
+Sometimes GPT models will hallucinate a `python` tool that accepts a single string rather than the proper JSON object that `run_cell` requests. You can include it in your `Chat` to handle these cases.
 
 ```python cell count=1
-from chatlab import Conversation
+from chatlab import Chat
 from chatlab.builtins import run_cell
 
-conversation = Conversation(
+chat = Chat(
     allow_hallucinated_python=True
 )
-conversation.register(run_cell)
-conversation.submit("Please calculate sin(793.1)")
+chat.register(run_cell)
+await chat("Please calculate sin(793.1)")
 ```
 
 <OutputBlock count={3}>
-  <ChatFunctionCall
-    open
-    name="python"
-    input={"import math\nmath.sin(793.1)"}
-    output="0.9884482539459452"
-  />
+    <ChatFunctionCall
+        open
+        name="python"
+        input={"import math\nmath.sin(793.1)"}
+        output="0.9884482539459452"
+    />
 </OutputBlock>
