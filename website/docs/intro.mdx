@@ -9,9 +9,9 @@ import { OutputBlock } from "@site/src/components/cell";
 
 With ChatLab, you can augment Large Language Models _with computational powers_ quickly.
 
-- 🐍 Write functions in Python, use any package
-- 📗 Run in Jupyter, Colab, Kaggle, Noteable, and more
-- 🤖 Chat with your agents in the notebook
+-   🐍 Write functions in Python, use any package
+-   📗 Run in Jupyter, Colab, Kaggle, Noteable, and more
+-   🤖 Chat with your agents in the notebook
 
 <!-- ChatLab is a Python package that makes it easy to experiment with OpenAI's chat models. It provides a simple interface to give assistants access to any Python functions you can write.
 
@@ -20,7 +20,7 @@ Best yet, it's interactive in the notebook! -->
 ## Installation
 
 ```bash
-pip install chatlab
+pip install chatlab --pre
 ```
 
 ### Configuration
@@ -44,21 +44,21 @@ There are many ways to set the `OPENAI_API_KEY` both securely and insecurely. Le
 Let's play a game of soccer. We'll write a function to flip a coin to determine who gets the first move. The assistant gets to be the referee.
 
 ```python cell count=1
-from chatlab import system, Conversation, user
+from chatlab import Chat, system, user
 import random
 
 def flip_a_coin():
     '''Returns heads or tails'''
     return random.choice(['heads', 'tails'])
 
-conversation = Conversation(
+chat = Chat(
   system("You are an experienced official soccer referee"),
   system("Form responses in Markdown and use emojis."),
   system("The home team captain steps up."),
 )
-conversation.register(flip_a_coin)
+chat.register(flip_a_coin)
 
-conversation.submit("**Kai**: We call tails.")
+await chat("**Kai**: We call tails.")
 ```
 
 <OutputBlock count="1">
@@ -141,8 +141,8 @@ The system role sets the scene and steers the conversation. Think of it like a b
 
 `system` is controlled by _you_. Use it to:
 
-- Set the tone of the assistant
-- Inform the assistant of conditions
+-   Set the tone of the assistant
+-   Inform the assistant of conditions
 
 The assistant _tends_ to assume it is part of the overall system and is responsible for communicating with the user.
 
@@ -153,18 +153,18 @@ The assistant _tends_ to assume it is part of the overall system and is responsi
 Any function with typed arguments can be registered quickly in a conversation. Registering the function will allow the `assistant` to call it during the conversation.
 
 ```python cell count=3
-conversation.register(flip_a_coin)
+chat.register(flip_a_coin)
 ```
 
 ```json output count=3
 {
-  "name": "flip_a_coin",
-  "description": "Returns heads or tails",
-  "parameters": {
-    "type": "object",
-    "properties": {},
-    "required": []
-  }
+    "name": "flip_a_coin",
+    "description": "Returns heads or tails",
+    "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+    }
 }
 ```
 
@@ -182,8 +182,8 @@ assistant("Let's play ball!")
 
 ```json output count=4
 {
-  "role": "assistant",
-  "content": "Let's play ball!"
+    "role": "assistant",
+    "content": "Let's play ball!"
 }
 ```
 
@@ -195,12 +195,12 @@ assistant_function_call("flip_a_coin", arguments="{}")
 
 ```json output count=5
 {
-  "role": "assistant",
-  "content": null,
-  "function_call": {
-    "name": "flip_a_coin",
-    "arguments": "{}"
-  }
+    "role": "assistant",
+    "content": null,
+    "function_call": {
+        "name": "flip_a_coin",
+        "arguments": "{}"
+    }
 }
 ```
 
@@ -218,16 +218,16 @@ function_result(content="tails", name="flip_a_coin")
 
 ```json output count=5
 {
-  "role": "function",
-  "content": "tails",
-  "name": "flip_a_coin"
+    "role": "function",
+    "content": "tails",
+    "name": "flip_a_coin"
 }
 ```
 
 While you wouldn't normally call this function directly, one way to use the `function_result` directly is for testing LLM responses to your functions, saving you from having to run the entire conversation or a potentially expensive function. In fact, you don't even have to implement a function to test the assistant's response.
 
 ```python cell count=6
-from chatlab import Conversation
+from chatlab import Chat
 from chatlab.messaging import (
     assistant,
     assistant_function_call,
@@ -235,12 +235,12 @@ from chatlab.messaging import (
     system
 )
 
-seeded_convo = Conversation(
+seeded_chat = Chat(
     system("What's the tide like in Santa Cruz right now?"),
     assistant_function_call("tides", arguments="{ 'station': 'Santa Cruz' }"),
     function_result(name="tides", content="The station is not a valid station.")
 )
-seeded_convo.submit()
+await seeded_chat.submit()
 ```
 
 <OutputBlock count={6}>
