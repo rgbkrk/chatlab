@@ -30,7 +30,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v2
         with:
-          path: ./build
+          path: ./website/build
 
   deploy:
     # Add a dependency to the build job
