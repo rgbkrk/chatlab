@@ -1,0 +1,92 @@
+/* ChatFunctionComponent.module.css */
+
+/**
+Chatlab palettes
+
+# Palette used here is https://colorhunt.co/palette/27374d526d829db2bfdde6ed
+colors = {
+    "darkest": "#27374D",
+    "dark": "#526D82",
+    "light": "#9DB2BF",
+    "lightest": "#DDE6ED",
+    "ultralight": "#F7F9FA",
+    # Named variants (not great names...)
+    "Japanese Indigo": "#27374D",
+    "Approximate Arapawa": "#526D82",
+    "Light Slate": "#9DB2BF",
+    "Pattens Blue": "#DDE6ED",
+    # ChatLab Colors
+    "Charcoal": "#2B4155",
+    "Lapis Lazuli": "#3C5B79",
+    "UCLA Blue": "#527498",
+    "Redwood": "#A04446",
+    "Sunset": "#EFCF99",
+}
+
+*/
+
+:root {
+  --chatlab-darkest: #27374d;
+  --chatlab-dark: #526d82;
+  --chatlab-light: #9db2bf;
+  --chatlab-lightest: #dde6ed;
+  --chatlab-ultralight: #f7f9fa;
+  --chatlab-japanese-indigo: #27374d;
+  --chatlab-approximate-arapawa: #526d82;
+  --chatlab-light-slate: #9db2bf;
+  --chatlab-pattens-blue: #dde6ed;
+  --chatlab-charcoal: #2b4155;
+  --chatlab-lapis-lazuli: #3c5b79;
+  --chatlab-ucla-blue: #527498;
+  --chatlab-redwood: #a04446;
+  --chatlab-sunset: #efcf99;
+}
+
+.functionLogo,
+.functionVerbage,
+.inlinePre {
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+.functionLogo {
+  color: var(--chatlab-light);
+}
+
+.functionVerbage,
+.rawFunctionInterfaceHeading {
+  color: var(--chatlab-darkest);
+}
+
+.rawFunctionInterfaceHeading {
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.rawFunctionInterface {
+  background: var(--chatlab-ultralight);
+  color: var(--chatlab-darkest);
+  padding: 10px;
+  margin-bottom: 10px;
+  unicode-bidi: embed;
+  font-family: monospace;
+  white-space: pre;
+  overflow: scroll;
+}
+
+.summary {
+  cursor: pointer;
+  user-select: none;
+  color: var(--chatlab-darkest);
+}
+
+.inputOutputDiv {
+  margin-top: 10px;
+  margin-left: 10px;
+}
+
+.chatlabChatDetails {
+  background: var(--chatlab-lightest);
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+}
