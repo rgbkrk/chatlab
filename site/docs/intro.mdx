@@ -1,0 +1,250 @@
+---
+sidebar_position: 1
+---
+
+import ChatFunctionCall from "@site/src/components/ChatFunctionCall";
+import { OutputBlock } from "@site/src/components/cell";
+
+# Get Started
+
+With ChatLab, you can augment Large Language Models _with computational powers_ quickly.
+
+- 🐍 Write functions in Python, use any package
+- 📗 Run in Jupyter, Colab, Kaggle, Noteable, and more
+- 🤖 Chat with your agents in the notebook
+
+<!-- ChatLab is a Python package that makes it easy to experiment with OpenAI's chat models. It provides a simple interface to give assistants access to any Python functions you can write.
+
+Best yet, it's interactive in the notebook! -->
+
+## Installation
+
+```bash
+pip install chatlab
+```
+
+### Configuration
+
+Set your OpenAI API key as an environment variable.
+
+```bash
+export OPENAI_API_KEY=<your key>
+```
+
+You can find your API key on your [OpenAI account page](https://platform.openai.com/account/api-keys). Once you have your key, set it to the `OPENAI_API_KEY` environment variable.
+
+:::info
+
+There are many ways to set the `OPENAI_API_KEY` both securely and insecurely. Learn more methods and avoid common pitfalls via [Setting API Keys](/docs/setting-api-keys).
+
+:::
+
+## First Chat ⚽️ {#first-example}
+
+Let's play a game of soccer. We'll write a function to flip a coin to determine who gets the first move. The assistant gets to be the referee.
+
+```python cell count=1
+from chatlab import system, Conversation, user
+import random
+
+def flip_a_coin():
+    '''Returns heads or tails'''
+    return random.choice(['heads', 'tails'])
+
+conversation = Conversation(
+  system("You are an experienced official soccer referee"),
+  system("Form responses in Markdown and use emojis."),
+  system("The home team captain steps up."),
+)
+conversation.register(flip_a_coin)
+
+conversation.submit("**Kai**: We call tails.")
+```
+
+<OutputBlock count="1">
+  <ChatFunctionCall
+    name="flip_a_coin"
+    input="{}"
+    output='"tails"'
+  />
+
+**Referee**: It's tails! The first move goes to the home team. Good luck to both teams! Let's begin the game! ⚽️👍🏼
+
+</OutputBlock>
+
+## Conversation Roles
+
+In the above example, we used the `system` function to create a `Message` for the assistant to interpret. We also implicitly created user `Message`s. These are the two most common roles in a conversation you will use directly. ChatLab captures not just these messages. It also captures responses from the assistant and function calls.
+
+To understand what transpired above, let's look at each `Message` from `conversation.messages`:
+
+```python cell count=2
+conversation.messages
+```
+
+```python output count=2
+{
+  'role': 'system',
+  'content': 'You are an experienced official soccer referee'
+},
+{
+  'role': 'system',
+  'content': 'Form responses in Markdown and use emojis.'
+},
+{
+  'role': 'system',
+  'content': 'The home team captain steps up.'
+},
+{
+  'role': 'user',
+  'content': '**Kai**: We call tails.'
+},
+{
+  'role': 'assistant',
+  'content': None,
+  'function_call': {
+    'name': 'flip_a_coin',
+    'arguments': '{}'
+  }
+},
+{
+  'role': 'function',
+  'content': 'tails',
+  'name': 'flip_a_coin'
+},
+{
+  'role': "assistant",
+  'content': "**Referee**: It's tails! The first move goes to the home team. Good luck to both teams! Let's begin the game! ⚽️👍🏼",
+  'function_call': None,
+}
+```
+
+As you can see, there are four roles in a conversation. Let's break those down.
+
+### `user`
+
+The user is you, the human, the person, the player, etc.
+
+### `assistant`
+
+The assistant is the Artificial Intelligence (the AI). People colloquially call it "the model" as a shortening of Large Language Model (LLM). The assistant creates messages for display to the user as well as requests to call functions.
+
+### `function`
+
+The result of a function call is sent with role `function` from chatlab. The `content` is the return value of the function.
+
+### `system`
+
+The system role sets the scene and steers the conversation. Think of it like a background narrator to inform the AI of the context of the conversation.
+
+:::note
+
+`system` is controlled by _you_. Use it to:
+
+- Set the tone of the assistant
+- Inform the assistant of conditions
+
+The assistant _tends_ to assume it is part of the overall system and is responsible for communicating with the user.
+
+:::
+
+## Registering Functions
+
+Any function with typed arguments can be registered quickly in a conversation. Registering the function will allow the `assistant` to call it during the conversation.
+
+```python cell count=3
+conversation.register(flip_a_coin)
+```
+
+```json output count=3
+{
+  "name": "flip_a_coin",
+  "description": "Returns heads or tails",
+  "parameters": {
+    "type": "object",
+    "properties": {},
+    "required": []
+  }
+}
+```
+
+Under the hood, ChatLab inspects your function and generates a JSON Schema for it. This schema is used to validate the arguments the assistant sends to your function.
+
+## Submitting Messages
+
+Every time you run `submit`, ChatLab sends the conversation to the assistant and returns the response. The response is a `Message` with the `role` of `assistant`. Assistant messages can either have `content` or a `function_call`. The `content` is the text the assistant wants to send to the user. When `function_call` is set, the assistant is requesting to run a function.
+
+```python cell count=4
+from chatlab.messaging import assistant
+
+assistant("Let's play ball!")
+```
+
+```json output count=4
+{
+  "role": "assistant",
+  "content": "Let's play ball!"
+}
+```
+
+```python cell count=5
+from chatlab.messaging import assistant_function_call
+
+assistant_function_call("flip_a_coin", arguments="{}")
+```
+
+```json output count=5
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "flip_a_coin",
+    "arguments": "{}"
+  }
+}
+```
+
+The `content` is `null` because the assistant has decided to call a function. The `arguments` are empty because `flip_a_coin` doesn't take any arguments.
+
+## Calling Functions
+
+When the assistant calls a function, `chatlab` sends back a `Message` with the role `function`. The `content` is the return value of the function.
+
+```python cell count=5
+from chatlab.messaging import function_result
+
+function_result(content="tails", name="flip_a_coin")
+```
+
+```json output count=5
+{
+  "role": "function",
+  "content": "tails",
+  "name": "flip_a_coin"
+}
+```
+
+While you wouldn't normally call this function directly, one way to use the `function_result` directly is for testing LLM responses to your functions, saving you from having to run the entire conversation or a potentially expensive function. In fact, you don't even have to implement a function to test the assistant's response.
+
+```python cell count=6
+from chatlab import Conversation
+from chatlab.messaging import (
+    assistant,
+    assistant_function_call,
+    function_result,
+    system
+)
+
+seeded_convo = Conversation(
+    system("What's the tide like in Santa Cruz right now?"),
+    assistant_function_call("tides", arguments="{ 'station': 'Santa Cruz' }"),
+    function_result(name="tides", content="The station is not a valid station.")
+)
+seeded_convo.submit()
+```
+
+<OutputBlock count={6}>
+
+I apologize, but I am unable to provide real-time information on the tide in Santa Cruz. It is recommended to check official tide websites, local tide charts, or consult with local authorities for the most accurate and up-to-date information.
+
+</OutputBlock>

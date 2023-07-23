@@ -1,0 +1,14 @@
+.codeBlockContainer {
+  background: var(--prism-background-color);
+  color: var(--prism-color);
+  margin-bottom: var(--ifm-leading);
+  box-shadow: var(--ifm-global-shadow-lw);
+  border-radius: var(--ifm-code-border-radius);
+}
+
+.outputBlockContainer {
+  /** To make the output look lined up like it would
+  in the notebook, override the CSS variable for pre padding */
+  --ifm-pre-padding: 0rem;
+  margin-bottom: var(--ifm-leading);
+}
