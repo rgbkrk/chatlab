@@ -18,10 +18,10 @@ def flip_a_coin():
     '''Returns heads or tails'''
     return random.choice(['heads', 'tails'])
 
-conversation = chatlab.Chat()
-conversation.register(flip_a_coin)
+chat = chatlab.Chat()
+chat.register(flip_a_coin)
 
-conversation.submit("Please flip a coin for me")
+await chat("Please flip a coin for me")
 ```
 
 <details style="background:#DDE6ED;color:#27374D;padding:.5rem 1rem;borderRadius:5px">
@@ -117,19 +117,16 @@ Let's break this down.
 ```python
 import chatlab
 
-conversation = chatlab.Chat()
+chat = chatlab.Chat()
 
 # Register our function
-conversation.register(what_time, WhatTime)
-
-# Pluck the submit off for easy access as chat
-chat = conversation.submit
+chat.register(what_time, WhatTime)
 ```
 
 After that, we can call `chat` with direct strings (which are turned into user messages) or using simple message makers from `chatlab` named `user` and `system`.
 
 ```python
-chat("What time is it?")
+await chat("What time is it?")
 ```
 
 <details style="background:#DDE6ED;color:#27374D;padding:.5rem 1rem;borderRadius:5px">
@@ -165,10 +162,10 @@ The `Chat` class is the main way to chat using OpenAI's models. It keeps a histo
 
 #### `Chat.submit`
 
-When you call `submit`, you're sending over messages to the chat model and getting back an updating `Markdown` display live as well as a interactive details area for any function calls.
+`submit` is how you send all the currently built up messages over to OpenAI. Markdown output will display responses from the `assistant`.
 
 ```python
-conversation.submit('What would a parent who says "I have to play zone defense" mean? ')
+await chat.submit('What would a parent who says "I have to play zone defense" mean? ')
 # Markdown response inline
 conversation.messages
 ```
