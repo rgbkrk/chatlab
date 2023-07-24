@@ -9,6 +9,8 @@ from IPython.utils.capture import RichOutput, capture_output
 from repr_llm import register_llm_formatter
 from repr_llm.pandas import format_dataframe_for_llm, format_series_for_llm
 
+from chatlab.decorators import expose_exception_to_llm
+
 # Formats to show to large language models
 formats_for_llm = [
     # Repr LLM is the richest text
@@ -210,3 +212,21 @@ class ChatLabShell:
                 outputs += f"RESULT:\n{text}\n\n"
 
         return outputs
+
+
+__shell: Optional[ChatLabShell] = None
+
+
+@expose_exception_to_llm
+def run_cell(code: str):
+    """Execute code in python and return the result."""
+    global __shell
+
+    if __shell is None:
+        # Since ChatLabShell has imports that are "costly" (e.g. IPython, numpy, pandas),
+        # we only import it on the first call to run_cell.
+        from .python import ChatLabShell
+
+        __shell = ChatLabShell()
+
+    return __shell.run_cell(code)
