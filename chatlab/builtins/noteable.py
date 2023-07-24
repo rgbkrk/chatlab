@@ -128,6 +128,16 @@ class NotebookClient:
 
         return llm_friendly_outputs
 
+    """This `python` function is here for dealing with ChatGPT's `python` hallucination."""
+
     async def python(self, code: str):
         """Creates a python cell, runs it, and returns output."""
         return await self.create_cell(code, and_run=True)
+
+
+__all__ = ["NotebookClient"]
+
+
+# Only expose the NotebookClient to tab completion
+def __dir__():
+    return __all__

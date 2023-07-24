@@ -218,7 +218,7 @@ __shell: Optional[ChatLabShell] = None
 
 
 @expose_exception_to_llm
-def run_cell(code: str):
+def run_python(code: str):
     """Execute code in python and return the result."""
     global __shell
 
@@ -230,3 +230,10 @@ def run_cell(code: str):
         __shell = ChatLabShell()
 
     return __shell.run_cell(code)
+
+
+__all__ = ["run_python", "ChatLabShell"]
+
+
+def __dir__():
+    return __all__
