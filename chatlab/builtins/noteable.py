@@ -129,7 +129,5 @@ class NotebookClient:
         return llm_friendly_outputs
 
     async def python(self, code: str):
-        '''Creates a cell, runs it, and returns output.
-        Mostly a hack around GPT Hallucination.'''
-
+        """Creates a python cell, runs it, and returns output."""
         return await self.create_cell(code, and_run=True)
