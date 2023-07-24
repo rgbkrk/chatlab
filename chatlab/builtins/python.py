@@ -1,4 +1,4 @@
-"""Builtins for ChatLab."""
+"""The in-IPython python code runner for ChatLab."""
 import json
 from traceback import TracebackException
 from typing import Optional
