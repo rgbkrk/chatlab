@@ -11,22 +11,29 @@ from repr_llm.pandas import format_dataframe_for_llm, format_series_for_llm
 
 from chatlab.decorators import expose_exception_to_llm
 
-# Formats to show to large language models
+# Prioritized formats to show to large language models
 formats_for_llm = [
     # Repr LLM is the richest text
     'text/llm+plain',
+    # Assume that if we get markdown we know it's rich for an LLM
+    'text/markdown',
+    # Same with LaTeX
+    'text/latex',
     # All the normal ones
     'application/vnd.jupyter.error+json',
     'application/vdom.v1+json',
     'application/json',
-    'text/latex',
-    'text/html',
-    'text/markdown',
-    'image/svg+xml',
+    # Since every object has a text/plain repr, even though the LLM would understand `text/plain` well,
+    # bumping this priority up would override more rich media types we definitely want to show.
     'text/plain',
+    # Both HTML and SVG should be conditional on size, considering many libraries
+    # Will emit giant JavaScript blobs for interactivity
+    # For now, we'll assume not to show these
+    # 'text/html',
+    # 'image/svg+xml',
 ]
 
-# Formats to redisplay for the user, since we capture the output during execution
+# Prioritized formats to redisplay for the user, since we capture the output during execution
 formats_to_redisplay = [
     'application/vnd.jupyter.widget-view+json',
     'application/vnd.dex.v1+json',
@@ -40,6 +47,8 @@ formats_to_redisplay = [
     'image/png',
     'image/jpeg',
     'image/gif',
+    'text/html',
+    'image/svg+xml',
 ]
 
 
