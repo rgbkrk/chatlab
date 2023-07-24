@@ -1,3 +1,4 @@
+"""A built-in for interacting with Noteable notebooks."""
 import os
 from typing import Optional
 
@@ -7,7 +8,7 @@ from ulid import ULID
 
 
 class NotebookClient:
-    """A notebook client for use in a single conversation."""
+    """A notebook client for use with Noteable."""
 
     def __init__(self, api_client, rtu_client):
         """Create a new NotebookClient based on an existing API and RTU client."""
@@ -59,7 +60,7 @@ class NotebookClient:
         # Wait for the kernel to start
         await rtu_client.wait_for_kernel_idle()
 
-        cn = ConversationNotebook(api_client, rtu_client)
+        cn = NotebookClient(api_client, rtu_client)
 
         return cn
 
