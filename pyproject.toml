@@ -62,6 +62,8 @@ types-toml = "^0.10.8.6"
 pandas = "^2.0.2"
 
 [tool.poetry.extras]
+noteable = ["noteable-origami"]
+
 test = [
     "pytest",
     "black",
@@ -74,6 +76,10 @@ test = [
 
 dev = ["tox", "pre-commit", "virtualenv", "pip", "twine", "toml", "bump2version"]
 
+
+[tool.poetry.dependencies.noteable-origami]
+version = "1.0.0a1"
+allow-prereleases = true
 
 [tool.black]
 line-length = 120
