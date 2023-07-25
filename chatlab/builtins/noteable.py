@@ -109,13 +109,22 @@ class NotebookClient:
         if cell_id is None:
             cell_id = str(ulid.ULID())
 
+        cell = None
+
         if cell_type == "markdown":
-            cell = await rtu_client.add_cell(MarkdownCell(source=source, id=cell_id))
-            return cell
+            cell = MarkdownCell(source=source, id=cell_id)
+        elif cell_type == "code":
+            cell = CodeCell(source=source, id=cell_id)
+        elif cell_type == "sql":
+            cell = CodeCell(source=source, id=cell_id)
+            cell.metadata.update({"noteable": {"cell_type": "sql"}})
 
-        cell = await rtu_client.add_cell(CodeCell(source=source, id=cell_id), after_id=after_cell_id)
+        if cell is None:
+            return f"Unknown cell type {cell_type}. Valid types are: markdown, code, sql."
 
-        if not and_run:
+        cell = await rtu_client.add_cell(cell, after_id=after_cell_id)
+
+        if cell.cell_type != "code" or not and_run:
             return cell
 
         try:
