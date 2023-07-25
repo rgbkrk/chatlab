@@ -75,10 +75,6 @@ class NotebookClient:
         # We have to track the kernel_session for now
         kernel_session = await api_client.launch_kernel(file_id)
 
-        logger.info("Waiting for kernel to idle")
-        # Wait for the kernel to start
-        await rtu_client.wait_for_kernel_idle()
-
         cn = NotebookClient(api_client, rtu_client, file_id=file_id, kernel_session=kernel_session)
 
         return cn
@@ -89,6 +85,11 @@ class NotebookClient:
             self.rtu_client = await self.api_client.rtu_client(self.file_id)
 
         return self.rtu_client
+
+    async def wait_for_kernel_idle(self):
+        """Wait for the kernel to be idle."""
+        rtu_client = await self.get_or_create_rtu_client()
+        await rtu_client.wait_for_kernel_idle()
 
     async def create_cell(
         self,
