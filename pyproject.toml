@@ -61,8 +61,12 @@ ipykernel = ">=6.0.0,<8.0.0"
 types-toml = "^0.10.8.6"
 pandas = "^2.0.2"
 
+
+[tool.poetry.group.noteable.dependencies]
+python-ulid = "^1.1.0"
+
 [tool.poetry.extras]
-noteable = ["noteable-origami"]
+noteable = ["noteable-origami", "python-ulid"]
 
 test = [
     "pytest",
