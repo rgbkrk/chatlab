@@ -126,7 +126,7 @@ frozenlist = ">=1.1.0"
 name = "anyio"
 version = "3.7.1"
 description = "High level compatibility layer for multiple asynchronous event loop implementations"
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "anyio-3.7.1-py3-none-any.whl", hash = "sha256:91dee416e570e92c64041bd18b900d1d6fa78dff7048769ce5ac5ddad004fbb5"},
@@ -215,7 +215,7 @@ files = [
 name = "backoff"
 version = "2.2.1"
 description = "Function decoration for backoff and retry"
-optional = false
+optional = true
 python-versions = ">=3.7,<4.0"
 files = [
     {file = "backoff-2.2.1-py3-none-any.whl", hash = "sha256:63579f9a0628e06278f7e47b7d7d5b6ce20dc65c5e96a6f3ca99a6adca0396e8"},
@@ -226,7 +226,7 @@ files = [
 name = "bitmath"
 version = "1.3.3.1"
 description = "Pythonic module for representing and manipulating file sizes with different prefix notations (file size unit conversion)"
-optional = false
+optional = true
 python-versions = "*"
 files = [
     {file = "bitmath-1.3.3.1.tar.gz", hash = "sha256:293325f01e65defe966853111df11d39215eb705a967cb115851da8c4cfa3eb8"},
@@ -721,7 +721,7 @@ packaging = "*"
 name = "diff-match-patch"
 version = "20200713"
 description = "Repackaging of Google's Diff Match and Patch libraries. Offers robust algorithms to perform the operations required for synchronizing plain text."
-optional = false
+optional = true
 python-versions = ">=2.7"
 files = [
     {file = "diff-match-patch-20200713.tar.gz", hash = "sha256:da6f5a01aa586df23dfc89f3827e1cafbb5420be9d87769eeb079ddfd9477a18"},
@@ -782,7 +782,7 @@ tests = ["asttokens", "littleutils", "pytest", "rich"]
 name = "fastjsonschema"
 version = "2.18.0"
 description = "Fastest Python implementation of JSON schema"
-optional = false
+optional = true
 python-versions = "*"
 files = [
     {file = "fastjsonschema-2.18.0-py3-none-any.whl", hash = "sha256:128039912a11a807068a7c87d0da36660afbfd7202780db26c4aa7153cfdc799"},
@@ -925,7 +925,7 @@ files = [
 name = "h11"
 version = "0.14.0"
 description = "A pure-Python, bring-your-own-I/O implementation of HTTP/1.1"
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "h11-0.14.0-py3-none-any.whl", hash = "sha256:e3fe4ac4b851c468cc8363d500db52c2ead036020723024a109d37346efaa761"},
@@ -936,7 +936,7 @@ files = [
 name = "httpcore"
 version = "0.17.3"
 description = "A minimal low-level HTTP client."
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "httpcore-0.17.3-py3-none-any.whl", hash = "sha256:c2789b767ddddfa2a5782e3199b2b7f6894540b17b16ec26b2c4d8e103510b87"},
@@ -957,7 +957,7 @@ socks = ["socksio (==1.*)"]
 name = "httpx"
 version = "0.24.1"
 description = "The next generation HTTP client."
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "httpx-0.24.1-py3-none-any.whl", hash = "sha256:06781eb9ac53cde990577af654bd990a4949de37a28bdb4a230d434f3a30b9bd"},
@@ -1255,7 +1255,7 @@ test = ["ipykernel", "pre-commit", "pytest", "pytest-cov", "pytest-timeout"]
 name = "jwt"
 version = "1.3.1"
 description = "JSON Web Token library for Python 3."
-optional = false
+optional = true
 python-versions = ">= 3.6"
 files = [
     {file = "jwt-1.3.1-py3-none-any.whl", hash = "sha256:61c9170f92e736b530655e75374681d4fcca9cfa8763ab42be57353b2b203494"},
@@ -1561,7 +1561,7 @@ files = [
 name = "nbformat"
 version = "5.9.1"
 description = "The Jupyter Notebook format"
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "nbformat-5.9.1-py3-none-any.whl", hash = "sha256:b7968ebf4811178a4108ee837eae1442e3f054132100f0359219e9ed1ce3ca45"},
@@ -1605,13 +1605,13 @@ setuptools = "*"
 
 [[package]]
 name = "noteable-origami"
-version = "1.0.0a1"
+version = "1.0.0a2"
 description = "The Noteable API interface"
-optional = false
+optional = true
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "noteable_origami-1.0.0a1-py3-none-any.whl", hash = "sha256:3c967b528318edec349a69552859e53e7e42ba79f22784d2f2d9d1a9c85f2c57"},
-    {file = "noteable_origami-1.0.0a1.tar.gz", hash = "sha256:b7d07ede2b1a44ae802ee26dac95522176823aeadbb3091c07853e289736436a"},
+    {file = "noteable_origami-1.0.0a2-py3-none-any.whl", hash = "sha256:a3d068c00c81b739421aca693d5e064eab4e2b1e1dbe629739fbf69786aa5b06"},
+    {file = "noteable_origami-1.0.0a2.tar.gz", hash = "sha256:4674d938778bfa7edc175545f63fd545009bc121d4dd8838ab7c7fd09744338e"},
 ]
 
 [package.dependencies]
@@ -1688,7 +1688,7 @@ wandb = ["numpy", "openpyxl (>=3.0.7)", "pandas (>=1.2.3)", "pandas-stubs (>=1.1
 name = "orjson"
 version = "3.9.2"
 description = "Fast, correct Python JSON library supporting dataclasses, datetimes, and numpy"
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "orjson-3.9.2-cp310-cp310-macosx_10_15_x86_64.macosx_11_0_arm64.macosx_10_15_universal2.whl", hash = "sha256:7323e4ca8322b1ecb87562f1ec2491831c086d9faa9a6c6503f489dadbed37d7"},
@@ -2236,7 +2236,7 @@ six = ">=1.5"
 name = "python-ulid"
 version = "1.1.0"
 description = "Universally Unique Lexicographically Sortable Identifier"
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "python-ulid-1.1.0.tar.gz", hash = "sha256:5fb5e4a91db8ca93e8938a613360b3def299b60d41f847279a8c39c9b2e9c65e"},
@@ -2546,7 +2546,7 @@ jeepney = ">=0.6"
 name = "sending"
 version = "0.3.0"
 description = "Library for pub/sub usage within an async application"
-optional = false
+optional = true
 python-versions = ">=3.8,<4.0"
 files = [
     {file = "sending-0.3.0-py3-none-any.whl", hash = "sha256:baad4a8bc08aa55d50bb8d177effb20fa5de1012fc71c2678c90d2af215a403c"},
@@ -2590,7 +2590,7 @@ files = [
 name = "sniffio"
 version = "1.3.0"
 description = "Sniff out which async library your code is running under"
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "sniffio-1.3.0-py3-none-any.whl", hash = "sha256:eecefdce1e5bbfb7ad2eeaabf7c1eeb404d7757c379bd1f7e5cce9d8bf425384"},
@@ -2863,7 +2863,7 @@ files = [
 name = "websockets"
 version = "11.0.3"
 description = "An implementation of the WebSocket Protocol (RFC 6455 & 7692)"
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "websockets-11.0.3-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:3ccc8a0c387629aec40f2fc9fdcb4b9d5431954f934da3eaf16cdc94f67dbfac"},
@@ -3042,10 +3042,10 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 
 [extras]
 dev = []
-noteable = ["noteable-origami"]
+noteable = ["noteable-origami", "python-ulid"]
 test = []
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9.0,<3.12"
-content-hash = "e24730be9bdd1c07accebdb705f6582f5241427f66f4ecc0f16cb309cc0ca1eb"
+content-hash = "fe248ba9e6a057db9b063e45e86f5704bb2c71161eee30d1a220fac93ade14a0"
