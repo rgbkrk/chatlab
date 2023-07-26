@@ -44,13 +44,13 @@ const config = {
                     sidebarPath: require.resolve("./sidebars.js"),
                     // TODO: Change this link to point to the repo's inner docs contents
                     editUrl:
-                        "https://github.com/rgbkrk/chatlab/tree/main/site/docs",
+                        "https://github.com/rgbkrk/chatlab/tree/main/website",
                 },
                 blog: {
                     showReadingTime: true,
                     // Change this to point to the repo's inner blog contents
                     editUrl:
-                        "https://github.com/rgbkrk/chatlab-docs/tree/main/site/blog",
+                        "https://github.com/rgbkrk/chatlab/tree/main/website",
                 },
                 theme: {
                     customCss: require.resolve("./src/css/custom.css"),
