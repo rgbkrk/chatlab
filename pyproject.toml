@@ -40,7 +40,8 @@ pydantic = ">=1.9.0,<2.0.0"
 vdom = "^1.0.0"
 deprecation = "^2.1.0"
 repr-llm = "^0.2.0"
-python-ulid = "^1.1.0"
+python-ulid = { version = "^1.1.0", optional = true }
+noteable-origami = { version = "^1.0.0a2", allow-prereleases = true, optional = true }
 
 [tool.poetry.group.dev.dependencies]
 tox = "^4.4.11"
@@ -76,11 +77,6 @@ test = [
 ]
 
 dev = ["tox", "pre-commit", "virtualenv", "pip", "twine", "toml", "bump2version"]
-
-
-[tool.poetry.dependencies.noteable-origami]
-version = "1.0.0a1"
-allow-prereleases = true
 
 [tool.black]
 line-length = 120

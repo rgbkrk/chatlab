@@ -68,7 +68,7 @@ class NotebookClient:
 
         # prepare our realtime client
         logger.info("Setting up RTU")
-        rtu_client = await api_client.rtu_client(file_id)
+        rtu_client = await api_client.connect_realtime(file_id)
 
         logger.info("Launching kernel")
         # Launch the kernel for the notebook
@@ -82,7 +82,7 @@ class NotebookClient:
     async def get_or_create_rtu_client(self):
         """Get or create an RTU client."""
         if self.rtu_client is None:
-            self.rtu_client = await self.api_client.rtu_client(self.file_id)
+            self.rtu_client = await self.api_client.connect_realtime(self.file_id)
 
         return self.rtu_client
 
