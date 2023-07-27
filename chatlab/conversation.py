@@ -67,7 +67,9 @@ class Chat:
         I am a large bird.
 
         """
-        openai_api_key = os.getenv('OPENAI_API_KEY')
+        # Sometimes people set the API key with an environment variables and sometimes
+        # they set it on the openai module. We'll check both.
+        openai_api_key = os.getenv('OPENAI_API_KEY') or openai.api_key
         if openai_api_key is None:
             raise ChatLabError(
                 "You must set the environment variable `OPENAI_API_KEY` to use this package.\n"
