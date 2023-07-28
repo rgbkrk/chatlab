@@ -201,6 +201,65 @@ class FunctionRegistry:
         chatlab_metadata = getattr(function, "chatlab_metadata", ChatlabMetadata())
         return chatlab_metadata
 
+    def api_manifest(self, function_call_option: Union[str, dict] = "auto"):
+        """
+        Get a dictionary containing function definitions and calling options.
+        This is designed to be used with OpenAI's Chat Completion API, where the
+        dictionary can be passed as keyword arguments to set the `functions` and
+        `function_call` parameters.
+
+        The `functions` parameter is a list of dictionaries, each representing a
+        function that the model can call during the conversation. Each dictionary
+        has a `name`, `description`, and `parameters` key.
+
+        The `function_call` parameter sets the policy of when to call these functions:
+            - "auto": The model decides when to call a function (default).
+            - "none": The model generates a user-facing message without calling a function.
+            - {"name": "<insert-function-name>"}: Forces the model to call a specific function.
+
+        Args:
+            function_call_option (str or dict, optional): The policy for function calls.
+            Defaults to "auto".
+
+        Returns:
+            dict: A dictionary with keys "functions" and "function_call", which
+            can be passed as keyword arguments to `openai.ChatCompletion.create`.
+
+        Example usage:
+            >>> registry = FunctionRegistry()
+            >>> # Register functions here...
+            >>> manifest = registry.api_manifest()
+            >>> resp = openai.ChatCompletion.create(
+                    model="gpt-4.0-turbo",
+                    messages=[...],
+                    **manifest,
+                    stream=True,
+                )
+
+            >>> # To force a specific function to be called:
+            >>> manifest = registry.api_manifest({"name": "what_time"})
+            >>> resp = openai.ChatCompletion.create(
+                    model="gpt-4.0-turbo",
+                    messages=[...],
+                    **manifest,
+                    stream=True,
+                )
+
+            >>> # To generate a user-facing message without calling a function:
+            >>> manifest = registry.api_manifest("none")
+            >>> resp = openai.ChatCompletion.create(
+                    model="gpt-4.0-turbo",
+                    messages=[...],
+                    **manifest,
+                    stream=True,
+                )
+        """
+        if len(self.function_definitions) == 0:
+            # When there are no functions, we can't send an empty functions array to OpenAI
+            return {}
+
+        return {"functions": self.function_definitions, "function_call": function_call_option}
+
     async def call(self, name: str, arguments: Optional[str] = None) -> Any:
         """Call a function by name with the given parameters."""
         function = self.get(name)

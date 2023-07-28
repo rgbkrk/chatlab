@@ -135,18 +135,10 @@ class Chat:
         mark = Markdown()
         mark.display()
 
-        # Don't pass in functions if there are none
-        chat_function_arguments = dict()
-        if len(self.function_registry.function_definitions) > 0:
-            chat_function_arguments = dict(
-                functions=self.function_registry.function_definitions,
-                function_call="auto",
-            )
-
         resp = openai.ChatCompletion.create(
             model=self.model,
             messages=self.messages,
-            **chat_function_arguments,
+            **self.function_registry.api_manifest(),
             stream=True,
         )
 
@@ -189,30 +181,6 @@ class Chat:
                             function_call["name"], function_registry=self.function_registry
                         )
                         chat_function.display()
-
-                        #
-                        ### The model doesn't care, ignore this section of code. I've had it spit 100 `python` calls
-                        #
-                        # if function_call['name'] not in self.function_registry:
-                        #     # Append a system message for the model, then allow it to continue
-                        #     self.append(
-                        #         assistant_function_call(
-                        #             name=function_call['name'],
-                        #             # OpenAI requires arguments as part of their message even though the stream
-                        #             # will send them separately. We can't just not send them, so we send an empty
-                        #             # string.
-                        #             arguments='',
-                        #         )
-                        #     )
-                        #     self.append(system(f"Function `{function_call['name']}` not registered."))
-                        #     # The odd thing here is that ChatGPT will still be emitting. We need to tell it to stop.
-                        #     # Our only choice is to break, which interrupts the stream. This is the only way to
-                        #     # stop the model from continuing to emit.
-                        #     finish_reason = CHATLAB_EXIT_BAD_CALL
-
-                        #     chat_function.finished = True
-                        #     chat_function.set_state("Errored")
-                        #     break
 
                     if 'arguments' in function_call:
                         if chat_function is None:
