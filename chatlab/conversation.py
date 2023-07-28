@@ -117,16 +117,6 @@ class Chat:
         """Send messages to the chat model and display the response."""
         return await self.submit(*messages)
 
-    def _prepare_chat_function_arguments(self):
-        """Prepare the chat function arguments for the OpenAI API."""
-        chat_function_arguments = dict()
-        if len(self.function_registry.function_definitions) > 0:
-            chat_function_arguments = dict(
-                functions=self.function_registry.function_definitions,
-                function_call="auto",
-            )
-        return chat_function_arguments
-
     async def submit(self, *messages: Union[Message, str]):
         """Send messages to the chat model and display the response.
 
@@ -145,13 +135,10 @@ class Chat:
         mark = Markdown()
         mark.display()
 
-        # Don't pass in functions if there are none
-        chat_function_arguments = self._prepare_chat_function_arguments()
-
         resp = openai.ChatCompletion.create(
             model=self.model,
             messages=self.messages,
-            **chat_function_arguments,
+            **self.function_registry.api_manifest(),
             stream=True,
         )
 

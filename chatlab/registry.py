@@ -201,6 +201,14 @@ class FunctionRegistry:
         chatlab_metadata = getattr(function, "chatlab_metadata", ChatlabMetadata())
         return chatlab_metadata
 
+    def api_manifest(self):
+        """Get the API manifest for the registry."""
+        if len(self.function_definitions) == 0:
+            # When there are no functions, we can't send an empty functions array to OpenAI
+            return {}
+
+        return {"functions": self.function_definitions, "function_call": "auto"}
+
     async def call(self, name: str, arguments: Optional[str] = None) -> Any:
         """Call a function by name with the given parameters."""
         function = self.get(name)
