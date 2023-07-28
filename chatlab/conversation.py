@@ -18,8 +18,6 @@ from .registry import FunctionRegistry, PythonHallucinationFunction
 
 logger = logging.getLogger(__name__)
 
-CHATLAB_EXIT_BAD_CALL = "chatlab_exit_for_bad_function_call"
-
 
 class Chat:
     """Interactive chats inside of computational notebooks, relying on OpenAI's API.
@@ -117,30 +115,10 @@ class Chat:
         """Send messages to the chat model and display the response."""
         return await self.submit(*messages)
 
-    async def submit(self, *messages: Union[Message, str]):
-        """Send messages to the chat model and display the response.
-
-        Side effects:
-            - Messages are sent to OpenAI Chat Models.
-            - Response(s) are displayed in the output area as a combination of Markdown and chat function calls.
-            - conversation.messages is updated with response(s).
-
-        Args:
-            messages (str | Message): One or more messages to send to the chat, can be strings or Message objects.
-
-        """
-        self.append(*messages)
-
+    async def __process_stream(self, resp):
         # Get the output area ready
         mark = Markdown()
         mark.display()
-
-        resp = openai.ChatCompletion.create(
-            model=self.model,
-            messages=self.messages,
-            **self.function_registry.api_manifest(),
-            stream=True,
-        )
 
         chat_function = None
         finish_reason = None
@@ -203,29 +181,50 @@ class Chat:
             # Include the response (or error) for the model
             self.append(fn_message)
 
+        # Wrap up the previous assistant
+        elif mark is not None and mark.message.strip() != "":
+            self.messages.append(assistant(mark.message))
+
+        return finish_reason
+
+    async def submit(self, *messages: Union[Message, str]):
+        """Send messages to the chat model and display the response.
+
+        Side effects:
+            - Messages are sent to OpenAI Chat Models.
+            - Response(s) are displayed in the output area as a combination of Markdown and chat function calls.
+            - conversation.messages is updated with response(s).
+
+        Args:
+            messages (str | Message): One or more messages to send to the chat, can be strings or Message objects.
+
+        """
+        self.append(*messages)
+
+        resp = openai.ChatCompletion.create(
+            model=self.model,
+            messages=self.messages,
+            **self.function_registry.api_manifest(),
+            stream=True,
+        )
+
+        finish_reason = await self.__process_stream(resp)
+
+        if finish_reason == "function_call":
             # Reply back to the LLM with the result of the function call, allow it to continue
             await self.submit()
             return
 
         # All other finish reasons are valid for regular assistant messages
 
-        # Wrap up the previous assistant
-        if mark is not None and mark.message.strip() != "":
-            self.messages.append(assistant(mark.message))
-
-        if finish_reason == CHATLAB_EXIT_BAD_CALL:
-            # ChatLab asked the model to exit due to a bad call
-            await self.submit()
-            return
-
         if finish_reason == 'stop':
             return
         elif finish_reason == 'max_tokens' or finish_reason == 'length':
-            mark.append("\n...max tokens or overall length is too high...\n")
+            print("max tokens or overall length is too high...\n")
         elif finish_reason == 'content_filter':
-            mark.append("\n...Content omitted due to OpenAI content filters...\n")
+            print("Content omitted due to OpenAI content filters...\n")
         else:
-            mark.append(f"\n...UNKNOWN FINISH REASON: {finish_reason}...\n")
+            print(f"UNKNOWN FINISH REASON: {finish_reason}...\n")
 
     def append(self, *messages: Union[Message, str]):
         """Append messages to the conversation history.
