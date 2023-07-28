@@ -182,30 +182,6 @@ class Chat:
                         )
                         chat_function.display()
 
-                        #
-                        ### The model doesn't care, ignore this section of code. I've had it spit 100 `python` calls
-                        #
-                        # if function_call['name'] not in self.function_registry:
-                        #     # Append a system message for the model, then allow it to continue
-                        #     self.append(
-                        #         assistant_function_call(
-                        #             name=function_call['name'],
-                        #             # OpenAI requires arguments as part of their message even though the stream
-                        #             # will send them separately. We can't just not send them, so we send an empty
-                        #             # string.
-                        #             arguments='',
-                        #         )
-                        #     )
-                        #     self.append(system(f"Function `{function_call['name']}` not registered."))
-                        #     # The odd thing here is that ChatGPT will still be emitting. We need to tell it to stop.
-                        #     # Our only choice is to break, which interrupts the stream. This is the only way to
-                        #     # stop the model from continuing to emit.
-                        #     finish_reason = CHATLAB_EXIT_BAD_CALL
-
-                        #     chat_function.finished = True
-                        #     chat_function.set_state("Errored")
-                        #     break
-
                     if 'arguments' in function_call:
                         if chat_function is None:
                             raise ValueError("Function arguments provided without function name")
