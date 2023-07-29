@@ -93,8 +93,8 @@ StreamCompletion = TypedDict(
 
 #### NON STREAMING ####
 
-Choice = TypedDict(
-    "Choice",
+FullChoice = TypedDict(
+    "FullChoice",
     {
         "finish_reason": Optional[str],
         "message": Message,
@@ -104,18 +104,18 @@ Choice = TypedDict(
 ChatCompletion = TypedDict(
     "ChatCompletion",
     {
-        "choices": List[Choice],
+        "choices": List[FullChoice],
     },
     total=False,
 )
 
 
-def is_stream_choice(choice: Union[StreamChoice, Choice]) -> TypeGuard[StreamChoice]:
+def is_stream_choice(choice: Union[StreamChoice, FullChoice]) -> TypeGuard[StreamChoice]:
     """Check if a choice is a stream choice."""
     return 'delta' in choice
 
 
-def is_full_choice(choice: Union[StreamChoice, Choice]) -> TypeGuard[Choice]:
+def is_full_choice(choice: Union[StreamChoice, FullChoice]) -> TypeGuard[FullChoice]:
     """Check if a choice is a regular choice."""
     return 'message' in choice
 

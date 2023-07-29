@@ -128,6 +128,23 @@ def ChatFunctionComponent(
     )
 
 
+class AssistantMessageView(Markdown):
+    """A view of a message from the assistant."""
+
+    def __init__(self, content: str = ""):
+        """Creates a new assistant message view and displays it."""
+        self.message = content
+        self.display()
+
+    def is_empty(self):
+        """Returns True if the message is empty, False otherwise."""
+        return self.message.strip() == ""
+
+    def get_message(self):
+        """Returns the message."""
+        return self.message
+
+
 class ChatFunctionCall:
     """Operates like the Markdown class, but with the ChatFunctionComponent."""
 

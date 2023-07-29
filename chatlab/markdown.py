@@ -47,14 +47,14 @@ class Markdown:
         ```
     """
 
-    def __init__(self, message: str = "") -> None:
+    def __init__(self, content: str = "") -> None:
         """Initialize a `Markdown` object with an optional message."""
-        self._message: str = message
+        self._content: str = content
         self._display_id: str = hexlify(os.urandom(8)).decode('ascii')
 
     def append(self, delta: str) -> None:
         """Append a string to the `Markdown`."""
-        self.message += delta
+        self.content += delta
 
     def extend(self, delta_generator: Iterator[str]) -> None:
         """Extend the `Markdown` with a generator/iterator of strings."""
@@ -80,26 +80,36 @@ class Markdown:
 
     def __repr__(self) -> str:
         """Provide a plaintext version of the `Markdown`."""
-        message = self._message
-        if message is None or message == "":
-            message = " "
-        return message
+        content = self._content
+        if content is None or content == "":
+            content = " "
+        return content
 
     def _repr_markdown_(self) -> Union[str, Tuple[str, Dict[str, Any]]]:
         """Emit our markdown with metadata."""
-        message = self._message
+        content = self._content
         # Handle some platforms that don't support empty Markdown
-        if message is None or message == "":
-            message = " "
+        if content is None or content == "":
+            content = " "
 
-        return message, self.metadata
+        return content, self.metadata
 
     @property
     def message(self) -> str:
-        """Return the `Markdown` message."""
-        return self._message
+        """Return the `Markdown` content. Deprecated."""
+        return self._content
 
     @message.setter
     def message(self, value: str) -> None:
-        self._message = value
+        self._content = value
+        self.update_displays()
+
+    @property
+    def content(self) -> str:
+        """Return the `Markdown` content."""
+        return self._content
+
+    @content.setter
+    def content(self, value: str) -> None:
+        self._content = value
         self.update_displays()

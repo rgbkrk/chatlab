@@ -4,7 +4,7 @@ import asyncio
 import logging
 import os
 from dataclasses import dataclass
-from typing import Callable, Iterable, List, Optional, Type, Union, cast
+from typing import Callable, Iterable, List, Optional, Tuple, Type, Union, cast
 
 import openai
 from deprecation import deprecated
@@ -12,7 +12,7 @@ from IPython.core.async_helpers import get_asyncio_loop
 from pydantic import BaseModel
 
 from ._version import __version__
-from .display import ChatFunctionCall, Markdown
+from .display import AssistantMessageView, ChatFunctionCall, Markdown
 from .errors import ChatLabError
 from .messaging import (
     ChatCompletion,
@@ -160,9 +160,11 @@ class Chat:
         """Send messages to the chat model and display the response."""
         return await self.submit(*messages, stream=stream)
 
-    async def __process_stream(self, resp: Iterable[Union[StreamCompletion, ChatCompletion]]):
-        mark = None
-        chat_function = None
+    async def __process_stream(
+        self, resp: Iterable[Union[StreamCompletion, ChatCompletion]]
+    ) -> Tuple[str, Optional[ChatFunctionCall]]:
+        assistant_view: Optional[AssistantMessageView] = None
+        function_view = None
         finish_reason = None
 
         for result in resp:  # Go through the results of the stream
@@ -184,61 +186,49 @@ class Chat:
                 for event in process_delta(delta):
                     if isinstance(event, ContentDelta):
                         # I wonder if I should call this AssistantDisplay or AssistantDispatch
-                        if mark is None:
-                            mark = Markdown()
-                            mark.display()
-                        mark.append(event.content)
+                        if assistant_view is None:
+                            assistant_view = AssistantMessageView()
+                        assistant_view.append(event.content)
                     elif isinstance(event, FunctionCallNameDelta):
-                        if mark is not None and mark.message.strip() != "":
+                        if assistant_view is not None and assistant_view.message.strip() != "":
                             # Flush out the finished assistant message
-                            self.messages.append(assistant(mark.message))
-                            mark = None
+                            self.messages.append(assistant(assistant_view.message))
+                            assistant_view = None
 
-                        chat_function = ChatFunctionCall(
+                        function_view = ChatFunctionCall(
                             function_name=event.name, function_registry=self.function_registry
                         )
-                        chat_function.display()
+                        function_view.display()
                     elif isinstance(event, FunctionCallArgumentsDelta):
-                        if chat_function is None:
+                        if function_view is None:
                             raise ValueError("Function arguments provided without function name")
-                        chat_function.append_arguments(event.arguments)
+                        function_view.append_arguments(event.arguments)
             elif is_full_choice(choice):
                 message = choice['message']
 
                 if is_function_call(message):
-                    chat_function = ChatFunctionCall(
+                    function_view = ChatFunctionCall(
                         function_name=message['function_call']['name'],
                         function_registry=self.function_registry,
                     )
-                    chat_function.append_arguments(message['function_call']['arguments'])
-                    chat_function.display()
+                    function_view.append_arguments(message['function_call']['arguments'])
+                    function_view.display()
                 elif 'content' in message and message['content'] is not None:
-                    mark = Markdown(message['content'])
-                    mark.display()
+                    assistant_view = AssistantMessageView(message['content'])
 
             if 'finish_reason' in choice and choice['finish_reason'] is not None:
                 finish_reason = choice['finish_reason']
                 break
 
-        if finish_reason == "function_call":
-            if chat_function is None:
-                raise ValueError("Function call finished without function name")
-
-            # Record the attempted call from the LLM
-            self.append(
-                assistant_function_call(name=chat_function.function_name, arguments=chat_function.function_args)
-            )
-            # Make the call
-            fn_message = await chat_function.call()
-            # Include the response (or error) for the model
-            self.append(fn_message)
-
         # Wrap up the previous assistant
         # Note: This will also wrap up the assistant's message when it ran out of tokens
-        elif mark is not None and mark.message.strip() != "":
-            self.messages.append(assistant(mark.message))
+        if assistant_view is not None and not assistant_view.is_empty()
+            self.append(assistant(assistant_view.message))
 
-        return finish_reason
+        if finish_reason is None:
+            raise ValueError("No finish reason provided by OpenAI")
+
+        return (finish_reason, function_view)
 
     async def submit(self, *messages: Union[Message, str], stream: bool = True):
         """Send messages to the chat model and display the response.
@@ -268,15 +258,27 @@ class Chat:
 
         resp = cast(Iterable[Union[StreamCompletion, ChatCompletion]], resp)
 
-        finish_reason = await self.__process_stream(resp)
+        finish_reason, chat_function = await self.__process_stream(resp)
 
         if finish_reason == "function_call":
+            if chat_function is None:
+                raise ValueError(
+                    "Function call buildout finished without function name. If you see this, report it as an issue to https://github.com/rgbkrk/chatlab/issues"  # noqa: E501
+                )
+            # Record the attempted call from the LLM
+            self.append(
+                assistant_function_call(name=chat_function.function_name, arguments=chat_function.function_args)
+            )
+            # Make the call
+            fn_message = await chat_function.call()
+            # Include the response (or error) for the model
+            self.append(fn_message)
+
             # Reply back to the LLM with the result of the function call, allow it to continue
             await self.submit(stream=stream)
             return
 
         # All other finish reasons are valid for regular assistant messages
-
         if finish_reason == 'stop':
             return
 
@@ -285,7 +287,9 @@ class Chat:
         elif finish_reason == 'content_filter':
             print("Content omitted due to OpenAI content filters...\n")
         else:
-            print(f"UNKNOWN FINISH REASON: {finish_reason}...\n")
+            print(
+                f"UNKNOWN FINISH REASON: '{finish_reason}'. If you see this message, report it as an issue to https://github.com/rgbkrk/chatlab/issues"  # noqa: E501
+            )
 
     def append(self, *messages: Union[Message, str]):
         """Append messages to the conversation history.
