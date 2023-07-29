@@ -3,7 +3,8 @@
 import asyncio
 import logging
 import os
-from typing import Callable, List, Optional, Type, Union
+from dataclasses import dataclass
+from typing import Callable, Iterable, List, Optional, Type, Union, cast
 
 import openai
 from deprecation import deprecated
@@ -13,12 +14,54 @@ from pydantic import BaseModel
 from ._version import __version__
 from .display import ChatFunctionCall, Markdown
 from .errors import ChatLabError
-from .messaging import Message, assistant, assistant_function_call, human
+from .messaging import (
+    ChatCompletion,
+    Message,
+    StreamCompletion,
+    assistant,
+    assistant_function_call,
+    human,
+    is_full_choice,
+    is_function_call,
+    is_stream_choice,
+)
 from .registry import FunctionRegistry, PythonHallucinationFunction
 
 logger = logging.getLogger(__name__)
 
-CHATLAB_EXIT_BAD_CALL = "chatlab_exit_for_bad_function_call"
+
+@dataclass
+class ContentDelta:
+    """A delta that contains markdown."""
+
+    content: str
+
+
+@dataclass
+class FunctionCallArgumentsDelta:
+    """A delta that contains function call arguments."""
+
+    arguments: str
+
+
+@dataclass
+class FunctionCallNameDelta:
+    """A delta that contains function call name."""
+
+    name: str
+
+
+def process_delta(delta):
+    """Process a delta."""
+    if 'content' in delta and delta['content'] is not None:
+        yield ContentDelta(delta['content'])
+
+    elif 'function_call' in delta:  # If the delta contains a function call
+        if 'name' in delta['function_call']:
+            yield FunctionCallNameDelta(delta['function_call']['name'])
+
+        if 'arguments' in delta['function_call']:
+            yield FunctionCallArgumentsDelta(delta['function_call']['arguments'])
 
 
 class Chat:
@@ -113,35 +156,12 @@ class Chat:
         """
         raise Exception("This method is deprecated. Use `submit` instead.")
 
-    async def __call__(self, *messages: Union[Message, str]):
+    async def __call__(self, *messages: Union[Message, str], stream: bool = True):
         """Send messages to the chat model and display the response."""
-        return await self.submit(*messages)
+        return await self.submit(*messages, stream=stream)
 
-    async def submit(self, *messages: Union[Message, str]):
-        """Send messages to the chat model and display the response.
-
-        Side effects:
-            - Messages are sent to OpenAI Chat Models.
-            - Response(s) are displayed in the output area as a combination of Markdown and chat function calls.
-            - conversation.messages is updated with response(s).
-
-        Args:
-            messages (str | Message): One or more messages to send to the chat, can be strings or Message objects.
-
-        """
-        self.append(*messages)
-
-        # Get the output area ready
-        mark = Markdown()
-        mark.display()
-
-        resp = openai.ChatCompletion.create(
-            model=self.model,
-            messages=self.messages,
-            **self.function_registry.api_manifest(),
-            stream=True,
-        )
-
+    async def __process_stream(self, resp: Iterable[Union[StreamCompletion, ChatCompletion]]):
+        mark = None
         chat_function = None
         finish_reason = None
 
@@ -150,7 +170,7 @@ class Chat:
                 logger.warning(f"Unknown result type: {type(result)}: {result}")
                 continue
 
-            choices: list = result.get('choices', [])
+            choices = result.get('choices', [])
 
             if len(choices) == 0:
                 logger.warning(f"Result has no choices: {result}")
@@ -158,34 +178,44 @@ class Chat:
 
             choice = choices[0]
 
-            if 'delta' in choice:  # If there is a delta in the result
+            if is_stream_choice(choice):  # If there is a delta in the result
                 delta = choice['delta']
-                if 'content' in delta and delta['content'] is not None:  # If the delta contains content
-                    mark.append(delta['content'])  # Extend the markdown with the content
 
-                elif 'function_call' in delta:  # If the delta contains a function call
-                    # Previous message finished
-                    if not chat_function:
-                        # Wrap up the previous assistant message
-                        if mark.message.strip() != "":
-                            self.append(assistant(mark.message))
-                            # Make a new display area
+                for event in process_delta(delta):
+                    if isinstance(event, ContentDelta):
+                        # I wonder if I should call this AssistantDisplay or AssistantDispatch
+                        if mark is None:
                             mark = Markdown()
-                            # We should not call `mark.display()` because we will display the function call
-                            # and new follow ons will be displayed with new chats. For type conformance,
-                            # we set mark to a new empty Markdown object.
+                            mark.display()
+                        mark.append(event.content)
+                    elif isinstance(event, FunctionCallNameDelta):
+                        if mark is not None and mark.message.strip() != "":
+                            # Flush out the finished assistant message
+                            self.messages.append(assistant(mark.message))
+                            mark = None
 
-                    function_call = delta['function_call']
-                    if 'name' in function_call:
                         chat_function = ChatFunctionCall(
-                            function_call["name"], function_registry=self.function_registry
+                            function_name=event.name, function_registry=self.function_registry
                         )
                         chat_function.display()
-
-                    if 'arguments' in function_call:
+                    elif isinstance(event, FunctionCallArgumentsDelta):
                         if chat_function is None:
                             raise ValueError("Function arguments provided without function name")
-                        chat_function.append_arguments(function_call['arguments'])
+                        chat_function.append_arguments(event.arguments)
+            elif is_full_choice(choice):
+                message = choice['message']
+
+                if is_function_call(message):
+                    chat_function = ChatFunctionCall(
+                        function_name=message['function_call']['name'],
+                        function_registry=self.function_registry,
+                    )
+                    chat_function.append_arguments(message['function_call']['arguments'])
+                    chat_function.display()
+                elif 'content' in message and message['content'] is not None:
+                    mark = Markdown(message['content'])
+                    mark.display()
+
             if 'finish_reason' in choice and choice['finish_reason'] is not None:
                 finish_reason = choice['finish_reason']
                 break
@@ -203,29 +233,59 @@ class Chat:
             # Include the response (or error) for the model
             self.append(fn_message)
 
+        # Wrap up the previous assistant
+        # Note: This will also wrap up the assistant's message when it ran out of tokens
+        elif mark is not None and mark.message.strip() != "":
+            self.messages.append(assistant(mark.message))
+
+        return finish_reason
+
+    async def submit(self, *messages: Union[Message, str], stream: bool = True):
+        """Send messages to the chat model and display the response.
+
+        Side effects:
+            - Messages are sent to OpenAI Chat Models.
+            - Response(s) are displayed in the output area as a combination of Markdown and chat function calls.
+            - conversation.messages is updated with response(s).
+
+        Args:
+            messages (str | Message): One or more messages to send to the chat, can be strings or Message objects.
+
+            stream (bool): Whether to stream chat into markdown or not. If False, the entire chat will be sent once.
+
+        """
+        self.append(*messages)
+
+        resp = openai.ChatCompletion.create(
+            model=self.model,
+            messages=self.messages,
+            **self.function_registry.api_manifest(),
+            stream=stream,
+        )
+
+        if not stream:
+            resp = [resp]
+
+        resp = cast(Iterable[Union[StreamCompletion, ChatCompletion]], resp)
+
+        finish_reason = await self.__process_stream(resp)
+
+        if finish_reason == "function_call":
             # Reply back to the LLM with the result of the function call, allow it to continue
-            await self.submit()
+            await self.submit(stream=stream)
             return
 
         # All other finish reasons are valid for regular assistant messages
 
-        # Wrap up the previous assistant
-        if mark is not None and mark.message.strip() != "":
-            self.messages.append(assistant(mark.message))
-
-        if finish_reason == CHATLAB_EXIT_BAD_CALL:
-            # ChatLab asked the model to exit due to a bad call
-            await self.submit()
-            return
-
         if finish_reason == 'stop':
             return
+
         elif finish_reason == 'max_tokens' or finish_reason == 'length':
-            mark.append("\n...max tokens or overall length is too high...\n")
+            print("max tokens or overall length is too high...\n")
         elif finish_reason == 'content_filter':
-            mark.append("\n...Content omitted due to OpenAI content filters...\n")
+            print("Content omitted due to OpenAI content filters...\n")
         else:
-            mark.append(f"\n...UNKNOWN FINISH REASON: {finish_reason}...\n")
+            print(f"UNKNOWN FINISH REASON: {finish_reason}...\n")
 
     def append(self, *messages: Union[Message, str]):
         """Append messages to the conversation history.

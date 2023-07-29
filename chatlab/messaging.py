@@ -12,6 +12,8 @@ Example:
 
 from typing import List, Optional, TypedDict, Union
 
+from typing_extensions import TypeGuard
+
 BasicMessage = TypedDict(
     "BasicMessage",
     {
@@ -25,7 +27,7 @@ FunctionCall = TypedDict(
     "FunctionCall",
     {
         "name": str,
-        "arguments": Optional[str],
+        "arguments": str,
     },
 )
 
@@ -47,15 +49,27 @@ FunctionResultMessage = TypedDict(
     },
 )
 
+
 Message = Union[BasicMessage, FunctionCallMessage, FunctionResultMessage]
 
+
+def is_function_call(message: Message) -> TypeGuard[FunctionCallMessage]:
+    """Check if a message is a function call message."""
+    return 'function_call' in message
+
+
+def is_basic_message(message: Message) -> TypeGuard[BasicMessage]:
+    """Check if a message is a basic message."""
+    return 'content' in message and 'role' in message and 'function_call' not in message
+
+
+#### STREAMING ####
 
 Delta = TypedDict(
     "Delta",
     {
         "function_call": FunctionCall,
         "content": Optional[str],
-        "finish_reason": Optional[str],
     },
     total=False,
 )
@@ -64,9 +78,9 @@ Delta = TypedDict(
 StreamChoice = TypedDict(
     "StreamChoice",
     {
+        "finish_reason": Optional[str],
         "delta": Delta,
     },
-    total=False,
 )
 
 StreamCompletion = TypedDict(
@@ -76,6 +90,34 @@ StreamCompletion = TypedDict(
     },
     total=False,
 )
+
+#### NON STREAMING ####
+
+Choice = TypedDict(
+    "Choice",
+    {
+        "finish_reason": Optional[str],
+        "message": Message,
+    },
+)
+
+ChatCompletion = TypedDict(
+    "ChatCompletion",
+    {
+        "choices": List[Choice],
+    },
+    total=False,
+)
+
+
+def is_stream_choice(choice: Union[StreamChoice, Choice]) -> TypeGuard[StreamChoice]:
+    """Check if a choice is a stream choice."""
+    return 'delta' in choice
+
+
+def is_full_choice(choice: Union[StreamChoice, Choice]) -> TypeGuard[Choice]:
+    """Check if a choice is a regular choice."""
+    return 'message' in choice
 
 
 def assistant(content: str) -> BasicMessage:
@@ -133,6 +175,9 @@ def assistant_function_call(name: str, arguments: Optional[str] = None) -> Funct
     Returns:
         A dictionary representing a function call message from the assistant.
     """
+    if arguments is None:
+        arguments = ''
+
     return {
         'role': 'assistant',
         'content': None,
