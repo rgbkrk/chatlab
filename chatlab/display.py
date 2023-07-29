@@ -1,214 +1,44 @@
 """Stylized representation of a Chat Function Call as we dance with the LLM."""
 
-import os
-from binascii import hexlify
 from typing import Optional
 
-from IPython.core import display_functions
-from vdom import details, div, span, style, summary
-
-# Importing for the sake of backwards compatibility
-from .markdown import Markdown  # noqa: F401
-from .messaging import Message, assistant, function_result, system
+from .components.function_details import ChatFunctionComponent
+from .messaging import Message, function_result, system
 from .registry import FunctionArgumentError, FunctionRegistry, UnknownFunctionError
-
-# Palette used here is https://colorhunt.co/palette/27374d526d829db2bfdde6ed
-colors = {
-    "darkest": "#27374D",
-    "dark": "#526D82",
-    "light": "#9DB2BF",
-    "lightest": "#DDE6ED",
-    "ultralight": "#F7F9FA",
-    # Named variants (not great names...)
-    "Japanese Indigo": "#27374D",
-    "Approximate Arapawa": "#526D82",
-    "Light Slate": "#9DB2BF",
-    "Pattens Blue": "#DDE6ED",
-    # ChatLab Colors
-    "Charcoal": "#2B4155",
-    "Lapis Lazuli": "#3C5B79",
-    "UCLA Blue": "#527498",
-    "Redwood": "#A04446",
-    "Sunset": "#EFCF99",
-}
+from .views.abstracts import AutoDisplayer
 
 
-def function_logo():
-    """Styled 𝑓 logo component for use in the chat function component."""
-    return span("𝑓", style=dict(color=colors["light"], paddingRight="5px", paddingLeft="5px"))
-
-
-def function_verbage(state: str):
-    """Simple styled state component."""
-    return span(state, style=dict(color=colors["darkest"], paddingRight="5px", paddingLeft="5px"))
-
-
-def inline_pre(text: str):
-    """A simple preformatted monospace component that works in all Jupyter frontends."""
-    return span(text, style=dict(unicodeBidi="embed", fontFamily="monospace", whiteSpace="pre"))
-
-
-def raw_function_interface_heading(text: str):
-    """Display Input: or Output: headings for the chat function interface."""
-    return div(
-        text,
-        style=dict(
-            color=colors["darkest"],
-            fontWeight="500",
-            marginBottom="5px",
-        ),
-    )
-
-
-def raw_function_interface(text: str):
-    """For inputs and outputs of the chat function interface."""
-    return div(
-        text,
-        style=dict(
-            background=colors["ultralight"],
-            color=colors["darkest"],
-            padding="10px",
-            marginBottom="10px",
-            unicodeBidi="embed",
-            fontFamily="monospace",
-            whiteSpace="pre",
-            overflowX="auto",
-        ),
-    )
-
-
-def ChatFunctionComponent(
-    name: str,
-    verbage: str,
-    input: Optional[str] = None,
-    output: Optional[str] = None,
-    finished: bool = False,
-):
-    """A component for displaying a chat function's state and input/output."""
-    input_element = div()
-    if input is not None:
-        input = input.strip()
-        input_element = div(raw_function_interface_heading("Input:"), raw_function_interface(input))
-
-    output_element = div()
-    if output is not None:
-        output = output.strip()
-        output_element = div(
-            raw_function_interface_heading("Output:"),
-            raw_function_interface(output),
-        )
-
-    return div(
-        style(".chatlab-chat-details summary > *  { display: inline; color: #27374D; }"),
-        details(
-            summary(
-                function_logo(),
-                function_verbage(verbage),
-                inline_pre(name),
-                # If not finished, show "...", otherwise show nothing
-                inline_pre("..." if not finished else ""),
-                style=dict(cursor="pointer", color=colors["darkest"]),
-            ),
-            div(
-                input_element,
-                output_element,
-                style=dict(
-                    # Need some space above to separate from the summary
-                    marginTop="10px",
-                    marginLeft="10px",
-                ),
-            ),
-            className="chatlab-chat-details",
-            style=dict(
-                background=colors["lightest"],
-                padding=".5rem 1rem",
-                borderRadius="5px",
-            ),
-        ),
-    )
-
-
-class AssistantMessageView:
-    """A view of a message from the assistant.
-
-    Buffers the message into an updating Markdown() object.
-    """
-
-    def __init__(self, content: str = ""):
-        """Creates a new assistant message view."""
-        self.markdown_buffer = Markdown(content)
-        self.active = False
-
-    def display(self):
-        """Display the current buffer message."""
-        if not self.active:
-            self.markdown_buffer.display()
-        self.active = True
-
-    def append(self, delta: str):
-        """Append a string to the message."""
-        self.display()
-        self.markdown_buffer.append(delta)
-
-    @property
-    def content(self):
-        """Returns the message."""
-        return self.markdown_buffer.content
-
-    def is_empty(self):
-        """Returns True if the message is empty, False otherwise."""
-        return self.content.strip() == ""
-
-    def in_progress(self):
-        """Returns True if the message is in progress, False otherwise."""
-        return self.active and not self.is_empty()
-
-    def get_message(self):
-        """Returns the message."""
-        return assistant(self.content)
-
-    def flush(self):
-        """Flushes the message buffer."""
-        self.markdown_buffer = Markdown()
-        self.active = False
-        return self.get_message()
-
-
-class ChatFunctionCall:
+class ChatFunctionCall(AutoDisplayer):
     """Operates like the Markdown class, but with the ChatFunctionComponent."""
 
     function_name: str
     function_args: Optional[str] = None
-
     function_result: Optional[str] = None
-    _display_id: str
-
     state: str = "Generating"
-
     finished: bool = False
 
-    def __init__(self, function_name: str, function_registry: FunctionRegistry):
+    def __init__(
+        self,
+        function_name: str,
+        function_arguments: str,
+        function_registry: FunctionRegistry,
+        display_id: Optional[str] = None,
+    ):
         """Initialize a `ChatFunctionCall` object with an optional message."""
         self.function_name = function_name
         self.function_registry = function_registry
-        self._display_id: str = hexlify(os.urandom(8)).decode('ascii')
+        self.function_args = function_arguments
 
-    def display(self):
-        """Display the `ChatFunctionCall` with a display ID for receiving updates."""
-        display_functions.display(self, display_id=self._display_id)
+        if display_id is None:
+            display_id = self.generate_display_id()
 
-    def update_displays(self) -> None:
-        """Force an update to all displays of this `ChatFunctionCall`."""
-        display_functions.display(self, display_id=self._display_id, update=True)
+        self._display_id = display_id
+        self.update_displays()
 
     async def call(self) -> Message:
         """Call the function and return a stack of messages for LLM and human consumption."""
         function_name = self.function_name
         function_args = self.function_args
-
-        if function_name is None:
-            self.set_state("Error")
-            return system("Function call message finished without function name")
 
         self.set_state("Running")
 
@@ -257,13 +87,6 @@ class ChatFunctionCall:
         self.update_displays()
 
         return function_result(name=function_name, content=repr_llm)
-
-    def append_arguments(self, args: str):
-        """Append more characters to the `function_args`."""
-        if self.function_args is None:
-            self.function_args = ""
-        self.function_args += args
-        self.update_displays()
 
     def set_state(self, state: str):
         """Set the state of the ChatFunctionCall."""
