@@ -175,6 +175,9 @@ def assistant_function_call(name: str, arguments: Optional[str] = None) -> Funct
     Returns:
         A dictionary representing a function call message from the assistant.
     """
+    if arguments is None:
+        arguments = ''
+
     return {
         'role': 'assistant',
         'content': None,
