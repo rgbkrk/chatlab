@@ -17,7 +17,6 @@ from .errors import ChatLabError
 from .messaging import (
     ChatCompletion,
     Message,
-    StreamChoice,
     StreamCompletion,
     assistant,
     assistant_function_call,
