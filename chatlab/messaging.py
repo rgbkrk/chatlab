@@ -10,7 +10,9 @@ Example:
 
 """
 
-from typing import List, Optional, TypedDict, TypeGuard, Union
+from typing import List, Optional, TypedDict, Union
+
+from typing_extensions import TypeGuard
 
 BasicMessage = TypedDict(
     "BasicMessage",
