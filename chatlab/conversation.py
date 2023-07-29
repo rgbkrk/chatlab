@@ -111,9 +111,9 @@ class Chat:
         """
         raise Exception("This method is deprecated. Use `submit` instead.")
 
-    async def __call__(self, *messages: Union[Message, str]):
+    async def __call__(self, *messages: Union[Message, str], stream: bool = True):
         """Send messages to the chat model and display the response."""
-        return await self.submit(*messages)
+        return await self.submit(*messages, stream=stream)
 
     async def __process_stream(self, resp):
         # Get the output area ready
@@ -164,6 +164,20 @@ class Chat:
                         if chat_function is None:
                             raise ValueError("Function arguments provided without function name")
                         chat_function.append_arguments(function_call['arguments'])
+            elif 'message' in choice and choice['message'] is not None:
+                message = choice['message']
+                self.append(message)
+
+                if 'function_call' in message:
+                    chat_function = ChatFunctionCall(
+                        function_name=message['function_call']['name'],
+                        function_registry=self.function_registry,
+                    )
+                    chat_function.append_arguments(message['function_call']['arguments'])
+                    chat_function.display()
+                elif 'content' in message and message['content'] is not None:
+                    mark.append(message['content'])
+
             if 'finish_reason' in choice and choice['finish_reason'] is not None:
                 finish_reason = choice['finish_reason']
                 break
@@ -187,7 +201,7 @@ class Chat:
 
         return finish_reason
 
-    async def submit(self, *messages: Union[Message, str]):
+    async def submit(self, *messages: Union[Message, str], stream: bool = True):
         """Send messages to the chat model and display the response.
 
         Side effects:
@@ -198,6 +212,8 @@ class Chat:
         Args:
             messages (str | Message): One or more messages to send to the chat, can be strings or Message objects.
 
+            stream (bool): Whether to stream chat into markdown or not. If False, the entire chat will be sent once.
+
         """
         self.append(*messages)
 
@@ -205,20 +221,24 @@ class Chat:
             model=self.model,
             messages=self.messages,
             **self.function_registry.api_manifest(),
-            stream=True,
+            stream=stream,
         )
+
+        if not stream:
+            resp = [resp]
 
         finish_reason = await self.__process_stream(resp)
 
         if finish_reason == "function_call":
             # Reply back to the LLM with the result of the function call, allow it to continue
-            await self.submit()
+            await self.submit(stream=stream)
             return
 
         # All other finish reasons are valid for regular assistant messages
 
         if finish_reason == 'stop':
             return
+
         elif finish_reason == 'max_tokens' or finish_reason == 'length':
             print("max tokens or overall length is too high...\n")
         elif finish_reason == 'content_filter':
