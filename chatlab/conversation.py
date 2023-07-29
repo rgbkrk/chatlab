@@ -4,7 +4,7 @@ import asyncio
 import logging
 import os
 from dataclasses import dataclass
-from typing import Callable, List, Optional, Type, Union
+from typing import Callable, Iterable, List, Optional, Type, Union, cast
 
 import openai
 from deprecation import deprecated
@@ -14,7 +14,18 @@ from pydantic import BaseModel
 from ._version import __version__
 from .display import ChatFunctionCall, Markdown
 from .errors import ChatLabError
-from .messaging import Message, assistant, assistant_function_call, human
+from .messaging import (
+    ChatCompletion,
+    Message,
+    StreamChoice,
+    StreamCompletion,
+    assistant,
+    assistant_function_call,
+    human,
+    is_full_choice,
+    is_function_call,
+    is_stream_choice,
+)
 from .registry import FunctionRegistry, PythonHallucinationFunction
 
 logger = logging.getLogger(__name__)
@@ -150,11 +161,8 @@ class Chat:
         """Send messages to the chat model and display the response."""
         return await self.submit(*messages, stream=stream)
 
-    async def __process_stream(self, resp):
-        # Get the output area ready
-        mark = Markdown()
-        mark.display()
-
+    async def __process_stream(self, resp: Iterable[Union[StreamCompletion, ChatCompletion]]):
+        mark = None
         chat_function = None
         finish_reason = None
 
@@ -163,7 +171,7 @@ class Chat:
                 logger.warning(f"Unknown result type: {type(result)}: {result}")
                 continue
 
-            choices: list = result.get('choices', [])
+            choices = result.get('choices', [])
 
             if len(choices) == 0:
                 logger.warning(f"Result has no choices: {result}")
@@ -171,17 +179,21 @@ class Chat:
 
             choice = choices[0]
 
-            if 'delta' in choice:  # If there is a delta in the result
+            if is_stream_choice(choice):  # If there is a delta in the result
                 delta = choice['delta']
 
                 for event in process_delta(delta):
                     if isinstance(event, ContentDelta):
+                        # I wonder if I should call this AssistantDisplay or AssistantDispatch
+                        if mark is None:
+                            mark = Markdown()
+                            mark.display()
                         mark.append(event.content)
                     elif isinstance(event, FunctionCallNameDelta):
                         if mark is not None and mark.message.strip() != "":
+                            # Flush out the finished assistant message
                             self.messages.append(assistant(mark.message))
-                            mark = Markdown()
-                            mark.display()
+                            mark = None
 
                         chat_function = ChatFunctionCall(
                             function_name=event.name, function_registry=self.function_registry
@@ -191,10 +203,10 @@ class Chat:
                         if chat_function is None:
                             raise ValueError("Function arguments provided without function name")
                         chat_function.append_arguments(event.arguments)
-            elif 'message' in choice and choice['message'] is not None:
+            elif is_full_choice(choice):
                 message = choice['message']
 
-                if 'function_call' in message:
+                if is_function_call(message):
                     chat_function = ChatFunctionCall(
                         function_name=message['function_call']['name'],
                         function_registry=self.function_registry,
@@ -202,7 +214,8 @@ class Chat:
                     chat_function.append_arguments(message['function_call']['arguments'])
                     chat_function.display()
                 elif 'content' in message and message['content'] is not None:
-                    mark.append(message['content'])
+                    mark = Markdown(message['content'])
+                    mark.display()
 
             if 'finish_reason' in choice and choice['finish_reason'] is not None:
                 finish_reason = choice['finish_reason']
@@ -222,6 +235,7 @@ class Chat:
             self.append(fn_message)
 
         # Wrap up the previous assistant
+        # Note: This will also wrap up the assistant's message when it ran out of tokens
         elif mark is not None and mark.message.strip() != "":
             self.messages.append(assistant(mark.message))
 
@@ -252,6 +266,8 @@ class Chat:
 
         if not stream:
             resp = [resp]
+
+        resp = cast(Iterable[Union[StreamCompletion, ChatCompletion]], resp)
 
         finish_reason = await self.__process_stream(resp)
 
