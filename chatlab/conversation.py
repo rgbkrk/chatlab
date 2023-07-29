@@ -3,6 +3,7 @@
 import asyncio
 import logging
 import os
+from dataclasses import dataclass
 from typing import Callable, List, Optional, Type, Union
 
 import openai
@@ -17,6 +18,40 @@ from .messaging import Message, assistant, assistant_function_call, human
 from .registry import FunctionRegistry, PythonHallucinationFunction
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class ContentDelta:
+    """A delta that contains markdown."""
+
+    content: str
+
+
+@dataclass
+class FunctionCallArgumentsDelta:
+    """A delta that contains function call arguments."""
+
+    arguments: str
+
+
+@dataclass
+class FunctionCallNameDelta:
+    """A delta that contains function call name."""
+
+    name: str
+
+
+def process_delta(delta):
+    """Process a delta."""
+    if 'content' in delta and delta['content'] is not None:
+        yield ContentDelta(delta['content'])
+
+    elif 'function_call' in delta:  # If the delta contains a function call
+        if 'name' in delta['function_call']:
+            yield FunctionCallNameDelta(delta['function_call']['name'])
+
+        if 'arguments' in delta['function_call']:
+            yield FunctionCallArgumentsDelta(delta['function_call']['arguments'])
 
 
 class Chat:
@@ -138,35 +173,26 @@ class Chat:
 
             if 'delta' in choice:  # If there is a delta in the result
                 delta = choice['delta']
-                if 'content' in delta and delta['content'] is not None:  # If the delta contains content
-                    mark.append(delta['content'])  # Extend the markdown with the content
 
-                elif 'function_call' in delta:  # If the delta contains a function call
-                    # Previous message finished
-                    if not chat_function:
-                        # Wrap up the previous assistant message
-                        if mark.message.strip() != "":
-                            self.append(assistant(mark.message))
-                            # Make a new display area
+                for event in process_delta(delta):
+                    if isinstance(event, ContentDelta):
+                        mark.append(event.content)
+                    elif isinstance(event, FunctionCallNameDelta):
+                        if mark is not None and mark.message.strip() != "":
+                            self.messages.append(assistant(mark.message))
                             mark = Markdown()
-                            # We should not call `mark.display()` because we will display the function call
-                            # and new follow ons will be displayed with new chats. For type conformance,
-                            # we set mark to a new empty Markdown object.
+                            mark.display()
 
-                    function_call = delta['function_call']
-                    if 'name' in function_call:
                         chat_function = ChatFunctionCall(
-                            function_call["name"], function_registry=self.function_registry
+                            function_name=event.name, function_registry=self.function_registry
                         )
                         chat_function.display()
-
-                    if 'arguments' in function_call:
+                    elif isinstance(event, FunctionCallArgumentsDelta):
                         if chat_function is None:
                             raise ValueError("Function arguments provided without function name")
-                        chat_function.append_arguments(function_call['arguments'])
+                        chat_function.append_arguments(event.arguments)
             elif 'message' in choice and choice['message'] is not None:
                 message = choice['message']
-                self.append(message)
 
                 if 'function_call' in message:
                     chat_function = ChatFunctionCall(
