@@ -9,7 +9,7 @@ from vdom import details, div, span, style, summary
 
 # Importing for the sake of backwards compatibility
 from .markdown import Markdown  # noqa: F401
-from .messaging import Message, function_result, system
+from .messaging import Message, assistant, function_result, system
 from .registry import FunctionArgumentError, FunctionRegistry, UnknownFunctionError
 
 # Palette used here is https://colorhunt.co/palette/27374d526d829db2bfdde6ed
@@ -128,21 +128,50 @@ def ChatFunctionComponent(
     )
 
 
-class AssistantMessageView(Markdown):
-    """A view of a message from the assistant."""
+class AssistantMessageView:
+    """A view of a message from the assistant.
+
+    Buffers the message into an updating Markdown() object.
+    """
 
     def __init__(self, content: str = ""):
-        """Creates a new assistant message view and displays it."""
-        self.message = content
+        """Creates a new assistant message view."""
+        self.markdown_buffer = Markdown(content)
+        self.active = False
+
+    def display(self):
+        """Display the current buffer message."""
+        if not self.active:
+            self.markdown_buffer.display()
+        self.active = True
+
+    def append(self, delta: str):
+        """Append a string to the message."""
         self.display()
+        self.markdown_buffer.append(delta)
+
+    @property
+    def content(self):
+        """Returns the message."""
+        return self.markdown_buffer.content
 
     def is_empty(self):
         """Returns True if the message is empty, False otherwise."""
-        return self.message.strip() == ""
+        return self.content.strip() == ""
+
+    def in_progress(self):
+        """Returns True if the message is in progress, False otherwise."""
+        return self.active and not self.is_empty()
 
     def get_message(self):
         """Returns the message."""
-        return self.message
+        return assistant(self.content)
+
+    def flush(self):
+        """Flushes the message buffer."""
+        self.markdown_buffer = Markdown()
+        self.active = False
+        return self.get_message()
 
 
 class ChatFunctionCall:

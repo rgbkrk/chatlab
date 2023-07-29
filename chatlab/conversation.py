@@ -163,7 +163,7 @@ class Chat:
     async def __process_stream(
         self, resp: Iterable[Union[StreamCompletion, ChatCompletion]]
     ) -> Tuple[str, Optional[ChatFunctionCall]]:
-        assistant_view: Optional[AssistantMessageView] = None
+        assistant_view: AssistantMessageView = AssistantMessageView()
         function_view = None
         finish_reason = None
 
@@ -185,15 +185,12 @@ class Chat:
 
                 for event in process_delta(delta):
                     if isinstance(event, ContentDelta):
-                        # I wonder if I should call this AssistantDisplay or AssistantDispatch
-                        if assistant_view is None:
-                            assistant_view = AssistantMessageView()
                         assistant_view.append(event.content)
                     elif isinstance(event, FunctionCallNameDelta):
-                        if assistant_view is not None and assistant_view.message.strip() != "":
+                        if assistant_view.in_progress():
                             # Flush out the finished assistant message
-                            self.messages.append(assistant(assistant_view.message))
-                            assistant_view = None
+                            message = assistant_view.flush()
+                            self.append(message)
 
                         function_view = ChatFunctionCall(
                             function_name=event.name, function_registry=self.function_registry
@@ -214,7 +211,7 @@ class Chat:
                     function_view.append_arguments(message['function_call']['arguments'])
                     function_view.display()
                 elif 'content' in message and message['content'] is not None:
-                    assistant_view = AssistantMessageView(message['content'])
+                    assistant_view.append(message['content'])
 
             if 'finish_reason' in choice and choice['finish_reason'] is not None:
                 finish_reason = choice['finish_reason']
@@ -222,8 +219,9 @@ class Chat:
 
         # Wrap up the previous assistant
         # Note: This will also wrap up the assistant's message when it ran out of tokens
-        if assistant_view is not None and not assistant_view.is_empty()
-            self.append(assistant(assistant_view.message))
+        if assistant_view.in_progress():
+            message = assistant_view.flush()
+            self.append(message)
 
         if finish_reason is None:
             raise ValueError("No finish reason provided by OpenAI")
