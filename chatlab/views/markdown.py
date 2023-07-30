@@ -54,11 +54,6 @@ class Markdown(BufferInterface):
         """Append a string to the `Markdown`."""
         self.content += delta
 
-    def extend(self, delta_generator: Iterator[str]) -> None:
-        """Extend the `Markdown` with a generator/iterator of strings."""
-        for delta in delta_generator:
-            self.append(delta)
-
     @property
     def metadata(self) -> Dict[str, Any]:
         """Return the metadata for the `Markdown`."""
