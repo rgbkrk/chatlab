@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   🪄 Introduced `make_magic` on a `Chat` so that you can use a current chat as a cell magic in IPython and Jupyter notebooks
 -   ⏩ Accept async functions as chat functions
 -   📗 New experimental builtin: Noteable. Create notebooks on Noteable like you can via ChatGPT Plugins with even more flexibility.
+-   🧩 Accept collections of functions to `Chat` and `FunctionRegistry` to register multiple functions at once
 
 ### Changed
 
