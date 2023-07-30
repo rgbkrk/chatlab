@@ -15,11 +15,10 @@ def test_markdown_creation():
     assert isinstance(md, Markdown)
 
 
-def test_assistant_message_view_methods():
+def test_assistant_message_get():
     amv = AssistantMessageView()
     try:
-        buffer = amv.create_buffer("test")
-        assert isinstance(buffer, Markdown)
+        amv.append("test")
         message = amv.get_message()
 
         assert message == {
