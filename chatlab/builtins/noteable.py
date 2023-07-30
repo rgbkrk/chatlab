@@ -2,6 +2,7 @@
 import logging
 import os
 import uuid
+from textwrap import dedent
 from typing import Optional
 
 import ulid
@@ -133,6 +134,44 @@ class NotebookClient:
         except Exception as e:
             return f"Cell created successfully. An error happened during run: {e}"
 
+    async def _get_llm_friendly_outputs(self, output_collection_id: uuid.UUID):
+        """Get the outputs for a given output collection ID."""
+        output_collection = await self.api_client.get_output_collection(output_collection_id)
+
+        outputs = output_collection.outputs
+
+        # Not *that* friendly, but it's a start.
+        llm_friendly_outputs = []
+
+        for output in outputs:
+            content = output.content
+            if content is None:
+                continue
+
+            friendly_output = self._get_llm_friendly_output(output)
+
+            if friendly_output is not None:
+                llm_friendly_outputs.append(friendly_output)
+
+        return llm_friendly_outputs
+
+    def _get_llm_friendly_output(self, output):
+        """Get the output for a given output."""
+        content = output.content
+        if content is None:
+            return None
+
+        if content.mimetype == 'application/vnd.dataresource+json':
+            # TODO: Bring back a smaller representation to allow the LLM to do analysis
+            return "<!-- DataFrame shown in notebook that user can see -->"
+
+        if content.mimetype == 'application/vnd.plotly.v1+json':
+            return "<!-- Plotly shown in notebook that user can see -->"
+        if content.url is not None:
+            return "<!-- Large output too large for chat. It is available in the notebook that the user can see -->"
+
+        return content.raw
+
     async def run_cell(self, cell_id: str):
         """Run a Cell within a Notebook by ID."""
         # Queue up the execution
@@ -162,33 +201,9 @@ class NotebookClient:
                 logger.exception("Invalid UUID", exc_info=True)
                 return cell
 
-        # Pull the outputs for this execution of the cell
-        output_collection = await self.api_client.get_output_collection(output_collection_id)
+        outputs = self._get_llm_friendly_outputs(output_collection_id)
 
-        outputs = output_collection.outputs
-
-        # Not *that* friendly, but it's a start.
-        llm_friendly_outputs = []
-
-        for output in outputs:
-            content = output.content
-            if content is None:
-                continue
-
-            if content.mimetype == 'application/vnd.dataresource+json':
-                content.raw = "[[DataFrame shown in notebook that user can see]]"
-                content.url = None
-
-                llm_friendly_outputs.append(content.dict(exclude_unset=True, exclude_none=True))
-            elif content.url is not None:
-                content.raw = "[[Output shown in notebook that user can see]]"
-                content.url = None
-                # Faking this in order to iterate
-                llm_friendly_outputs.append({"embed": "![image.png](image.png)"})
-            else:
-                llm_friendly_outputs.append(content.dict(exclude_unset=True, exclude_none=True))
-
-        return llm_friendly_outputs
+        return outputs
 
     async def get_datasources(self):
         """Get a list of databases, AKA datasources."""
@@ -197,7 +212,55 @@ class NotebookClient:
     async def get_cell(self, cell_id: str):
         """Get a cell by ID."""
         rtu_client = await self.get_or_create_rtu_client()
-        return rtu_client.builder.get_cell(cell_id)
+        try:
+            _, cell = rtu_client.builder.get_cell(cell_id)
+        except KeyError:
+            return f"Cell {cell_id} not found."
+
+        response = f"<!-- {cell.cell_type.title()} Cell, ID: {cell_id} -->\n"
+
+        if cell.cell_type != "code":
+            response += cell.source
+            return response
+
+        source_type = rtu_client.builder.nb.metadata.get("kernelspec", {}).get("language", "")
+
+        if cell.metadata.get("noteable", {}).get("cell_type") == "sql":
+            source_type = "sql"
+
+        # Convert to a plaintext response
+        response += f"\nIn:\n\n```{source_type}\n"
+        response += cell.source
+        response += "\n```\n"
+
+        output_collection_id = cell.output_collection_id
+
+        if isinstance(output_collection_id, str):
+            try:
+                output_collection_id = uuid.UUID(output_collection_id)
+            except ValueError:
+                # This is a case where the output collection ID in the notebook is invalid
+                logger.exception("Invalid UUID", exc_info=True)
+                return response + "\nUnable to get outputs."
+
+        if output_collection_id is None:
+            return response + "\nNo output."
+
+        outputs = await self._get_llm_friendly_outputs(output_collection_id)
+        if len(outputs) == 0:
+            return response + "\nNo output."
+
+        response += "\nOut:"
+
+        for output in outputs:
+            response += "\n" + str(output)
+
+        return response
+
+    async def get_cell_ids(self):
+        """Get all cells."""
+        rtu_client = await self.get_or_create_rtu_client()
+        return rtu_client.cell_ids
 
     async def shutdown(self):
         """Shutdown the notebook."""
@@ -212,6 +275,16 @@ class NotebookClient:
     async def python(self, code: str):
         """Creates a python cell, runs it, and returns output."""
         return await self.create_cell(code, and_run=True)
+
+    def chat_functions(self):
+        """Functions to expose for LLMs."""
+        return [
+            self.create_cell,
+            self.run_cell,
+            self.get_cell,
+            self.get_cell_ids,
+            self.get_datasources,
+        ]
 
 
 __all__ = ["NotebookClient"]

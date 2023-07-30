@@ -20,7 +20,6 @@ from .messaging import (
     ChatCompletion,
     Message,
     StreamCompletion,
-    assistant_function_call,
     human,
     is_full_choice,
     is_function_call,
@@ -101,6 +100,7 @@ class Chat:
         *initial_context: Union[Message, str],
         model="gpt-3.5-turbo-0613",
         function_registry: Optional[FunctionRegistry] = None,
+        chat_functions: Optional[List[Callable]] = None,
         allow_hallucinated_python: bool = False,
         python_hallucination_function: Optional[PythonHallucinationFunction] = None,
     ):
@@ -144,6 +144,9 @@ class Chat:
             self.function_registry = FunctionRegistry(python_hallucination_function=python_hallucination_function)
         else:
             self.function_registry = function_registry
+
+        if chat_functions is not None:
+            self.function_registry.register_functions(chat_functions)
 
     @deprecated(
         deprecated_in="0.13.0", removed_in="1.0.0", current_version=__version__, details="Use `submit` instead."

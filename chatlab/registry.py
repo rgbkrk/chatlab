@@ -42,7 +42,7 @@ Example usage:
 import asyncio
 import inspect
 import json
-from typing import Any, Callable, Optional, Type, Union, get_args, get_origin
+from typing import Any, Callable, Iterable, Optional, Type, Union, get_args, get_origin
 
 from pydantic import BaseModel
 
@@ -183,6 +183,14 @@ class FunctionRegistry:
         self.__schemas[function.__name__] = final_schema
 
         return final_schema
+
+    def register_functions(self, functions: Union[Iterable[Callable], dict[str, Callable]]):
+        """Register a dictionary of functions."""
+        if isinstance(functions, dict):
+            functions = functions.values()
+
+        for function in functions:
+            self.register(function)
 
     def get(self, function_name) -> Optional[Callable]:
         """Get a function by name."""
