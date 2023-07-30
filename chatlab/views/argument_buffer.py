@@ -18,7 +18,7 @@ class ArgumentBuffer(BufferInterface):
 
     __state: str = "Generating"
 
-    def __init__(self, function_name: str, function_arguments: str):
+    def __init__(self, function_name: str, function_arguments: str = ""):
         """Initialize a `ArgumentBuffer` object with an optional message."""
         self.__function_name = function_name
         self.__function_arguments = function_arguments

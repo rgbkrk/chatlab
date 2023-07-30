@@ -1,6 +1,7 @@
 # flake8: noqa
 import pytest
 
+from chatlab.views.argument_buffer import ArgumentBuffer
 from chatlab.views.assistant import AssistantMessageView
 from chatlab.views.assistant_function_call import AssistantFunctionCallView
 from chatlab.views.markdown import Markdown
@@ -51,6 +52,19 @@ def test_assistant_function_call_view_get():
         "function_arguments": "you can do it",
         "display_id": afcv.buffer._display_id,
     }
+
+
+def test_argument_buffer_initialization():
+    # Initializing the ArgumentBuffer object
+    arg_buffer = ArgumentBuffer("fun")
+
+    assert arg_buffer.content == ""
+
+    arg_buffer.append("woo")
+    arg_buffer.append("who")
+    assert arg_buffer.content == "woowho"
+
+    arg_buffer._repr_mimebundle_()
 
 
 def test_markdown_methods():
