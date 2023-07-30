@@ -5,7 +5,7 @@
 
 """
 
-from typing import Any, Dict, Iterator, Tuple, Union
+from typing import Any, Dict, Tuple, Union
 
 from .abstracts import BufferInterface
 
