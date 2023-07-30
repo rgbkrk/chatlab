@@ -83,12 +83,14 @@ def test_generate_function_schema_with_model():
 
 
 # Test the function registry
+@pytest.mark.asyncio
 async def test_function_registry_unknown_function():
     registry = FunctionRegistry()
     with pytest.raises(UnknownFunctionError, match="Function unknown is not registered"):
         await registry.call("unknown")
 
 
+@pytest.mark.asyncio
 async def test_function_registry_function_argument_error():
     registry = FunctionRegistry()
     registry.register(simple_func, SimpleModel)
@@ -98,6 +100,7 @@ async def test_function_registry_function_argument_error():
         await registry.call("simple_func", arguments="not json")
 
 
+@pytest.mark.asyncio
 async def test_function_registry_call():
     registry = FunctionRegistry()
     registry.register(simple_func, SimpleModel)
@@ -137,12 +140,14 @@ def test_function_registry_function_definitions():
 
 
 # Test that we do not allow python hallucination when False
+@pytest.mark.asyncio
 async def test_function_registry_call_python_hallucination_invalid():
     registry = FunctionRegistry(python_hallucination_function=None)
     with pytest.raises(Exception, match="Function python is not registered"):
         await registry.call("python", arguments='1 + 4')
 
 
+@pytest.mark.asyncio
 async def test_ensure_python_hallucination_not_enabled_by_default():
     registry = FunctionRegistry()
     with pytest.raises(Exception, match="Function python is not registered"):
@@ -172,10 +177,11 @@ def test_generate_function_schema_no_args():
 
 
 # Testing edge cases with call method
+@pytest.mark.asyncio
 async def test_function_registry_call_edge_cases():
     registry = FunctionRegistry()
     with pytest.raises(UnknownFunctionError):
         await registry.call("totes_not_real", arguments='{"x": 1, "y": "str", "z": true}')
 
     with pytest.raises(UnknownFunctionError):
-        registry.call(None)  # type: ignore
+        await registry.call(None)  # type: ignore
