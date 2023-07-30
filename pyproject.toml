@@ -117,4 +117,4 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-addopts = "--cov --cov-report=lcov:lcov.info --cov-report=term"
+addopts = "--cov --cov-report=lcov:lcov.info --cov-report=term --cov-report=html"
