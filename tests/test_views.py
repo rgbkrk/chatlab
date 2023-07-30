@@ -38,3 +38,21 @@ def test_markdown_methods():
         assert repr_md == "test"
     except Exception:
         pytest.fail("Method raised an exception unexpectedly!")
+
+
+def test_assistant_message_view_flush():
+    amv = AssistantMessageView("wahoo")
+    amv.append("test")
+    amv.flush()
+    assert amv.content == ""
+
+
+def test_assistant_message_view_ipython_display():
+    amv = AssistantMessageView()
+    amv._ipython_display_()
+    assert amv.active
+
+
+def test_markdown_metadata():
+    md = Markdown()
+    assert md.metadata == {"chatlab": {"default": True}}
