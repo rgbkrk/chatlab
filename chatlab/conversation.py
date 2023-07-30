@@ -11,14 +11,15 @@ from deprecation import deprecated
 from IPython.core.async_helpers import get_asyncio_loop
 from pydantic import BaseModel
 
+from chatlab.views.assistant_function_call import AssistantFunctionCallView
+
 from ._version import __version__
-from .display import AssistantMessageView, ChatFunctionCall, Markdown
+from .display import ChatFunctionCall
 from .errors import ChatLabError
 from .messaging import (
     ChatCompletion,
     Message,
     StreamCompletion,
-    assistant,
     assistant_function_call,
     human,
     is_full_choice,
@@ -26,6 +27,7 @@ from .messaging import (
     is_stream_choice,
 )
 from .registry import FunctionRegistry, PythonHallucinationFunction
+from .views.assistant import AssistantMessageView
 
 logger = logging.getLogger(__name__)
 
@@ -162,9 +164,9 @@ class Chat:
 
     async def __process_stream(
         self, resp: Iterable[Union[StreamCompletion, ChatCompletion]]
-    ) -> Tuple[str, Optional[ChatFunctionCall]]:
+    ) -> Tuple[str, Optional[AssistantFunctionCallView]]:
         assistant_view: AssistantMessageView = AssistantMessageView()
-        function_view = None
+        function_view: Optional[AssistantFunctionCallView] = None
         finish_reason = None
 
         for result in resp:  # Go through the results of the stream
@@ -191,25 +193,17 @@ class Chat:
                             # Flush out the finished assistant message
                             message = assistant_view.flush()
                             self.append(message)
-
-                        function_view = ChatFunctionCall(
-                            function_name=event.name, function_registry=self.function_registry
-                        )
-                        function_view.display()
+                        function_view = AssistantFunctionCallView(event.name)
                     elif isinstance(event, FunctionCallArgumentsDelta):
                         if function_view is None:
                             raise ValueError("Function arguments provided without function name")
-                        function_view.append_arguments(event.arguments)
+                        function_view.append(event.arguments)
             elif is_full_choice(choice):
                 message = choice['message']
 
                 if is_function_call(message):
-                    function_view = ChatFunctionCall(
-                        function_name=message['function_call']['name'],
-                        function_registry=self.function_registry,
-                    )
-                    function_view.append_arguments(message['function_call']['arguments'])
-                    function_view.display()
+                    function_view = AssistantFunctionCallView(message['function_call']['name'])
+                    function_view.append(message['function_call']['arguments'])
                 elif 'content' in message and message['content'] is not None:
                     assistant_view.append(message['content'])
 
@@ -256,17 +250,20 @@ class Chat:
 
         resp = cast(Iterable[Union[StreamCompletion, ChatCompletion]], resp)
 
-        finish_reason, chat_function = await self.__process_stream(resp)
+        finish_reason, function_call_request = await self.__process_stream(resp)
 
         if finish_reason == "function_call":
-            if chat_function is None:
+            if function_call_request is None:
                 raise ValueError(
-                    "Function call buildout finished without function name. If you see this, report it as an issue to https://github.com/rgbkrk/chatlab/issues"  # noqa: E501
+                    "Function call was the stated function_call reason without having a complete function call. If you see this, report it as an issue to https://github.com/rgbkrk/chatlab/issues"  # noqa: E501
                 )
             # Record the attempted call from the LLM
-            self.append(
-                assistant_function_call(name=chat_function.function_name, arguments=chat_function.function_args)
+            self.append(function_call_request.get_message())
+
+            chat_function = ChatFunctionCall(
+                **function_call_request.finalize(), function_registry=self.function_registry
             )
+
             # Make the call
             fn_message = await chat_function.call()
             # Include the response (or error) for the model
