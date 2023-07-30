@@ -108,3 +108,5 @@ ENV/
 .idea/
 
 Untitled*.ipynb
+
+lcov.info
