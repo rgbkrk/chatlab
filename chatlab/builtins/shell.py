@@ -2,8 +2,11 @@
 import asyncio
 import subprocess
 
+from chatlab.decorators import expose_exception_to_llm
 
-async def run_shell_command(command: str) -> str:
+
+@expose_exception_to_llm
+async def run_shell_command(command: str):
     """Run a shell command and return the output.
 
     Args:
@@ -14,7 +17,7 @@ async def run_shell_command(command: str) -> str:
     """
     process = await asyncio.create_subprocess_shell(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = await process.communicate()
-    return stdout.decode().strip()
+    return process.returncode, stdout.decode().strip(), stderr.decode().strip()
 
 
 chat_functions = [run_shell_command]

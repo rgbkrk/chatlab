@@ -2,7 +2,10 @@
 import asyncio
 import os
 
+from chatlab.decorators import expose_exception_to_llm
 
+
+@expose_exception_to_llm
 async def list_files(directory: str) -> list[str]:
     """List all files in the given directory.
 
@@ -17,6 +20,7 @@ async def list_files(directory: str) -> list[str]:
     return files
 
 
+@expose_exception_to_llm
 async def get_file_size(file_path: str) -> int:
     """Get the size of the file in bytes asynchronously.
 
@@ -30,6 +34,7 @@ async def get_file_size(file_path: str) -> int:
     return size
 
 
+@expose_exception_to_llm
 async def is_file(file_path: str) -> bool:
     """Check if the given path points to a file asynchronously.
 
@@ -43,6 +48,7 @@ async def is_file(file_path: str) -> bool:
     return is_file
 
 
+@expose_exception_to_llm
 async def is_directory(directory: str) -> bool:
     """Check if the given path points to a directory asynchronously.
 
