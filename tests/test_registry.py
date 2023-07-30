@@ -184,4 +184,4 @@ async def test_function_registry_call_edge_cases():
         await registry.call("totes_not_real", arguments='{"x": 1, "y": "str", "z": true}')
 
     with pytest.raises(UnknownFunctionError):
-        registry.call(None)  # type: ignore
+        await registry.call(None)  # type: ignore

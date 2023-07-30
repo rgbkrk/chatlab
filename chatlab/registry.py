@@ -262,6 +262,9 @@ class FunctionRegistry:
 
     async def call(self, name: str, arguments: Optional[str] = None) -> Any:
         """Call a function by name with the given parameters."""
+        if name is None:
+            raise UnknownFunctionError("Function name must be provided")
+
         function = self.get(name)
         parameters: dict = {}
 
