@@ -1,3 +1,12 @@
+"""These are all functions for file operations to expose to a Large Language Model.
+
+⚠️ ☢️ WARNING ☢️ ⚠️
+The model will do useful things and the model will do destructive things.
+
+Git and Docker can be your friends when you let a probalistc model loose on your filesystem.
+
+You've been warned. Have fun and be safe!
+"""
 import asyncio
 import os
 
