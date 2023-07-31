@@ -1,7 +1,33 @@
 # flake8: noqa
 import pytest
 
+from chatlab import FunctionRegistry
+from chatlab.builtins import os_functions
 from chatlab.builtins.files import get_file_size, is_directory, is_file, list_files, read_file, write_file
+from chatlab.builtins.shell import run_shell_command
+
+
+def test_chat_function_adherence():
+    assert len(os_functions) > 0
+
+    for function in os_functions:
+        assert function.__name__ is not None and function.__name__ != ""
+        assert function.__doc__ is not None and function.__doc__ != ""
+
+        fr = FunctionRegistry()
+        schema = fr.register(function)
+        assert schema is not None
+
+
+# TODO: Determine if this is part of the testing suite on Windows
+async def test_run_shell_command():
+    command = "echo Hello, ChatLab!"
+    result = await run_shell_command(command)
+    assert "Hello, ChatLab!" in result
+
+    command = "adsflkajsdg"
+    result = await run_shell_command(command)
+    assert "adsflkajsdg: command not found" in result
 
 
 @pytest.mark.asyncio
