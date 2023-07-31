@@ -1,6 +1,7 @@
-"""Built-in functions for file operations."""
 import asyncio
 import os
+
+import aiofiles
 
 from chatlab.decorators import expose_exception_to_llm
 
@@ -49,7 +50,7 @@ async def is_file(file_path: str) -> bool:
 
 
 @expose_exception_to_llm
-def write_file(file_path: str, content: str, mode: str = 'w') -> None:
+async def write_file(file_path: str, content: str, mode: str = 'w') -> None:
     """Write content to a file.
 
     Args:
@@ -60,12 +61,12 @@ def write_file(file_path: str, content: str, mode: str = 'w') -> None:
     Returns:
     - None
     """
-    with open(file_path, mode) as file:
-        file.write(content)
+    async with aiofiles.open(file_path, mode) as file:  # type: ignore
+        await file.write(content)
 
 
 @expose_exception_to_llm
-def read_file(file_path: str, mode: str = 'r') -> str:
+async def read_file(file_path: str, mode: str = 'r') -> str:
     """Read content from a file.
 
     Args:
@@ -75,8 +76,8 @@ def read_file(file_path: str, mode: str = 'r') -> str:
     Returns:
     - str: The content of the file
     """
-    with open(file_path, mode) as file:
-        content = file.read()
+    async with aiofiles.open(file_path, mode) as file:  # type: ignore
+        content = await file.read()
     return content
 
 
