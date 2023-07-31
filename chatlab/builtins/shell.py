@@ -17,7 +17,12 @@ async def run_shell_command(command: str):
     """
     process = await asyncio.create_subprocess_shell(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = await process.communicate()
-    return process.returncode, stdout.decode().strip(), stderr.decode().strip()
+
+    resp = f"Return Code: {process.returncode}\n"
+    resp += f"stdout: ```\n{stdout.decode().strip()}\n```\n"
+    resp += f"stderr: ```\n{stderr.decode().strip()}\n```"
+
+    return resp
 
 
 chat_functions = [run_shell_command]

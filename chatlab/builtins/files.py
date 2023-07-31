@@ -1,6 +1,16 @@
-"""Built-in functions for file operations."""
+"""These are all functions for file operations to expose to a Large Language Model.
+
+⚠️ ☢️ WARNING ☢️ ⚠️
+The model will do useful things and the model will do destructive things.
+
+Git and Docker can be your friends when you let a probalistc model loose on your filesystem.
+
+You've been warned. Have fun and be safe!
+"""
 import asyncio
 import os
+
+import aiofiles
 
 from chatlab.decorators import expose_exception_to_llm
 
@@ -49,6 +59,38 @@ async def is_file(file_path: str) -> bool:
 
 
 @expose_exception_to_llm
+async def write_file(file_path: str, content: str, mode: str = 'w') -> None:
+    """Write content to a file.
+
+    Args:
+    - file_path: The path to the file
+    - content: The content to be written
+    - mode: The writing mode, default is 'w' for write
+
+    Returns:
+    - None
+    """
+    async with aiofiles.open(file_path, mode) as file:  # type: ignore
+        await file.write(content)
+
+
+@expose_exception_to_llm
+async def read_file(file_path: str, mode: str = 'r') -> str:
+    """Read content from a file.
+
+    Args:
+    - file_path: The path to the file
+    - mode: The reading mode, default is 'r' for read
+
+    Returns:
+    - str: The content of the file
+    """
+    async with aiofiles.open(file_path, mode) as file:  # type: ignore
+        content = await file.read()
+    return content
+
+
+@expose_exception_to_llm
 async def is_directory(directory: str) -> bool:
     """Check if the given path points to a directory asynchronously.
 
@@ -62,4 +104,4 @@ async def is_directory(directory: str) -> bool:
     return is_directory
 
 
-chat_functions = [list_files, get_file_size, is_file, is_directory]
+chat_functions = [list_files, get_file_size, is_file, is_directory, write_file, read_file]
