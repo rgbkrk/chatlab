@@ -2783,6 +2783,17 @@ rich = ">=12.0.0"
 urllib3 = ">=1.26.0"
 
 [[package]]
+name = "types-aiofiles"
+version = "23.1.0.5"
+description = "Typing stubs for aiofiles"
+optional = false
+python-versions = "*"
+files = [
+    {file = "types-aiofiles-23.1.0.5.tar.gz", hash = "sha256:8acf2c847eb474a1397e88ac6e981484c5211715ceba1b41f6431cdc95094e7d"},
+    {file = "types_aiofiles-23.1.0.5-py3-none-any.whl", hash = "sha256:4106aa867fb8d3ded9b21ca4a9dbe3f8580f756cf90973d2b863f2cbb9c29995"},
+]
+
+[[package]]
 name = "types-toml"
 version = "0.10.8.6"
 description = "Typing stubs for toml"
@@ -3077,4 +3088,4 @@ test = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9.0,<3.12"
-content-hash = "3445b2c9418067dcad4e10ec4df8472aca5b59c5ce61a9f1cda7a7e220deb862"
+content-hash = "274853e8cf1f6ee8f1b2a6f29cd58b7ae67185dc372d249feb86e2150ac0519e"
