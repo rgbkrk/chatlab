@@ -19,6 +19,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   📗 New experimental builtin: Noteable. Create notebooks on Noteable like you can via ChatGPT Plugins with even more flexibility.
 -   🧩 Accept collections of functions to `Chat` and `FunctionRegistry` to register multiple functions at once
 
+-   [Builtins] 📁 Chat File functions:
+
+    -   `list_files`: List all files in a directory.
+    -   `get_file_size`: Get the size of a file.
+    -   `is_file`: Check if a path points to a file.
+    -   `is_directory`: Check if a path points to a directory.
+    -   `write_file`: Write content to a file.
+    -   `read_file`: Read content from a file.
+
+-   [Builtins] 🐚 Chat Shell Functions:
+
+    -   `run_shell_command`: Run a shell command and return the output.
+
 ### Changed
 
 -   🔄 `chatlab.Chat` is now `chatlab.Conversation` to improve readability
