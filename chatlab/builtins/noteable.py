@@ -158,7 +158,7 @@ class NotebookClient:
         return llm_friendly_outputs
 
     async def extract_llm_plain(self, output: KernelOutput):
-        resp = await self.api_client.client.get(f"/outputs/{output.id}?mimetype=text/llm+plain")
+        resp = await self.api_client.client.get(f"/outputs/{output.id}?mimetype=text%2Fllm%2Bplain")
         resp.raise_for_status()
 
         output_for_llm = KernelOutput.parse_obj(resp.json())
