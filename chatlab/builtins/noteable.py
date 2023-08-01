@@ -2,13 +2,15 @@
 import logging
 import os
 import uuid
-from textwrap import dedent
 from typing import Optional
 
 import ulid
 from origami.clients.api import APIClient, RTUClient
+from origami.models.api.outputs import KernelOutput
 from origami.models.kernels import KernelSession
 from origami.models.notebook import CodeCell, MarkdownCell
+
+from ._mediatypes import formats_for_llm
 
 logger = logging.getLogger(__name__)
 
@@ -148,18 +150,35 @@ class NotebookClient:
             if content is None:
                 continue
 
-            friendly_output = self._get_llm_friendly_output(output)
+            friendly_output = await self._get_llm_friendly_output(output)
 
             if friendly_output is not None:
                 llm_friendly_outputs.append(friendly_output)
 
         return llm_friendly_outputs
 
-    def _get_llm_friendly_output(self, output):
+    async def extract_llm_plain(self, output: KernelOutput):
+        resp = await self.api_client.client.get(f"/outputs/{output.id}?mimetype=text%2Fllm%2Bplain")
+        resp.raise_for_status()
+
+        output_for_llm = KernelOutput.parse_obj(resp.json())
+
+        if output_for_llm.content is None:
+            return None
+
+        return output_for_llm.content.raw
+
+    async def _get_llm_friendly_output(self, output: KernelOutput):
         """Get the output for a given output."""
         content = output.content
         if content is None:
             return None
+
+        if 'text/llm+plain' in output.available_mimetypes:
+            # Fetch the specialized LLM+Plain directly
+            result = await self.extract_llm_plain(output)
+            if result is not None:
+                return result
 
         if content.mimetype == 'application/vnd.dataresource+json':
             # TODO: Bring back a smaller representation to allow the LLM to do analysis
@@ -170,7 +189,25 @@ class NotebookClient:
         if content.url is not None:
             return "<!-- Large output too large for chat. It is available in the notebook that the user can see -->"
 
-        return content.raw
+        if content.mimetype in formats_for_llm:
+            return content.raw
+
+        mimetypes: list[str] = output.available_mimetypes
+
+        for format in formats_for_llm:
+            if format in mimetypes:
+                resp = await self.api_client.client.get(f"/outputs/{output.id}?mimetype={format}")
+                resp.raise_for_status()
+                if resp.status_code == 200:
+                    return
+
+                next_best_output = KernelOutput.parse_obj(resp.json())
+
+                if next_best_output.content is None:
+                    continue
+
+                if next_best_output.content.raw is not None:
+                    return next_best_output.content.raw
 
     async def run_cell(self, cell_id: str):
         """Run a Cell within a Notebook by ID."""
