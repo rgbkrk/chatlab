@@ -42,12 +42,12 @@ class NotebookClient:
         return f"{base_url}/f/{self.file_id}"
 
     @classmethod
-    async def connect(cls, token=None, file_id=None):
+    async def connect(cls, file_id, token=None):
         """Connect to an existing notebook."""
-        return await cls.create(token=token, file_id=file_id)
+        return await cls.create(file_id=file_id, token=token)
 
     @classmethod
-    async def create(cls, token=None, file_id=None, file_name=None, project_id=None):
+    async def create(cls, file_name=None, token=None, file_id=None, project_id=None):
         """Create a new notebook."""
         if token is None:
             token = os.environ.get("NOTEABLE_TOKEN")
