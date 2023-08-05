@@ -8,7 +8,7 @@ import ulid
 from origami.clients.api import APIClient, RTUClient
 from origami.models.api.outputs import KernelOutput
 from origami.models.kernels import KernelSession
-from origami.models.notebook import CodeCell, MarkdownCell, SQLCell
+from origami.models.notebook import CodeCell, MarkdownCell, make_sql_cell
 
 from ._mediatypes import formats_for_llm
 
@@ -104,6 +104,8 @@ class NotebookClient:
         and_run: bool = False,
         cell_type: str = "code",
         after_cell_id: Optional[str] = None,
+        db_connection_id: Optional[str] = None,
+        assign_results_to: Optional[str] = None,
     ):
         """Create a code, markdown, or SQL cell."""
         rtu_client = await self.get_or_create_rtu_client()
@@ -123,14 +125,17 @@ class NotebookClient:
         elif cell_type == "code":
             cell = CodeCell(source=source, id=cell_id)
         elif cell_type == "sql":
-            cell = CodeCell(source=source, id=cell_id)
-            cell.metadata.update({"noteable": {"cell_type": "sql"}})
+            if db_connection_id is None:
+                return "You must specify a db_connection for SQL cells."
+            cell = make_sql_cell(
+                source=source, cell_id=cell_id, db_connection=db_connection_id, assign_results_to=assign_results_to
+            )
 
         if cell is None:
             return f"Unknown cell type {cell_type}. Valid types are: markdown, code, sql."
 
         logger.info(f"Adding cell {cell_id} to notebook")
-        cell = await rtu_client.add_cell(cell, after_id=after_cell_id)
+        cell = await rtu_client.add_cell(cell=cell, after_id=after_cell_id)
         logger.info(f"Added cell {cell_id} to notebook")
 
         if cell.cell_type != "code" or not and_run:
@@ -235,16 +240,8 @@ class NotebookClient:
         """Run a Cell within a Notebook by ID."""
         # Queue up the execution
         rtu_client = await self.get_or_create_rtu_client()
-        results_future = await rtu_client.queue_execution(cell_id)
-
-        # results_future is either a list of codecell or a codecell
-        if isinstance(results_future, list):
-            # HACK: queue_execute only returns a list when given a list (or requested to run all)
-            # This is here just for types to be happy.
-            results_future = results_future[0]
-
-        # Wait for execution to finish
-        cell = await results_future
+        queued_executions = await rtu_client.queue_execution(cell_id)
+        cell = await list(queued_executions)[0]
 
         if cell.output_collection_id is None:
             # Hypothesis: if the output collection ID is None, we're in a bad
