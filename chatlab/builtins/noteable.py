@@ -8,11 +8,13 @@ import ulid
 from origami.clients.api import APIClient, RTUClient
 from origami.models.api.outputs import KernelOutput
 from origami.models.kernels import KernelSession
-from origami.models.notebook import CodeCell, MarkdownCell
+from origami.models.notebook import CodeCell, MarkdownCell, SQLCell
 
 from ._mediatypes import formats_for_llm
 
 logger = logging.getLogger(__name__)
+
+logger.setLevel(logging.DEBUG)
 
 
 class NotebookClient:
@@ -127,12 +129,15 @@ class NotebookClient:
         if cell is None:
             return f"Unknown cell type {cell_type}. Valid types are: markdown, code, sql."
 
+        logger.info(f"Adding cell {cell_id} to notebook")
         cell = await rtu_client.add_cell(cell, after_id=after_cell_id)
+        logger.info(f"Added cell {cell_id} to notebook")
 
         if cell.cell_type != "code" or not and_run:
             return cell
 
         try:
+            logger.info("Running cell")
             return await self.run_cell(cell.id)
         except Exception as e:
             return f"Cell created successfully. An error happened during run: {e}"
@@ -273,6 +278,17 @@ class NotebookClient:
 
         response = f"<!-- {cell.cell_type.title()} Cell, ID: {cell_id} -->\n"
 
+        noteable_metadata = cell.metadata.get("noteable", {})
+
+        if noteable_metadata.get("cell_type") == "sql":
+            source_type = "sql"
+
+        extra = ""
+
+        assign_results_to = noteable_metadata.get("assign_results_to")
+        if assign_results_to is not None:
+            extra += f" assign_to: {assign_results_to}"
+
         if cell.cell_type != "code":
             response += cell.source
             return response
@@ -283,7 +299,7 @@ class NotebookClient:
             source_type = "sql"
 
         # Convert to a plaintext response
-        response += f"\nIn:\n\n```{source_type}\n"
+        response += f"\nIn:\n\n```{source_type}{extra}\n"
         response += cell.source
         response += "\n```\n"
 
