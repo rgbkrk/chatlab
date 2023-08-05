@@ -158,8 +158,19 @@ class NotebookClient:
 
         return llm_friendly_outputs
 
-    async def extract_llm_plain(self, output: KernelOutput):
-        resp = await self.api_client.client.get(f"/outputs/{output.id}?mimetype=text%2Fllm%2Bplain")
+    async def _extract_llm_plain(self, output: KernelOutput):
+        resp = await self.api_client.client.get(f"/outputs/{output.id}", params={"mimetype": "text/llm+plain"})
+        resp.raise_for_status()
+
+        output_for_llm = KernelOutput.parse_obj(resp.json())
+
+        if output_for_llm.content is None:
+            return None
+
+        return output_for_llm.content.raw
+
+    async def _extract_specific_mediatype(self, output: KernelOutput, mimetype: str):
+        resp = await self.api_client.client.get(f"/outputs/{output.id}", params={"mimetype": mimetype})
         resp.raise_for_status()
 
         output_for_llm = KernelOutput.parse_obj(resp.json())
@@ -177,7 +188,12 @@ class NotebookClient:
 
         if 'text/llm+plain' in output.available_mimetypes:
             # Fetch the specialized LLM+Plain directly
-            result = await self.extract_llm_plain(output)
+            result = await self._extract_llm_plain(output)
+            if result is not None:
+                return result
+
+        if content.mimetype == 'text/html':
+            result = await self._extract_specific_mediatype(output, 'text/plain')
             if result is not None:
                 return result
 
@@ -239,7 +255,7 @@ class NotebookClient:
                 logger.exception("Invalid UUID", exc_info=True)
                 return cell
 
-        outputs = self._get_llm_friendly_outputs(output_collection_id)
+        outputs = await self._get_llm_friendly_outputs(output_collection_id)
 
         return outputs
 
@@ -247,7 +263,7 @@ class NotebookClient:
         """Get a list of databases, AKA datasources."""
         return await self.api_client.get_datasources_for_notebook(self.file_id)
 
-    async def get_cell(self, cell_id: str):
+    async def get_cell(self, cell_id: str, with_outputs: bool = False):
         """Get a cell by ID."""
         rtu_client = await self.get_or_create_rtu_client()
         try:
@@ -270,6 +286,9 @@ class NotebookClient:
         response += f"\nIn:\n\n```{source_type}\n"
         response += cell.source
         response += "\n```\n"
+
+        if not with_outputs:
+            return response
 
         output_collection_id = cell.output_collection_id
 
@@ -296,7 +315,7 @@ class NotebookClient:
         return response
 
     async def get_cell_ids(self):
-        """Get all cells."""
+        """Get a list of cell IDs."""
         rtu_client = await self.get_or_create_rtu_client()
         return rtu_client.cell_ids
 
