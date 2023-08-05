@@ -33,6 +33,7 @@ class NotebookClient:
         # should be pulling this based on the file ID instead.
         self.kernel_session = kernel_session
 
+    @property
     def notebook_url(self):
         """Get the URL for the notebook."""
         # HACK: Assuming the deployment is on the same domain as the API server.
