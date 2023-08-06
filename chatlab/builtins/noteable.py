@@ -223,7 +223,7 @@ class NotebookClient:
             return None
 
         if output.type == "error":
-            return self._extract_error(content)
+            return await self._extract_error(content)
 
         if 'text/llm+plain' in output.available_mimetypes:
             # Fetch the specialized LLM+Plain directly
