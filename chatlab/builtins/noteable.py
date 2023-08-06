@@ -127,6 +127,10 @@ class NotebookClient:
         elif cell_type == "sql":
             if db_connection_id is None:
                 return "You must specify a db_connection for SQL cells."
+
+            # db connection has to start with `@`
+            if not db_connection_id.startswith("@"):
+                db_connection_id = f"@{db_connection_id}"
             cell = make_sql_cell(
                 source=source, cell_id=cell_id, db_connection=db_connection_id, assign_results_to=assign_results_to
             )
@@ -258,12 +262,31 @@ class NotebookClient:
                 return cell
 
         outputs = await self._get_llm_friendly_outputs(output_collection_id)
+        response = ""
+        if len(outputs) == 0:
+            return response + "\nNo output."
+
+        response += "\nOut:"
+
+        for output in outputs:
+            response += "\n" + str(output)
 
         return outputs
 
     async def get_datasources(self):
         """Get a list of databases, AKA datasources."""
-        return await self.api_client.get_datasources_for_notebook(self.file_id)
+        datasources = await self.api_client.get_datasources_for_notebook(self.file_id)
+
+        resp_text = "Datasources:\n"
+
+        for datasource in datasources:
+            print(datasource.dict(exclude_unset=True, exclude_none=True))
+            resp_text += f"## {datasource.name}\n"
+            resp_text += f"{datasource.description}\n"
+            resp_text += f"datasource_id: {datasource.sql_cell_handle}\n\n"
+            resp_text += f"Type: {datasource.type_id}\n\n"
+
+        return resp_text
 
     async def get_cell(self, cell_id: str, with_outputs: bool = False):
         """Get a cell by ID."""
@@ -273,8 +296,6 @@ class NotebookClient:
         except KeyError:
             return f"Cell {cell_id} not found."
 
-        response = f"<!-- {cell.cell_type.title()} Cell, ID: {cell_id} -->\n"
-
         noteable_metadata = cell.metadata.get("noteable", {})
 
         if noteable_metadata.get("cell_type") == "sql":
@@ -283,8 +304,14 @@ class NotebookClient:
         extra = ""
 
         assign_results_to = noteable_metadata.get("assign_results_to")
+        db_connection = noteable_metadata.get("db_connection")
+        if db_connection is not None:
+            extra += f", db_connection: {db_connection}"
+
         if assign_results_to is not None:
-            extra += f" assign_to: {assign_results_to}"
+            extra += f", assign_to: {assign_results_to}"
+
+        response = f"<!-- {cell.cell_type.title()} Cell, ID: {cell_id}{extra} -->\n"
 
         if cell.cell_type != "code":
             response += cell.source
@@ -296,7 +323,7 @@ class NotebookClient:
             source_type = "sql"
 
         # Convert to a plaintext response
-        response += f"\nIn:\n\n```{source_type}{extra}\n"
+        response += f"\nIn:\n\n```{source_type}\n"
         response += cell.source
         response += "\n```\n"
 
