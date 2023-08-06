@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Callable, Iterable, List, Optional, Tuple, Type, Union, cast
 
 import openai
+import openai.error
 from deprecation import deprecated
 from IPython.core.async_helpers import get_asyncio_loop
 from pydantic import BaseModel
@@ -239,14 +240,32 @@ class Chat:
             stream (bool): Whether to stream chat into markdown or not. If False, the entire chat will be sent once.
 
         """
-        self.append(*messages)
 
-        resp = openai.ChatCompletion.create(
-            model=self.model,
-            messages=self.messages,
-            **self.function_registry.api_manifest(),
-            stream=stream,
-        )
+        # messages = [self.messages, *messages]
+
+        full_messages: List[Message] = []
+        full_messages.extend(self.messages)
+        for message in messages:
+            if isinstance(message, str):
+                full_messages.append(human(message))
+            else:
+                full_messages.append(message)
+
+        try:
+            resp = openai.ChatCompletion.create(
+                model=self.model,
+                messages=full_messages,
+                **self.function_registry.api_manifest(),
+                stream=stream,
+            )
+        except openai.error.RateLimitError as e:
+            logger.error(f"Rate limited: {e}. Waiting 5 seconds and trying again.")
+            await asyncio.sleep(5)
+            await self.submit(*messages, stream=stream)
+
+            return
+
+        self.append(*messages)
 
         if not stream:
             resp = [resp]

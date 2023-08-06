@@ -8,11 +8,13 @@ import ulid
 from origami.clients.api import APIClient, RTUClient
 from origami.models.api.outputs import KernelOutput
 from origami.models.kernels import KernelSession
-from origami.models.notebook import CodeCell, MarkdownCell
+from origami.models.notebook import CodeCell, MarkdownCell, make_sql_cell
 
 from ._mediatypes import formats_for_llm
 
 logger = logging.getLogger(__name__)
+
+logger.setLevel(logging.DEBUG)
 
 
 class NotebookClient:
@@ -33,6 +35,7 @@ class NotebookClient:
         # should be pulling this based on the file ID instead.
         self.kernel_session = kernel_session
 
+    @property
     def notebook_url(self):
         """Get the URL for the notebook."""
         # HACK: Assuming the deployment is on the same domain as the API server.
@@ -41,12 +44,12 @@ class NotebookClient:
         return f"{base_url}/f/{self.file_id}"
 
     @classmethod
-    async def connect(cls, token=None, file_id=None):
+    async def connect(cls, file_id, token=None):
         """Connect to an existing notebook."""
-        return await cls.create(token=token, file_id=file_id)
+        return await cls.create(file_id=file_id, token=token)
 
     @classmethod
-    async def create(cls, token=None, file_id=None, file_name=None, project_id=None):
+    async def create(cls, file_name=None, token=None, file_id=None, project_id=None):
         """Create a new notebook."""
         if token is None:
             token = os.environ.get("NOTEABLE_TOKEN")
@@ -101,6 +104,8 @@ class NotebookClient:
         and_run: bool = False,
         cell_type: str = "code",
         after_cell_id: Optional[str] = None,
+        db_connection_id: Optional[str] = None,
+        assign_results_to: Optional[str] = None,
     ):
         """Create a code, markdown, or SQL cell."""
         rtu_client = await self.get_or_create_rtu_client()
@@ -120,18 +125,28 @@ class NotebookClient:
         elif cell_type == "code":
             cell = CodeCell(source=source, id=cell_id)
         elif cell_type == "sql":
-            cell = CodeCell(source=source, id=cell_id)
-            cell.metadata.update({"noteable": {"cell_type": "sql"}})
+            if db_connection_id is None:
+                return "You must specify a db_connection for SQL cells."
+
+            # db connection has to start with `@`
+            if not db_connection_id.startswith("@"):
+                db_connection_id = f"@{db_connection_id}"
+            cell = make_sql_cell(
+                source=source, cell_id=cell_id, db_connection=db_connection_id, assign_results_to=assign_results_to
+            )
 
         if cell is None:
             return f"Unknown cell type {cell_type}. Valid types are: markdown, code, sql."
 
-        cell = await rtu_client.add_cell(cell, after_id=after_cell_id)
+        logger.info(f"Adding cell {cell_id} to notebook")
+        cell = await rtu_client.add_cell(cell=cell, after_id=after_cell_id)
+        logger.info(f"Added cell {cell_id} to notebook")
 
         if cell.cell_type != "code" or not and_run:
             return cell
 
         try:
+            logger.info("Running cell")
             return await self.run_cell(cell.id)
         except Exception as e:
             return f"Cell created successfully. An error happened during run: {e}"
@@ -157,8 +172,19 @@ class NotebookClient:
 
         return llm_friendly_outputs
 
-    async def extract_llm_plain(self, output: KernelOutput):
-        resp = await self.api_client.client.get(f"/outputs/{output.id}?mimetype=text%2Fllm%2Bplain")
+    async def _extract_llm_plain(self, output: KernelOutput):
+        resp = await self.api_client.client.get(f"/outputs/{output.id}", params={"mimetype": "text/llm+plain"})
+        resp.raise_for_status()
+
+        output_for_llm = KernelOutput.parse_obj(resp.json())
+
+        if output_for_llm.content is None:
+            return None
+
+        return output_for_llm.content.raw
+
+    async def _extract_specific_mediatype(self, output: KernelOutput, mimetype: str):
+        resp = await self.api_client.client.get(f"/outputs/{output.id}", params={"mimetype": mimetype})
         resp.raise_for_status()
 
         output_for_llm = KernelOutput.parse_obj(resp.json())
@@ -176,7 +202,12 @@ class NotebookClient:
 
         if 'text/llm+plain' in output.available_mimetypes:
             # Fetch the specialized LLM+Plain directly
-            result = await self.extract_llm_plain(output)
+            result = await self._extract_llm_plain(output)
+            if result is not None:
+                return result
+
+        if content.mimetype == 'text/html':
+            result = await self._extract_specific_mediatype(output, 'text/plain')
             if result is not None:
                 return result
 
@@ -213,16 +244,8 @@ class NotebookClient:
         """Run a Cell within a Notebook by ID."""
         # Queue up the execution
         rtu_client = await self.get_or_create_rtu_client()
-        results_future = await rtu_client.queue_execution(cell_id)
-
-        # results_future is either a list of codecell or a codecell
-        if isinstance(results_future, list):
-            # HACK: queue_execute only returns a list when given a list (or requested to run all)
-            # This is here just for types to be happy.
-            results_future = results_future[0]
-
-        # Wait for execution to finish
-        cell = await results_future
+        queued_executions = await rtu_client.queue_execution(cell_id)
+        cell = await list(queued_executions)[0]
 
         if cell.output_collection_id is None:
             # Hypothesis: if the output collection ID is None, we're in a bad
@@ -238,15 +261,34 @@ class NotebookClient:
                 logger.exception("Invalid UUID", exc_info=True)
                 return cell
 
-        outputs = self._get_llm_friendly_outputs(output_collection_id)
+        outputs = await self._get_llm_friendly_outputs(output_collection_id)
+        response = ""
+        if len(outputs) == 0:
+            return response + "\nNo output."
+
+        response += "\nOut:"
+
+        for output in outputs:
+            response += "\n" + str(output)
 
         return outputs
 
     async def get_datasources(self):
         """Get a list of databases, AKA datasources."""
-        return await self.api_client.get_datasources_for_notebook(self.file_id)
+        datasources = await self.api_client.get_datasources_for_notebook(self.file_id)
 
-    async def get_cell(self, cell_id: str):
+        resp_text = "Datasources:\n"
+
+        for datasource in datasources:
+            print(datasource.dict(exclude_unset=True, exclude_none=True))
+            resp_text += f"## {datasource.name}\n"
+            resp_text += f"{datasource.description}\n"
+            resp_text += f"datasource_id: {datasource.sql_cell_handle}\n\n"
+            resp_text += f"Type: {datasource.type_id}\n\n"
+
+        return resp_text
+
+    async def get_cell(self, cell_id: str, with_outputs: bool = False):
         """Get a cell by ID."""
         rtu_client = await self.get_or_create_rtu_client()
         try:
@@ -254,7 +296,22 @@ class NotebookClient:
         except KeyError:
             return f"Cell {cell_id} not found."
 
-        response = f"<!-- {cell.cell_type.title()} Cell, ID: {cell_id} -->\n"
+        noteable_metadata = cell.metadata.get("noteable", {})
+
+        if noteable_metadata.get("cell_type") == "sql":
+            source_type = "sql"
+
+        extra = ""
+
+        assign_results_to = noteable_metadata.get("assign_results_to")
+        db_connection = noteable_metadata.get("db_connection")
+        if db_connection is not None:
+            extra += f", db_connection: {db_connection}"
+
+        if assign_results_to is not None:
+            extra += f", assign_to: {assign_results_to}"
+
+        response = f"<!-- {cell.cell_type.title()} Cell, ID: {cell_id}{extra} -->\n"
 
         if cell.cell_type != "code":
             response += cell.source
@@ -269,6 +326,9 @@ class NotebookClient:
         response += f"\nIn:\n\n```{source_type}\n"
         response += cell.source
         response += "\n```\n"
+
+        if not with_outputs:
+            return response
 
         output_collection_id = cell.output_collection_id
 
@@ -295,7 +355,7 @@ class NotebookClient:
         return response
 
     async def get_cell_ids(self):
-        """Get all cells."""
+        """Get a list of cell IDs."""
         rtu_client = await self.get_or_create_rtu_client()
         return rtu_client.cell_ids
 
