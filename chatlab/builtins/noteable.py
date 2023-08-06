@@ -4,9 +4,11 @@ import os
 import uuid
 from typing import Optional
 
+import httpx
+import orjson
 import ulid
 from origami.clients.api import APIClient, RTUClient
-from origami.models.api.outputs import KernelOutput
+from origami.models.api.outputs import KernelOutput, KernelOutputContent
 from origami.models.kernels import KernelSession
 from origami.models.notebook import CodeCell, MarkdownCell, make_sql_cell
 
@@ -104,7 +106,7 @@ class NotebookClient:
         and_run: bool = False,
         cell_type: str = "code",
         after_cell_id: Optional[str] = None,
-        db_connection_id: Optional[str] = None,
+        db_connection: Optional[str] = None,
         assign_results_to: Optional[str] = None,
     ):
         """Create a code, markdown, or SQL cell."""
@@ -125,14 +127,14 @@ class NotebookClient:
         elif cell_type == "code":
             cell = CodeCell(source=source, id=cell_id)
         elif cell_type == "sql":
-            if db_connection_id is None:
+            if db_connection is None:
                 return "You must specify a db_connection for SQL cells."
 
             # db connection has to start with `@`
-            if not db_connection_id.startswith("@"):
-                db_connection_id = f"@{db_connection_id}"
+            if not db_connection.startswith("@"):
+                db_connection = f"@{db_connection}"
             cell = make_sql_cell(
-                source=source, cell_id=cell_id, db_connection=db_connection_id, assign_results_to=assign_results_to
+                source=source, cell_id=cell_id, db_connection=db_connection, assign_results_to=assign_results_to
             )
 
         if cell is None:
@@ -194,11 +196,34 @@ class NotebookClient:
 
         return output_for_llm.content.raw
 
+    async def _extract_error(self, content: KernelOutputContent):
+        orjson_content = None
+        if content.raw is not None:
+            orjson_content = orjson.loads(content.raw)
+        elif content.url is not None:
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(content.url)
+                # If the response failed, return None
+                if resp.status_code != 200:
+                    return None
+                try:
+                    orjson_content = orjson.loads(resp.content)
+                except orjson.JSONDecodeError:
+                    return None
+
+        if orjson_content is None:
+            return None
+
+        return f"Error: {orjson_content['ename']}: {orjson_content['evalue']}"
+
     async def _get_llm_friendly_output(self, output: KernelOutput):
         """Get the output for a given output."""
         content = output.content
         if content is None:
             return None
+
+        if output.type == "error":
+            return self._extract_error(content)
 
         if 'text/llm+plain' in output.available_mimetypes:
             # Fetch the specialized LLM+Plain directly
@@ -271,7 +296,7 @@ class NotebookClient:
         for output in outputs:
             response += "\n" + str(output)
 
-        return outputs
+        return response
 
     async def get_datasources(self):
         """Get a list of databases, AKA datasources."""
