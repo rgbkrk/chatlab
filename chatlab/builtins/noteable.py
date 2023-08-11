@@ -398,6 +398,7 @@ class NotebookClient:
         """Creates a python cell, runs it, and returns output."""
         return await self.create_cell(code, and_run=True)
 
+    @property
     def chat_functions(self):
         """Functions to expose for LLMs."""
         return [
