@@ -91,9 +91,10 @@ class BufferView(ABC):
 
     def flush(self):
         """Flushes the message buffer."""
+        message = self.get_message()
         self.buffer = self.create_buffer()
         self.active = False
-        return self.get_message()
+        return message
 
     def _ipython_display_(self):
         """Display the buffer."""
