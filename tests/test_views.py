@@ -28,6 +28,17 @@ def test_assistant_message_get():
     }
 
 
+def test_assistant_message_flush():
+    amv = AssistantMessageView()
+    amv.append("test")
+    message = amv.flush()
+    assert amv.content == ""
+    assert message == {
+        "role": "assistant",
+        "content": "test",
+    }
+
+
 def test_assistant_function_call_view_creation():
     afcv = AssistantFunctionCallView("compute_pi")
     assert isinstance(afcv, AssistantFunctionCallView)
