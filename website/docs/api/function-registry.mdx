@@ -1,0 +1,26 @@
+## Function Registry
+
+Chatlab exposes functions to chat models with the assistance of a function registry.
+
+
+```python cell count=1
+from chatlab import FunctionRegistry
+
+registry = FunctionRegistry()
+```
+
+```python cell count=2
+def f(x: float):
+    '''Multiply x by 2.'''
+    return x
+
+registry.register(f)
+```
+
+```output
+{'name': 'f',
+ 'description': 'Multiply x by 2.',
+ 'parameters': {'type': 'object',
+  'properties': {'x': {'type': 'number'}},
+  'required': ['x']}}
+```
