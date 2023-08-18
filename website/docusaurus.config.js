@@ -59,6 +59,20 @@ const config = {
         ],
     ],
 
+    plugins: [
+        [
+            "@docusaurus/plugin-client-redirects",
+            {
+                redirects: [
+                    {
+                        to: "/docs/intro",
+                        from: ["/docs", "/docs/"],
+                    },
+                ],
+            },
+        ],
+    ],
+
     themeConfig:
         /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
         ({
@@ -71,13 +85,31 @@ const config = {
                     src: "img/logo.svg",
                 },
                 items: [
+                    // {
+                    //     type: "doc",
+                    //     docId: "intro",
+                    //     position: "left",
+                    //     label: "Get Started",
+                    // },
                     {
                         type: "docSidebar",
-                        sidebarId: "tutorialSidebar",
+                        sidebarId: "gettingStartedSidebar",
                         position: "left",
-                        label: "Tutorial",
+                        label: "Get Started",
                     },
-                    { to: "/blog", label: "Blog", position: "left" },
+                    // {
+                    //     type: "docSidebar",
+                    //     sidebarId: "guidesSidebar",
+                    //     position: "left",
+                    //     label: "Guides",
+                    // },
+                    {
+                        type: "docSidebar",
+                        sidebarId: "apiSidebar",
+                        position: "left",
+                        label: "API",
+                    },
+                    // { to: "/blog", label: "Blog", position: "left" },
                     {
                         href: "https://github.com/rgbkrk/chatlab",
                         label: "GitHub",
@@ -92,8 +124,16 @@ const config = {
                         title: "Docs",
                         items: [
                             {
-                                label: "Tutorial",
+                                label: "Get Started",
                                 to: "/docs/intro",
+                            },
+                            {
+                                label: "Guides",
+                                to: "/docs/guides",
+                            },
+                            {
+                                label: "API",
+                                to: "/docs/api",
                             },
                         ],
                     },
