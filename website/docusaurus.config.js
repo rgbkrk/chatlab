@@ -59,6 +59,21 @@ const config = {
         ],
     ],
 
+    plugins: [
+        [
+            "@docusaurus/plugin-client-redirects",
+            {
+                redirects: [
+                    // For later
+                    // {
+                    //     to: "/docs/intro",
+                    //     from: ["/docs", "/docs/"],
+                    // },
+                ],
+            },
+        ],
+    ],
+
     themeConfig:
         /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
         ({
@@ -73,11 +88,17 @@ const config = {
                 items: [
                     {
                         type: "docSidebar",
-                        sidebarId: "tutorialSidebar",
+                        sidebarId: "gettingStartedSidebar",
                         position: "left",
-                        label: "Tutorial",
+                        label: "Get Started",
                     },
-                    { to: "/blog", label: "Blog", position: "left" },
+                    {
+                        type: "docSidebar",
+                        sidebarId: "apiSidebar",
+                        position: "left",
+                        label: "API",
+                    },
+                    // { to: "/blog", label: "Blog", position: "left" },
                     {
                         href: "https://github.com/rgbkrk/chatlab",
                         label: "GitHub",
@@ -92,8 +113,12 @@ const config = {
                         title: "Docs",
                         items: [
                             {
-                                label: "Tutorial",
+                                label: "Get Started",
                                 to: "/docs/intro",
+                            },
+                            {
+                                label: "API",
+                                to: "/docs/api/function-registry",
                             },
                         ],
                     },
