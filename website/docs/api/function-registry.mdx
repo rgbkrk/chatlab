@@ -1,26 +1,313 @@
-## Function Registry
+---
+title: Function Registry
+description: Register functions to enable chat models to call them.
+---
 
-Chatlab exposes functions to chat models with the assistance of a function registry.
+# Overview
 
+The hidden power behind `chat.register(ƒ)` is the Function Registry. It lets you register _typed_ functions quickly and easily so they can be called on behalf of chat models.
 
 ```python cell count=1
 from chatlab import FunctionRegistry
 
-registry = FunctionRegistry()
-```
-
-```python cell count=2
 def f(x: float):
     '''Multiply x by 2.'''
-    return x
+    return x*2
 
+registry = FunctionRegistry()
 registry.register(f)
+
+await registry.call("f", "{\"x\": 4}")
 ```
 
-```output
-{'name': 'f',
- 'description': 'Multiply x by 2.',
- 'parameters': {'type': 'object',
-  'properties': {'x': {'type': 'number'}},
-  'required': ['x']}}
+```plain output count=1
+8
+```
+
+Functions can be registered by:
+
+-   Passing a typed function in directly
+-   Passing the function and the Pydantic model that describes its parameters
+-   Passing the function and a JSON schema that describes its parameters
+
+## Registering Typed Functions
+
+:::tip
+
+Not all function parameters can be accurately determined. For those cases it's best to use a Pydantic model or JSON schema.
+
+If you're adventurous, make a [PR to chatlab](https://github.com/rgbkrk/chatlab) to improve the type inference!
+
+:::
+
+### No Parameters
+
+```python cell count=2
+def flip_a_coin():
+    '''Flip a coin.'''
+    return random.choice(["heads", "tails"])
+
+registry.register(flip_a_coin)
+```
+
+```js output count=2
+{
+    'name': 'flip_a_coin',
+    'description': 'Flip a coin.',
+    'parameters': {
+        'type': 'object',
+        'properties': {},
+        'required': []
+    }
+}
+```
+
+### Multiple Parameters
+
+```python cell count=3
+def add(x: float, y: float):
+    '''Add x and y.'''
+    return x + y
+
+registry.register(add)
+```
+
+```js output count=3
+{
+    'name': 'add',
+    'description': 'Add x and y.',
+    'parameters': {
+        'type': 'object',
+        'properties': {
+            'x': {'type': 'number'},
+            'y': {'type': 'number'}
+        },
+        'required': ['x', 'y']
+    }
+}
+```
+
+### Optional Parameters
+
+```python cell count=4
+def add(x: float, y: float = 1):
+    '''Add x and y.'''
+    return x + y
+
+registry.register(add)
+```
+
+```js output count=4
+{
+    'name': 'add',
+    'description': 'Add x and y.',
+    'parameters': {
+        'type': 'object',
+        'properties': {
+            'x': {'type': 'number'},
+            'y': {'type': 'number'}
+        },
+        'required': ['x']
+    }
+}
+```
+
+## Registering Functions with Pydantic Models
+
+Pydantic Models give you all the benefits above _and_ much more:
+
+-   Default values
+-   Descriptions on parameters
+-   Deeper type validation
+
+```python cell count=5
+from pydantic import BaseModel
+
+class Add(BaseModel):
+    x: float
+    y: float = 1
+
+def add(x: float, y: float = 1):
+    '''Add x and y.'''
+    return x + y
+
+registry.register(add, Add)
+```
+
+```js output count=5
+{
+    'name': 'add',
+    'description': 'Add x and y.',
+    'parameters': {
+        'title': 'Add',
+        'type': 'object',
+        'properties': {
+            'x': {'title': 'X', 'type': 'number'},
+            'y': {'title': 'Y', 'default': 1, 'type': 'number'}
+        },
+        'required': ['x']
+    }
+}
+```
+
+### Additional Descriptions
+
+Using `Field`, you can add descriptions to your parameters.
+
+```python cell count=6
+from pydantic import BaseModel, Field
+
+class Add(BaseModel):
+    x: float = Field(..., description="The first number to add.")
+    y: float = Field(1, description="The second number to add.")
+
+def add(x: float, y: float = 1):
+    '''Add x and y.'''
+    return x + y
+
+registry.register(add, Add)
+```
+
+```js output count=6
+{
+    'name': 'add',
+    'description': 'Add x and y.',
+    'parameters': {
+        'title': 'Add',
+        'type': 'object',
+        'properties': {
+            'x': {
+                'title': 'X',
+                'description': 'The first number to add.',
+                'type': 'number'
+            },
+            'y': {
+                'title': 'Y',
+                'default': 1,
+                'description': 'The second number to add.',
+                'type': 'number'
+            }
+        },
+        'required': ['x']
+    }
+}
+```
+
+## Registering Functions with JSON Schemas
+
+If you don't want to use Pydantic, you can write pure JSON schemas to describe your functions.
+
+```python cell count=7
+def add(x: float, y: float = 1):
+    '''Add x and y.'''
+    return x + y
+
+registry.register(add, {
+    "title": "Add",
+    "type": "object",
+    "properties": {
+        "x": {"type": "number"},
+        "y": {"type": "number", "default": 1}
+    },
+    "required": ["x"]
+})
+```
+
+## Direct OpenAI API Calls with the Function Registry
+
+When calling OpenAI's Chat Completion endpoint you can tell it what kind of functions you have directly:
+
+```python cell count=8
+import openai
+
+openai.ChatCompletion.create(
+    model="gpt-3.5-turbo-0613",
+    messages=[
+        {"role": "user", "content": "Multiply 1024 by 2"},
+    ],
+    functions=[
+        {
+            'name': 'f',
+            'description': 'Multiply x by 2.',
+            'parameters': {
+                'type': 'object',
+                'properties': {'x': {'type': 'number'}},
+                'required': ['x']
+            }
+        }
+    ],
+    function_call="auto"
+)
+```
+
+Function registries expose an `api_manifest()` method that returns a dictionary for passing directly to OpenAI's Chat Completion endpoint. This is useful if you have a lot of functions to register.
+
+```python cell count=9
+import random
+
+def secret():
+    '''Returns a secret'''
+    return random.randint(1, 10)
+
+registry = FunctionRegistry()
+registry.register(secret)
+
+registry.api_manifest()
+```
+
+```js output count=9
+{
+    'functions': [
+        {
+            'name': 'secret',
+            'description': 'Returns a secret',
+            'parameters': {
+                'type': 'object',
+                'properties': {},
+                'required': []
+            }
+        }
+    ],
+    'function_call': 'auto'
+}
+```
+
+This can be passed directly to `ChatCompletion.create()`:
+
+```python cell count=10
+resp = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo-0613",
+    messages=[
+        {"role": "user", "content": "Multiply 1024 by 2"},
+    ],
+    **registry.api_manifest(),
+).choices[0]
+
+resp
+```
+
+```js output count=10
+<OpenAIObject at 0x1198aef90> JSON: {
+  "finish_reason": "function_call",
+  "index": 0,
+  "message": {
+    "content": null,
+    "function_call": {
+      "arguments": "{}",
+      "name": "secret"
+    },
+    "role": "assistant"
+  }
+}
+```
+
+From there, the response's `message.function_call` can be passed to `registry.call()` to execute the function:
+
+```python cell count=11
+value = await registry.call(**resp.message.function_call)
+value
+```
+
+```plain output count=11
+Assistant 10
 ```

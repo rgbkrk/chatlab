@@ -64,10 +64,11 @@ const config = {
             "@docusaurus/plugin-client-redirects",
             {
                 redirects: [
-                    {
-                        to: "/docs/intro",
-                        from: ["/docs", "/docs/"],
-                    },
+                    // For later
+                    // {
+                    //     to: "/docs/intro",
+                    //     from: ["/docs", "/docs/"],
+                    // },
                 ],
             },
         ],
@@ -85,24 +86,12 @@ const config = {
                     src: "img/logo.svg",
                 },
                 items: [
-                    // {
-                    //     type: "doc",
-                    //     docId: "intro",
-                    //     position: "left",
-                    //     label: "Get Started",
-                    // },
                     {
                         type: "docSidebar",
                         sidebarId: "gettingStartedSidebar",
                         position: "left",
                         label: "Get Started",
                     },
-                    // {
-                    //     type: "docSidebar",
-                    //     sidebarId: "guidesSidebar",
-                    //     position: "left",
-                    //     label: "Guides",
-                    // },
                     {
                         type: "docSidebar",
                         sidebarId: "apiSidebar",
@@ -128,12 +117,8 @@ const config = {
                                 to: "/docs/intro",
                             },
                             {
-                                label: "Guides",
-                                to: "/docs/guides",
-                            },
-                            {
                                 label: "API",
-                                to: "/docs/api",
+                                to: "/docs/api/function-registry",
                             },
                         ],
                     },
