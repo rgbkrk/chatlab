@@ -173,10 +173,19 @@ class FunctionRegistry:
 
     def register(
         self,
-        function: Callable,
+        function: Optional[Callable] = None,
         parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
-    ) -> dict:
+    ) -> Union[dict, Callable]:
         """Register a function for use in `Chat`s."""
+        # If the function is None, assume this is a decorator call
+        if function is None:
+
+            def decorator(f):
+                self.register(function=f, parameter_schema=parameter_schema)
+                return f
+
+            return decorator
+
         final_schema = generate_function_schema(function, parameter_schema)
 
         self.__functions[function.__name__] = function
