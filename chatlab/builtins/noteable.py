@@ -103,7 +103,7 @@ class NotebookClient:
         self,
         source: str,
         cell_id: Optional[str] = None,
-        and_run: bool = False,
+        and_run: bool = True,
         cell_type: str = "code",
         after_cell_id: Optional[str] = None,
         db_connection: Optional[str] = None,
