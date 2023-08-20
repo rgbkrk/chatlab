@@ -1616,13 +1616,13 @@ setuptools = "*"
 
 [[package]]
 name = "noteable-origami"
-version = "1.0.0a3"
+version = "1.0.0a5"
 description = "The Noteable API interface"
 optional = true
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "noteable_origami-1.0.0a3-py3-none-any.whl", hash = "sha256:d3f6b3fbd8014d6aa73152872ddf1e8c712388216072f277d87dd8c32ea2d24a"},
-    {file = "noteable_origami-1.0.0a3.tar.gz", hash = "sha256:795bbd01be125b7ed34e43637d5b86714cdb22e007578aef61e3455463ec8865"},
+    {file = "noteable_origami-1.0.0a5-py3-none-any.whl", hash = "sha256:ea3ea035fe1b26e3e87ef6fb145c36aff40352e00ba777e9489a578f998bfe55"},
+    {file = "noteable_origami-1.0.0a5.tar.gz", hash = "sha256:792c5ac13fcffa9f7aa515fa22ce2cd85c5fa87724eedfe527139fa313aea274"},
 ]
 
 [package.dependencies]
@@ -3088,4 +3088,4 @@ test = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9.0,<3.12"
-content-hash = "e92a3b87aee2c9015c7fd02b55e47021c06af6db3501b2a641f75944a8140b33"
+content-hash = "d93487b5fd5cd5336df48ca90f54dc0e3b089481daf47f4bf4a699710141232a"

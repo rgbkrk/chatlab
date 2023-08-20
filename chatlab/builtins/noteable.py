@@ -103,7 +103,7 @@ class NotebookClient:
         self,
         source: str,
         cell_id: Optional[str] = None,
-        and_run: bool = False,
+        and_run: bool = True,
         cell_type: str = "code",
         after_cell_id: Optional[str] = None,
         db_connection: Optional[str] = None,
@@ -145,7 +145,7 @@ class NotebookClient:
         logger.info(f"Added cell {cell_id} to notebook")
 
         if cell.cell_type != "code" or not and_run:
-            return cell
+            return f"Cell ID `{cell.id}` created successfully."
 
         try:
             logger.info("Running cell")
