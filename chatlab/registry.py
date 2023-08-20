@@ -42,7 +42,7 @@ Example usage:
 import asyncio
 import inspect
 import json
-from typing import Any, Callable, Iterable, Optional, Type, Union, get_args, get_origin
+from typing import Any, Callable, Dict, Iterable, Optional, Type, Union, get_args, get_origin, overload
 
 from pydantic import BaseModel
 
@@ -171,21 +171,58 @@ class FunctionRegistry:
 
         self.python_hallucination_function = python_hallucination_function
 
+    def decorator(self, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None) -> Callable:
+        """Create a decorator for registering functions with a schema."""
+
+        def decorator(function):
+            self.register_function(function, parameter_schema)
+            return function
+
+        return decorator
+
+    @overload
     def register(
-        self,
-        function: Optional[Callable] = None,
-        parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
-    ) -> Union[dict, Callable]:
-        """Register a function for use in `Chat`s."""
+        self, function: None = None, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None
+    ) -> Callable:
+        ...
+
+    @overload
+    def register(self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None) -> Dict:
+        ...
+
+    def register(
+        self, function: Optional[Callable] = None, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None
+    ) -> Union[Callable, Dict]:
+        """Register a function for use in `Chat`s. Can be used as a decorator or directly to register a function.
+
+        >>> registry = FunctionRegistry()
+        >>> @registry.register
+        ... def what_time(tz: Optional[str] = None):
+        ...     '''Current time, defaulting to the user's current timezone'''
+        ...     if tz is None:
+        ...         pass
+        ...     elif tz in all_timezones:
+        ...         tz = timezone(tz)
+        ...     else:
+        ...         return 'Invalid timezone'
+        ...     return datetime.now(tz).strftime('%I:%M %p')
+        >>> registry.get("what_time")
+        <function __main__.what_time(tz: Optional[str] = None)>
+        >>> await registry.call("what_time", '{"tz": "America/New_York"}')
+        '10:57 AM'
+
+        """
         # If the function is None, assume this is a decorator call
         if function is None:
+            return self.decorator(parameter_schema)
 
-            def decorator(f):
-                self.register(function=f, parameter_schema=parameter_schema)
-                return f
+        # Otherwise, directly register the function
+        return self.register_function(function, parameter_schema)
 
-            return decorator
-
+    def register_function(
+        self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None
+    ) -> Dict:
+        """Register a single function."""
         final_schema = generate_function_schema(function, parameter_schema)
 
         self.__functions[function.__name__] = function
