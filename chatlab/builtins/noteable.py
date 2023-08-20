@@ -145,7 +145,7 @@ class NotebookClient:
         logger.info(f"Added cell {cell_id} to notebook")
 
         if cell.cell_type != "code" or not and_run:
-            return cell
+            return f"Cell ID `{cell.id}` created successfully."
 
         try:
             logger.info("Running cell")
