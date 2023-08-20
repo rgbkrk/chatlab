@@ -1,24 +1,11 @@
 ---
-title: Chat
-description: The simple chat interface for notebooks
+title: API Reference
+sidebar_label: Chat Class
 ---
 
-# Chat
+import Documentation from "@site/src/components/Documentation";
+import chatlab_doc from "./chatlab_doc.json";
 
-The `Chat` class
+## Chat Class
 
-```python cell count=1
-from chatlab import Chat
-
-# Instantiate
-chat = Chat()
-
-# Start the conversation
-await chat("What's an emoji representing Serendipity?")
-```
-
-<OutputBlock count="1">
-
-An emoji often associated with serendipity is ✨.
-
-</OutputBlock>
+<Documentation jsonData={chatlab_doc.Chat} />

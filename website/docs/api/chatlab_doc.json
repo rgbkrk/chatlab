@@ -1,0 +1,807 @@
+{
+    "Chat": {
+        "methods": [
+            {
+                "name": "_Chat__process_stream",
+                "description": null,
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "resp",
+                        "default": null,
+                        "annotation": "typing.Iterable[typing.Union[chatlab.messaging.StreamCompletion, chatlab.messaging.ChatCompletion]]"
+                    }
+                ],
+                "returns": "typing.Tuple[str, typing.Optional[chatlab.views.assistant_function_call.AssistantFunctionCallView]]"
+            },
+            {
+                "name": "__call__",
+                "description": "Send messages to the chat model and display the response.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "messages",
+                        "default": null,
+                        "annotation": "typing.Union[chatlab.messaging.BasicMessage, chatlab.messaging.FunctionCallMessage, chatlab.messaging.FunctionResultMessage, str]"
+                    },
+                    {
+                        "name": "stream",
+                        "default": true,
+                        "annotation": "<class 'bool'>"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "__init__",
+                "description": "Initialize a Chat with an optional initial context of messages.\n\n>>> from chatlab import Chat, narrate\n>>> convo = Chat(narrate(\"You are a large bird\"))\n>>> convo.submit(\"What are you?\")\nI am a large bird.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "initial_context",
+                        "default": null,
+                        "annotation": "typing.Union[chatlab.messaging.BasicMessage, chatlab.messaging.FunctionCallMessage, chatlab.messaging.FunctionResultMessage, str]"
+                    },
+                    {
+                        "name": "model",
+                        "default": "gpt-3.5-turbo-0613",
+                        "annotation": null
+                    },
+                    {
+                        "name": "function_registry",
+                        "default": null,
+                        "annotation": "typing.Optional[chatlab.registry.FunctionRegistry]"
+                    },
+                    {
+                        "name": "chat_functions",
+                        "default": null,
+                        "annotation": "typing.Optional[typing.List[typing.Callable]]"
+                    },
+                    {
+                        "name": "allow_hallucinated_python",
+                        "default": false,
+                        "annotation": "<class 'bool'>"
+                    },
+                    {
+                        "name": "python_hallucination_function",
+                        "default": null,
+                        "annotation": "typing.Optional[typing.Callable[[str], typing.Any]]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "__repr__",
+                "description": "Return a representation of the ChatLab instance.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "append",
+                "description": "Append messages to the conversation history.\n\nNote: this does not send the messages on until `chat` is called.\n\nArgs:\n    messages (str | Message): One or more messages to append to the conversation.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "messages",
+                        "default": null,
+                        "annotation": "typing.Union[chatlab.messaging.BasicMessage, chatlab.messaging.FunctionCallMessage, chatlab.messaging.FunctionResultMessage, str]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "chat",
+                "description": "Send messages to the chat model and display the response.\n\nDeprecated in 0.13.0, removed in 1.0.0. Use `submit` instead.\n\n\n.. deprecated:: 0.13.0\n   This will be removed in 1.0.0. Use `submit` instead.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "messages",
+                        "default": null,
+                        "annotation": "typing.Union[chatlab.messaging.BasicMessage, chatlab.messaging.FunctionCallMessage, chatlab.messaging.FunctionResultMessage, str]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "clear_history",
+                "description": "Clears the conversation history.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "get_history",
+                "description": "Returns the conversation history as a list of messages.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "ipython_magic_submit",
+                "description": "Submit a cell to the ChatLab instance.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    { "name": "line", "default": null, "annotation": null },
+                    {
+                        "name": "cell",
+                        "default": null,
+                        "annotation": "typing.Optional[str]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "make_magic",
+                "description": "Register the chat as an IPython magic with the given name.\n\nIn [1]: chat = Chat()\nIn [2]: chat.make_magic(\"chat\")\nIn [3]: %%chat\n   ...:\n   ...: Lets chat!\n   ...:\nOut[3]: Sure, I'd be happy to chat! What's on your mind?",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    { "name": "name", "default": null, "annotation": null }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "register",
+                "description": "Register a function with the ChatLab instance.\n\nDeprecated in 1.0.0, removed in 2.0.0. Use `register_function` instead.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "function",
+                        "default": null,
+                        "annotation": "typing.Callable"
+                    },
+                    {
+                        "name": "parameter_schema",
+                        "default": null,
+                        "annotation": "typing.Union[typing.Type[ForwardRef('BaseModel')], dict, NoneType]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "register_function",
+                "description": "Register a function with the ChatLab instance.\n\nArgs:\n    function (Callable): The function to register.\n\n    parameter_schema (BaseModel or dict): The pydantic model or JSON schema for the function's parameters.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "function",
+                        "default": null,
+                        "annotation": "typing.Callable"
+                    },
+                    {
+                        "name": "parameter_schema",
+                        "default": null,
+                        "annotation": "typing.Union[typing.Type[ForwardRef('BaseModel')], dict, NoneType]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "replace_hallucinated_python",
+                "description": "Replace the hallucinated python function with a custom function.\n\nArgs:\n    function (Callable): The function to register.\n\n    parameter_schema (BaseModel or dict): The pydantic model or JSON schema for the function's parameters.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "function",
+                        "default": null,
+                        "annotation": "typing.Callable"
+                    },
+                    {
+                        "name": "parameter_schema",
+                        "default": null,
+                        "annotation": "typing.Union[typing.Type[ForwardRef('BaseModel')], dict, NoneType]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "submit",
+                "description": "Send messages to the chat model and display the response.\n\nSide effects:\n    - Messages are sent to OpenAI Chat Models.\n    - Response(s) are displayed in the output area as a combination of Markdown and chat function calls.\n    - conversation.messages is updated with response(s).\n\nArgs:\n    messages (str | Message): One or more messages to send to the chat, can be strings or Message objects.\n\n    stream (bool): Whether to stream chat into markdown or not. If False, the entire chat will be sent once.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "messages",
+                        "default": null,
+                        "annotation": "typing.Union[chatlab.messaging.BasicMessage, chatlab.messaging.FunctionCallMessage, chatlab.messaging.FunctionResultMessage, str]"
+                    },
+                    {
+                        "name": "stream",
+                        "default": true,
+                        "annotation": "<class 'bool'>"
+                    }
+                ],
+                "returns": "_empty"
+            }
+        ],
+        "parent_classes": ["object"]
+    },
+    "ChatlabMetadata": {
+        "methods": [
+            {
+                "name": "__init__",
+                "description": "Initialize ChatLab metadata for a function.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "expose_exception_to_llm",
+                        "default": false,
+                        "annotation": null
+                    }
+                ],
+                "returns": "_empty"
+            }
+        ],
+        "parent_classes": ["object"]
+    },
+    "Conversation": {
+        "methods": [
+            {
+                "name": "_Chat__process_stream",
+                "description": null,
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "resp",
+                        "default": null,
+                        "annotation": "typing.Iterable[typing.Union[chatlab.messaging.StreamCompletion, chatlab.messaging.ChatCompletion]]"
+                    }
+                ],
+                "returns": "typing.Tuple[str, typing.Optional[chatlab.views.assistant_function_call.AssistantFunctionCallView]]"
+            },
+            {
+                "name": "__call__",
+                "description": "Send messages to the chat model and display the response.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "messages",
+                        "default": null,
+                        "annotation": "typing.Union[chatlab.messaging.BasicMessage, chatlab.messaging.FunctionCallMessage, chatlab.messaging.FunctionResultMessage, str]"
+                    },
+                    {
+                        "name": "stream",
+                        "default": true,
+                        "annotation": "<class 'bool'>"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "__init__",
+                "description": "Initialize a Session with an optional initial context of messages.\n\nSession is deprecated. Use `Chat` instead.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    { "name": "args", "default": null, "annotation": null },
+                    { "name": "kwargs", "default": null, "annotation": null }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "__repr__",
+                "description": "Return a representation of the ChatLab instance.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "append",
+                "description": "Append messages to the conversation history.\n\nNote: this does not send the messages on until `chat` is called.\n\nArgs:\n    messages (str | Message): One or more messages to append to the conversation.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "messages",
+                        "default": null,
+                        "annotation": "typing.Union[chatlab.messaging.BasicMessage, chatlab.messaging.FunctionCallMessage, chatlab.messaging.FunctionResultMessage, str]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "chat",
+                "description": "Send messages to the chat model and display the response.\n\nDeprecated in 0.13.0, removed in 1.0.0. Use `submit` instead.\n\n\n.. deprecated:: 0.13.0\n   This will be removed in 1.0.0. Use `submit` instead.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "messages",
+                        "default": null,
+                        "annotation": "typing.Union[chatlab.messaging.BasicMessage, chatlab.messaging.FunctionCallMessage, chatlab.messaging.FunctionResultMessage, str]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "clear_history",
+                "description": "Clears the conversation history.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "get_history",
+                "description": "Returns the conversation history as a list of messages.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "ipython_magic_submit",
+                "description": "Submit a cell to the ChatLab instance.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    { "name": "line", "default": null, "annotation": null },
+                    {
+                        "name": "cell",
+                        "default": null,
+                        "annotation": "typing.Optional[str]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "make_magic",
+                "description": "Register the chat as an IPython magic with the given name.\n\nIn [1]: chat = Chat()\nIn [2]: chat.make_magic(\"chat\")\nIn [3]: %%chat\n   ...:\n   ...: Lets chat!\n   ...:\nOut[3]: Sure, I'd be happy to chat! What's on your mind?",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    { "name": "name", "default": null, "annotation": null }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "register",
+                "description": "Register a function with the ChatLab instance.\n\nDeprecated in 1.0.0, removed in 2.0.0. Use `register_function` instead.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "function",
+                        "default": null,
+                        "annotation": "typing.Callable"
+                    },
+                    {
+                        "name": "parameter_schema",
+                        "default": null,
+                        "annotation": "typing.Union[typing.Type[ForwardRef('BaseModel')], dict, NoneType]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "register_function",
+                "description": "Register a function with the ChatLab instance.\n\nArgs:\n    function (Callable): The function to register.\n\n    parameter_schema (BaseModel or dict): The pydantic model or JSON schema for the function's parameters.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "function",
+                        "default": null,
+                        "annotation": "typing.Callable"
+                    },
+                    {
+                        "name": "parameter_schema",
+                        "default": null,
+                        "annotation": "typing.Union[typing.Type[ForwardRef('BaseModel')], dict, NoneType]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "replace_hallucinated_python",
+                "description": "Replace the hallucinated python function with a custom function.\n\nArgs:\n    function (Callable): The function to register.\n\n    parameter_schema (BaseModel or dict): The pydantic model or JSON schema for the function's parameters.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "function",
+                        "default": null,
+                        "annotation": "typing.Callable"
+                    },
+                    {
+                        "name": "parameter_schema",
+                        "default": null,
+                        "annotation": "typing.Union[typing.Type[ForwardRef('BaseModel')], dict, NoneType]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "submit",
+                "description": "Send messages to the chat model and display the response.\n\nSide effects:\n    - Messages are sent to OpenAI Chat Models.\n    - Response(s) are displayed in the output area as a combination of Markdown and chat function calls.\n    - conversation.messages is updated with response(s).\n\nArgs:\n    messages (str | Message): One or more messages to send to the chat, can be strings or Message objects.\n\n    stream (bool): Whether to stream chat into markdown or not. If False, the entire chat will be sent once.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "messages",
+                        "default": null,
+                        "annotation": "typing.Union[chatlab.messaging.BasicMessage, chatlab.messaging.FunctionCallMessage, chatlab.messaging.FunctionResultMessage, str]"
+                    },
+                    {
+                        "name": "stream",
+                        "default": true,
+                        "annotation": "<class 'bool'>"
+                    }
+                ],
+                "returns": "_empty"
+            }
+        ],
+        "parent_classes": ["Chat", "object"]
+    },
+    "FunctionRegistry": {
+        "methods": [
+            {
+                "name": "__contains__",
+                "description": "Check if a function is registered by name.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    { "name": "name", "default": null, "annotation": null }
+                ],
+                "returns": "bool"
+            },
+            {
+                "name": "__init__",
+                "description": "Initialize a FunctionRegistry object.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "python_hallucination_function",
+                        "default": null,
+                        "annotation": "typing.Optional[typing.Callable[[str], typing.Any]]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "api_manifest",
+                "description": "Get a dictionary containing function definitions and calling options.\nThis is designed to be used with OpenAI's Chat Completion API, where the\ndictionary can be passed as keyword arguments to set the `functions` and\n`function_call` parameters.\n\nThe `functions` parameter is a list of dictionaries, each representing a\nfunction that the model can call during the conversation. Each dictionary\nhas a `name`, `description`, and `parameters` key.\n\nThe `function_call` parameter sets the policy of when to call these functions:\n    - \"auto\": The model decides when to call a function (default).\n    - \"none\": The model generates a user-facing message without calling a function.\n    - {\"name\": \"<insert-function-name>\"}: Forces the model to call a specific function.\n\nArgs:\n    function_call_option (str or dict, optional): The policy for function calls.\n    Defaults to \"auto\".\n\nReturns:\n    dict: A dictionary with keys \"functions\" and \"function_call\", which\n    can be passed as keyword arguments to `openai.ChatCompletion.create`.\n\nExample usage:\n    >>> registry = FunctionRegistry()\n    >>> # Register functions here...\n    >>> manifest = registry.api_manifest()\n    >>> resp = openai.ChatCompletion.create(\n            model=\"gpt-4.0-turbo\",\n            messages=[...],\n            **manifest,\n            stream=True,\n        )\n\n    >>> # To force a specific function to be called:\n    >>> manifest = registry.api_manifest({\"name\": \"what_time\"})\n    >>> resp = openai.ChatCompletion.create(\n            model=\"gpt-4.0-turbo\",\n            messages=[...],\n            **manifest,\n            stream=True,\n        )\n\n    >>> # To generate a user-facing message without calling a function:\n    >>> manifest = registry.api_manifest(\"none\")\n    >>> resp = openai.ChatCompletion.create(\n            model=\"gpt-4.0-turbo\",\n            messages=[...],\n            **manifest,\n            stream=True,\n        )",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "function_call_option",
+                        "default": "auto",
+                        "annotation": "typing.Union[str, dict]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "call",
+                "description": "Call a function by name with the given parameters.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "name",
+                        "default": null,
+                        "annotation": "<class 'str'>"
+                    },
+                    {
+                        "name": "arguments",
+                        "default": null,
+                        "annotation": "typing.Optional[str]"
+                    }
+                ],
+                "returns": "Any"
+            },
+            {
+                "name": "get",
+                "description": "Get a function by name.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "function_name",
+                        "default": null,
+                        "annotation": null
+                    }
+                ],
+                "returns": "typing.Optional[typing.Callable]"
+            },
+            {
+                "name": "get_chatlab_metadata",
+                "description": "Get the chatlab metadata for a function by name.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "function_name",
+                        "default": null,
+                        "annotation": null
+                    }
+                ],
+                "returns": "ChatlabMetadata"
+            },
+            {
+                "name": "register",
+                "description": "Register a function for use in `Chat`s.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "function",
+                        "default": null,
+                        "annotation": "typing.Callable"
+                    },
+                    {
+                        "name": "parameter_schema",
+                        "default": null,
+                        "annotation": "typing.Union[typing.Type[ForwardRef('BaseModel')], dict, NoneType]"
+                    }
+                ],
+                "returns": "dict"
+            },
+            {
+                "name": "register_functions",
+                "description": "Register a dictionary of functions.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "functions",
+                        "default": null,
+                        "annotation": "typing.Union[typing.Iterable[typing.Callable], dict[str, typing.Callable]]"
+                    }
+                ],
+                "returns": "_empty"
+            }
+        ],
+        "parent_classes": ["object"]
+    },
+    "Markdown": {
+        "methods": [
+            {
+                "name": "__init__",
+                "description": "Initialize a `Markdown` object with an optional message.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "content",
+                        "default": "",
+                        "annotation": "<class 'str'>"
+                    }
+                ],
+                "returns": "None"
+            },
+            {
+                "name": "__repr__",
+                "description": "Provide a plaintext version of the `Markdown`.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null }
+                ],
+                "returns": "str"
+            },
+            {
+                "name": "_repr_markdown_",
+                "description": "Emit our markdown with metadata.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null }
+                ],
+                "returns": "typing.Union[str, typing.Tuple[str, typing.Dict[str, typing.Any]]]"
+            },
+            {
+                "name": "append",
+                "description": "Append a string to the `Markdown`.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "delta",
+                        "default": null,
+                        "annotation": "<class 'str'>"
+                    }
+                ],
+                "returns": "None"
+            },
+            {
+                "name": "display",
+                "description": "Display the object with a display ID to allow updating.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "generate_display_id",
+                "description": "Generate a display ID.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null }
+                ],
+                "returns": "str"
+            },
+            {
+                "name": "update_displays",
+                "description": "Force an update to all displays of this object.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null }
+                ],
+                "returns": "None"
+            }
+        ],
+        "parent_classes": ["BufferInterface", "AutoDisplayer", "ABC", "object"]
+    },
+    "Session": {
+        "methods": [
+            {
+                "name": "_Chat__process_stream",
+                "description": null,
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "resp",
+                        "default": null,
+                        "annotation": "typing.Iterable[typing.Union[chatlab.messaging.StreamCompletion, chatlab.messaging.ChatCompletion]]"
+                    }
+                ],
+                "returns": "typing.Tuple[str, typing.Optional[chatlab.views.assistant_function_call.AssistantFunctionCallView]]"
+            },
+            {
+                "name": "__call__",
+                "description": "Send messages to the chat model and display the response.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "messages",
+                        "default": null,
+                        "annotation": "typing.Union[chatlab.messaging.BasicMessage, chatlab.messaging.FunctionCallMessage, chatlab.messaging.FunctionResultMessage, str]"
+                    },
+                    {
+                        "name": "stream",
+                        "default": true,
+                        "annotation": "<class 'bool'>"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "__init__",
+                "description": "Initialize a Session with an optional initial context of messages.\n\nSession is deprecated. Use `Chat` instead.\n\n.. deprecated:: 0.13.0\n   This will be removed in 1.0.0. Use `Chat` instead.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    { "name": "args", "default": null, "annotation": null },
+                    { "name": "kwargs", "default": null, "annotation": null }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "__repr__",
+                "description": "Return a representation of the ChatLab instance.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "append",
+                "description": "Append messages to the conversation history.\n\nNote: this does not send the messages on until `chat` is called.\n\nArgs:\n    messages (str | Message): One or more messages to append to the conversation.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "messages",
+                        "default": null,
+                        "annotation": "typing.Union[chatlab.messaging.BasicMessage, chatlab.messaging.FunctionCallMessage, chatlab.messaging.FunctionResultMessage, str]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "chat",
+                "description": "Send messages to the chat model and display the response.\n\nDeprecated in 0.13.0, removed in 1.0.0. Use `submit` instead.\n\n\n.. deprecated:: 0.13.0\n   This will be removed in 1.0.0. Use `submit` instead.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "messages",
+                        "default": null,
+                        "annotation": "typing.Union[chatlab.messaging.BasicMessage, chatlab.messaging.FunctionCallMessage, chatlab.messaging.FunctionResultMessage, str]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "clear_history",
+                "description": "Clears the conversation history.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "get_history",
+                "description": "Returns the conversation history as a list of messages.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "ipython_magic_submit",
+                "description": "Submit a cell to the ChatLab instance.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    { "name": "line", "default": null, "annotation": null },
+                    {
+                        "name": "cell",
+                        "default": null,
+                        "annotation": "typing.Optional[str]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "make_magic",
+                "description": "Register the chat as an IPython magic with the given name.\n\nIn [1]: chat = Chat()\nIn [2]: chat.make_magic(\"chat\")\nIn [3]: %%chat\n   ...:\n   ...: Lets chat!\n   ...:\nOut[3]: Sure, I'd be happy to chat! What's on your mind?",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    { "name": "name", "default": null, "annotation": null }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "register",
+                "description": "Register a function with the ChatLab instance.\n\nDeprecated in 1.0.0, removed in 2.0.0. Use `register_function` instead.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "function",
+                        "default": null,
+                        "annotation": "typing.Callable"
+                    },
+                    {
+                        "name": "parameter_schema",
+                        "default": null,
+                        "annotation": "typing.Union[typing.Type[ForwardRef('BaseModel')], dict, NoneType]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "register_function",
+                "description": "Register a function with the ChatLab instance.\n\nArgs:\n    function (Callable): The function to register.\n\n    parameter_schema (BaseModel or dict): The pydantic model or JSON schema for the function's parameters.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "function",
+                        "default": null,
+                        "annotation": "typing.Callable"
+                    },
+                    {
+                        "name": "parameter_schema",
+                        "default": null,
+                        "annotation": "typing.Union[typing.Type[ForwardRef('BaseModel')], dict, NoneType]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "replace_hallucinated_python",
+                "description": "Replace the hallucinated python function with a custom function.\n\nArgs:\n    function (Callable): The function to register.\n\n    parameter_schema (BaseModel or dict): The pydantic model or JSON schema for the function's parameters.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "function",
+                        "default": null,
+                        "annotation": "typing.Callable"
+                    },
+                    {
+                        "name": "parameter_schema",
+                        "default": null,
+                        "annotation": "typing.Union[typing.Type[ForwardRef('BaseModel')], dict, NoneType]"
+                    }
+                ],
+                "returns": "_empty"
+            },
+            {
+                "name": "submit",
+                "description": "Send messages to the chat model and display the response.\n\nSide effects:\n    - Messages are sent to OpenAI Chat Models.\n    - Response(s) are displayed in the output area as a combination of Markdown and chat function calls.\n    - conversation.messages is updated with response(s).\n\nArgs:\n    messages (str | Message): One or more messages to send to the chat, can be strings or Message objects.\n\n    stream (bool): Whether to stream chat into markdown or not. If False, the entire chat will be sent once.",
+                "parameters": [
+                    { "name": "self", "default": null, "annotation": null },
+                    {
+                        "name": "messages",
+                        "default": null,
+                        "annotation": "typing.Union[chatlab.messaging.BasicMessage, chatlab.messaging.FunctionCallMessage, chatlab.messaging.FunctionResultMessage, str]"
+                    },
+                    {
+                        "name": "stream",
+                        "default": true,
+                        "annotation": "<class 'bool'>"
+                    }
+                ],
+                "returns": "_empty"
+            }
+        ],
+        "parent_classes": ["Chat", "object"]
+    }
+}
