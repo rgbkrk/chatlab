@@ -16,8 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   🎛️ New option `replace_hallucinated_python` to replace any hallucinated python function with a custom one. This allows you to create notebook cells, run IPython, or even shell out to a regular python interpreter.
 -   🪄 Introduced `make_magic` on a `Chat` so that you can use a current chat as a cell magic in IPython and Jupyter notebooks
 -   ⏩ Accept async functions as chat functions
+-   👉🏻 You _MUST_ now call `await chat()` instead of just `chat()` now that chat is async
 -   📗 New experimental builtin: Noteable. Create notebooks on Noteable like you can via ChatGPT Plugins with even more flexibility.
 -   🧩 Accept collections of functions to `Chat` and `FunctionRegistry` to register multiple functions at once
+-   🧩 Enhanced type support in the registry, including handling of `Union`, `List`, `Dict`, `Literal`, and `Enum` types.
+-   🎨 Added a decorator for registering functions with a schema, allowing more flexible function registration.
+-   📑 Added `registry.get_schema` method to retrieve a function schema by name.
 
 -   [Builtins] 📁 Chat File functions:
 
@@ -40,6 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   📜 Improved UI: Scrollbars for function inputs and outputs now only appear on the x-axis when content is too large
 -   🛑🔙 Enhanced error handling: Python interpreter traceback is no longer displayed in the notebook when it is included in the ChatLab output pane.
 -   🐍 The python builtin's name has been changed to `run_python`
+-   🧹 Refactored `generate_function_schema` and `register` methods in the registry to simplify and enhance functionality.
+-   🚨 Updated error handling and messages related to type annotations.
 
 ### Deprecated
 
