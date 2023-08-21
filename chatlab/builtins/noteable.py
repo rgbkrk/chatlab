@@ -2,7 +2,7 @@
 import logging
 import os
 import uuid
-from typing import Optional
+from typing import Literal, Optional
 
 import httpx
 import orjson
@@ -102,9 +102,9 @@ class NotebookClient:
     async def create_cell(
         self,
         source: str,
+        cell_type: Literal["code", "markdown", "sql"] = "code",
         cell_id: Optional[str] = None,
-        and_run: bool = True,
-        cell_type: str = "code",
+        and_run: Optional[bool] = False,
         after_cell_id: Optional[str] = None,
         db_connection: Optional[str] = None,
         assign_results_to: Optional[str] = None,
