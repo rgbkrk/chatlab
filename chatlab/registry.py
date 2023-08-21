@@ -42,7 +42,7 @@ Example usage:
 import asyncio
 import inspect
 import json
-from typing import Any, Callable, Dict, Iterable, Optional, Type, Union, get_args, get_origin, overload
+from typing import Any, Callable, Dict, Iterable, List, Optional, Type, Union, get_args, get_origin, overload
 
 from pydantic import BaseModel
 
@@ -62,7 +62,7 @@ class UnknownFunctionError(Exception):
 
 
 # Allowed types for auto-inferred schemas
-ALLOWED_TYPES = [int, str, bool, float, list, dict]
+ALLOWED_TYPES = [int, str, bool, float, list, dict, List, Dict]
 
 JSON_SCHEMA_TYPES = {
     int: 'integer',
@@ -71,12 +71,54 @@ JSON_SCHEMA_TYPES = {
     bool: 'boolean',
     list: 'array',
     dict: 'object',
+    List: 'array',
+    Dict: 'object',
 }
 
 
 def is_optional_type(t):
     """Check if a type is Optional."""
     return get_origin(t) is Union and len(get_args(t)) == 2 and type(None) in get_args(t)
+
+
+def is_union_type(t):
+    """Check if a type is a Union."""
+    return get_origin(t) is Union
+
+
+def process_type(annotation, is_required=True):
+    """Determine the JSON schema type of a type annotation."""
+    if is_optional_type(annotation):
+        actual_type = get_args(annotation)[0]
+        return process_type(actual_type, is_required=False)
+
+    elif is_union_type(annotation):
+        union_types = get_args(annotation)
+        types = []
+        for actual_type in union_types:
+            # Skip NoneType within a Union, since it's handled by the is_required flag
+            # NOTE: You cannot just check if isinstance(actual_type, type(None)) because that will always be False
+            if actual_type is type(None):  # noqa: E721
+                continue
+
+            processed_type, _ = process_type(actual_type, is_required)
+            types.append(processed_type["type"])
+        return {
+            "type": types,
+        }, is_required
+
+    elif annotation in ALLOWED_TYPES:
+        return {
+            "type": JSON_SCHEMA_TYPES[annotation],
+        }, is_required
+
+    else:
+        raise Exception(f"Type annotation must be a JSON serializable type ({ALLOWED_TYPES})")
+
+
+def process_parameter(name, param):
+    """Process a function parameter for use in a JSON schema."""
+    return process_type(param.annotation, param.default == inspect.Parameter.empty)
 
 
 def generate_function_schema(
@@ -101,45 +143,21 @@ def generate_function_schema(
         schema = parameter_schema.schema()
     else:
         schema_properties = {}
+        required = []
+
         sig = inspect.signature(function)
         for name, param in sig.parameters.items():
-            if param.annotation == inspect.Parameter.empty:
-                raise Exception(f"Parameter {name} of function {func_name} must have a type annotation")
-
-            if is_optional_type(param.annotation):
-                actual_type = get_args(param.annotation)[0]
-
-                if actual_type not in ALLOWED_TYPES:
-                    raise Exception(
-                        f"Type annotation of parameter {name} in function {func_name} "
-                        f"must be a JSON serializable type ({ALLOWED_TYPES})"
-                    )
-
-                schema_properties[name] = {
-                    "type": JSON_SCHEMA_TYPES[actual_type],
-                }
-
-            elif param.annotation in ALLOWED_TYPES:
-                schema_properties[name] = {
-                    "type": JSON_SCHEMA_TYPES[param.annotation],
-                }
-
-            else:
-                raise Exception(
-                    f"Type annotation of parameter {name} in function {func_name} "
-                    f"must be a JSON serializable type ({ALLOWED_TYPES})"
-                )
+            prop_schema, is_required = process_parameter(name, param)
+            schema_properties[name] = prop_schema
+            if is_required:
+                required.append(name)
 
         schema = {"type": "object", "properties": {}, "required": []}
         if len(schema_properties) > 0:
             schema = {
                 "type": "object",
                 "properties": schema_properties,
-                "required": [
-                    name
-                    for name, param in sig.parameters.items()
-                    if param.default == inspect.Parameter.empty and param.annotation != Optional
-                ],
+                "required": required,
             }
 
     if schema is None:
@@ -244,6 +262,10 @@ class FunctionRegistry:
             return self.python_hallucination_function
 
         return self.__functions.get(function_name)
+
+    def get_schema(self, function_name) -> Optional[dict]:
+        """Get a function schema by name."""
+        return self.__schemas.get(function_name)
 
     def get_chatlab_metadata(self, function_name) -> ChatlabMetadata:
         """Get the chatlab metadata for a function by name."""
