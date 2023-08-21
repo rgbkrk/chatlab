@@ -62,7 +62,7 @@ def test_generate_function_schema():
             "properties": {
                 "x": {"type": "integer"},
                 "y": {"type": "string"},
-                "z": {"type": "boolean"},
+                "z": {"type": "boolean", "default": False},
             },
             "required": ["x", "y"],
         },
