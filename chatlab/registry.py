@@ -42,7 +42,8 @@ Example usage:
 import asyncio
 import inspect
 import json
-from typing import Any, Callable, Iterable, Optional, Type, Union, get_args, get_origin
+from enum import Enum
+from typing import Any, Callable, Dict, Iterable, List, Literal, Optional, Type, Union, get_args, get_origin, overload
 
 from pydantic import BaseModel
 
@@ -62,7 +63,7 @@ class UnknownFunctionError(Exception):
 
 
 # Allowed types for auto-inferred schemas
-ALLOWED_TYPES = [int, str, bool, float, list, dict]
+ALLOWED_TYPES = [int, str, bool, float, list, dict, List, Dict]
 
 JSON_SCHEMA_TYPES = {
     int: 'integer',
@@ -71,12 +72,60 @@ JSON_SCHEMA_TYPES = {
     bool: 'boolean',
     list: 'array',
     dict: 'object',
+    List: 'array',
+    Dict: 'object',
 }
 
 
 def is_optional_type(t):
     """Check if a type is Optional."""
     return get_origin(t) is Union and len(get_args(t)) == 2 and type(None) in get_args(t)
+
+
+def is_union_type(t):
+    """Check if a type is a Union."""
+    return get_origin(t) is Union
+
+
+def process_type(annotation, is_required=True):
+    """Determine the JSON schema type of a type annotation."""
+    origin = get_origin(annotation)
+    args = get_args(annotation)
+
+    if is_optional_type(annotation):
+        return process_type(args[0], is_required=False)
+
+    elif origin is Union:
+        types = [process_type(t, is_required)[0]["type"] for t in args if t is not type(None)]  # noqa: E721
+        return {"type": types}, is_required
+
+    elif origin is list:
+        item_type = process_type(args[0], is_required)[0]["type"]
+        return {"type": "array", "items": {"type": item_type}}, is_required
+
+    elif origin is Literal:
+        values = get_args(annotation)
+        return {"type": "string", "enum": values}, is_required
+
+    elif issubclass(annotation, Enum):
+        values = [e.name for e in annotation]
+        return {"type": "string", "enum": values}, is_required
+
+    elif origin is dict:
+        return {"type": "object"}, is_required
+
+    elif annotation in ALLOWED_TYPES:
+        return {
+            "type": JSON_SCHEMA_TYPES[annotation],
+        }, is_required
+
+    else:
+        raise Exception(f"Type annotation must be a JSON serializable type ({ALLOWED_TYPES})")
+
+
+def process_parameter(name, param):
+    """Process a function parameter for use in a JSON schema."""
+    return process_type(param.annotation, param.default == inspect.Parameter.empty)
 
 
 def generate_function_schema(
@@ -101,45 +150,21 @@ def generate_function_schema(
         schema = parameter_schema.schema()
     else:
         schema_properties = {}
+        required = []
+
         sig = inspect.signature(function)
         for name, param in sig.parameters.items():
-            if param.annotation == inspect.Parameter.empty:
-                raise Exception(f"Parameter {name} of function {func_name} must have a type annotation")
-
-            if is_optional_type(param.annotation):
-                actual_type = get_args(param.annotation)[0]
-
-                if actual_type not in ALLOWED_TYPES:
-                    raise Exception(
-                        f"Type annotation of parameter {name} in function {func_name} "
-                        f"must be a JSON serializable type ({ALLOWED_TYPES})"
-                    )
-
-                schema_properties[name] = {
-                    "type": JSON_SCHEMA_TYPES[actual_type],
-                }
-
-            elif param.annotation in ALLOWED_TYPES:
-                schema_properties[name] = {
-                    "type": JSON_SCHEMA_TYPES[param.annotation],
-                }
-
-            else:
-                raise Exception(
-                    f"Type annotation of parameter {name} in function {func_name} "
-                    f"must be a JSON serializable type ({ALLOWED_TYPES})"
-                )
+            prop_schema, is_required = process_parameter(name, param)
+            schema_properties[name] = prop_schema
+            if is_required:
+                required.append(name)
 
         schema = {"type": "object", "properties": {}, "required": []}
         if len(schema_properties) > 0:
             schema = {
                 "type": "object",
                 "properties": schema_properties,
-                "required": [
-                    name
-                    for name, param in sig.parameters.items()
-                    if param.default == inspect.Parameter.empty and param.annotation != Optional
-                ],
+                "required": required,
             }
 
     if schema is None:
@@ -171,12 +196,58 @@ class FunctionRegistry:
 
         self.python_hallucination_function = python_hallucination_function
 
+    def decorator(self, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None) -> Callable:
+        """Create a decorator for registering functions with a schema."""
+
+        def decorator(function):
+            self.register_function(function, parameter_schema)
+            return function
+
+        return decorator
+
+    @overload
     def register(
-        self,
-        function: Callable,
-        parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
-    ) -> dict:
-        """Register a function for use in `Chat`s."""
+        self, function: None = None, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None
+    ) -> Callable:
+        ...
+
+    @overload
+    def register(self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None) -> Dict:
+        ...
+
+    def register(
+        self, function: Optional[Callable] = None, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None
+    ) -> Union[Callable, Dict]:
+        """Register a function for use in `Chat`s. Can be used as a decorator or directly to register a function.
+
+        >>> registry = FunctionRegistry()
+        >>> @registry.register
+        ... def what_time(tz: Optional[str] = None):
+        ...     '''Current time, defaulting to the user's current timezone'''
+        ...     if tz is None:
+        ...         pass
+        ...     elif tz in all_timezones:
+        ...         tz = timezone(tz)
+        ...     else:
+        ...         return 'Invalid timezone'
+        ...     return datetime.now(tz).strftime('%I:%M %p')
+        >>> registry.get("what_time")
+        <function __main__.what_time(tz: Optional[str] = None)>
+        >>> await registry.call("what_time", '{"tz": "America/New_York"}')
+        '10:57 AM'
+
+        """
+        # If the function is None, assume this is a decorator call
+        if function is None:
+            return self.decorator(parameter_schema)
+
+        # Otherwise, directly register the function
+        return self.register_function(function, parameter_schema)
+
+    def register_function(
+        self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None
+    ) -> Dict:
+        """Register a single function."""
         final_schema = generate_function_schema(function, parameter_schema)
 
         self.__functions[function.__name__] = function
@@ -198,6 +269,10 @@ class FunctionRegistry:
             return self.python_hallucination_function
 
         return self.__functions.get(function_name)
+
+    def get_schema(self, function_name) -> Optional[dict]:
+        """Get a function schema by name."""
+        return self.__schemas.get(function_name)
 
     def get_chatlab_metadata(self, function_name) -> ChatlabMetadata:
         """Get the chatlab metadata for a function by name."""

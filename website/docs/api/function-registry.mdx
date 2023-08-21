@@ -43,6 +43,8 @@ If you're adventurous, make a [PR to chatlab](https://github.com/rgbkrk/chatlab)
 ### No Parameters
 
 ```python cell count=2
+import random
+
 def flip_a_coin():
     '''Flip a coin.'''
     return random.choice(["heads", "tails"])
@@ -121,33 +123,39 @@ Pydantic Models give you all the benefits above _and_ much more:
 -   Deeper type validation
 
 ```python cell count=5
+from chatlab import FunctionRegistry
 from pydantic import BaseModel
 
-class Add(BaseModel):
-    x: float
-    y: float = 1
+registry = FunctionRegistry()
 
-def add(x: float, y: float = 1):
-    '''Add x and y.'''
-    return x + y
 
-registry.register(add, Add)
+class CompoundInterestModel(BaseModel):
+    principal: float
+    rate: float
+    times_compounded: int
+    years: float
+
+
+@registry.register(parameter_schema=CompoundInterestModel)
+def compound_interest(principal: float, rate: float, times_compounded: int, years: float) -> float:
+    """
+    Calculates the future value of an investment using compound interest.
+    :param principal: Initial investment amount
+    :param rate: Annual interest rate (as a decimal)
+    :param times_compounded: Number of times interest is compounded per year
+    :param years: Number of years the money is invested
+    :return: Future value of the investment
+    """
+    return principal * (1 + rate / times_compounded) ** (times_compounded * years)
+
+await registry.call(
+    "compound_interest",
+    CompoundInterestModel(principal=1000, rate=0.05, times_compounded=12, years=5).json()
+)
 ```
 
 ```js output count=5
-{
-    'name': 'add',
-    'description': 'Add x and y.',
-    'parameters': {
-        'title': 'Add',
-        'type': 'object',
-        'properties': {
-            'x': {'title': 'X', 'type': 'number'},
-            'y': {'title': 'Y', 'default': 1, 'type': 'number'}
-        },
-        'required': ['x']
-    }
-}
+1283.3586785035118;
 ```
 
 ### Additional Descriptions

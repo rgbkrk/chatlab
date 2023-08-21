@@ -39,7 +39,7 @@ def test_generate_function_schema_no_type_annotation():
         """Return back x"""
         return x
 
-    with pytest.raises(Exception, match="Parameter x of function no_type_annotation must have a type annotation"):
+    with pytest.raises(Exception, match="Type annotation must be a JSON serializable type"):
         generate_function_schema(no_type_annotation)
 
 
@@ -48,9 +48,7 @@ def test_generate_function_schema_unallowed_type():
         '''Return back x'''
         return x
 
-    with pytest.raises(
-        Exception, match="Type annotation of parameter x in function unallowed_type must be a JSON serializable type"
-    ):
+    with pytest.raises(Exception, match="Type annotation must be a JSON serializable type"):
         generate_function_schema(unallowed_type)
 
 
