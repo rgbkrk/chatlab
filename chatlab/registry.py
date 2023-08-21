@@ -42,7 +42,8 @@ Example usage:
 import asyncio
 import inspect
 import json
-from typing import Any, Callable, Dict, Iterable, List, Optional, Type, Union, get_args, get_origin, overload
+from enum import Enum
+from typing import Any, Callable, Dict, Iterable, List, Literal, Optional, Type, Union, get_args, get_origin, overload
 
 from pydantic import BaseModel
 
@@ -101,6 +102,17 @@ def process_type(annotation, is_required=True):
     elif origin is list:
         item_type = process_type(args[0], is_required)[0]["type"]
         return {"type": "array", "items": {"type": item_type}}, is_required
+
+    elif origin is Literal:
+        values = get_args(annotation)
+        return {"type": "string", "enum": values}, is_required
+
+    elif issubclass(annotation, Enum):
+        values = [e.name for e in annotation]
+        return {"type": "string", "enum": values}, is_required
+
+    elif origin is dict:
+        return {"type": "object"}, is_required
 
     elif annotation in ALLOWED_TYPES:
         return {
