@@ -125,7 +125,10 @@ def process_type(annotation, is_required=True):
 
 def process_parameter(name, param):
     """Process a function parameter for use in a JSON schema."""
-    return process_type(param.annotation, param.default == inspect.Parameter.empty)
+    prop_schema, is_required = process_type(param.annotation, param.default == inspect.Parameter.empty)
+    if param.default != inspect.Parameter.empty:
+        prop_schema["default"] = param.default
+    return prop_schema, is_required
 
 
 def generate_function_schema(
