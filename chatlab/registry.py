@@ -88,24 +88,19 @@ def is_union_type(t):
 
 def process_type(annotation, is_required=True):
     """Determine the JSON schema type of a type annotation."""
+    origin = get_origin(annotation)
+    args = get_args(annotation)
+
     if is_optional_type(annotation):
-        actual_type = get_args(annotation)[0]
-        return process_type(actual_type, is_required=False)
+        return process_type(args[0], is_required=False)
 
-    elif is_union_type(annotation):
-        union_types = get_args(annotation)
-        types = []
-        for actual_type in union_types:
-            # Skip NoneType within a Union, since it's handled by the is_required flag
-            # NOTE: You cannot just check if isinstance(actual_type, type(None)) because that will always be False
-            if actual_type is type(None):  # noqa: E721
-                continue
+    elif origin is Union:
+        types = [process_type(t, is_required)[0]["type"] for t in args if t is not type(None)]  # noqa: E721
+        return {"type": types}, is_required
 
-            processed_type, _ = process_type(actual_type, is_required)
-            types.append(processed_type["type"])
-        return {
-            "type": types,
-        }, is_required
+    elif origin is list:
+        item_type = process_type(args[0], is_required)[0]["type"]
+        return {"type": "array", "items": {"type": item_type}}, is_required
 
     elif annotation in ALLOWED_TYPES:
         return {
