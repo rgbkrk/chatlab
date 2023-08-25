@@ -20,7 +20,17 @@ logger.setLevel(logging.DEBUG)
 
 
 class NotebookClient:
-    """A notebook client for use with Noteable."""
+    """A notebook client for use with ChatLab and Noteable.
+
+    This class integrates with ChatLab to create, connect to, and manage notebooks on the Noteable platform.
+    It enables interactive experiments with OpenAI's chat models within a notebook environment.
+
+    Attributes:
+        api_client (APIClient): The API client for Noteable.
+        rtu_client (RTUClient): The Real-Time Update client for Noteable.
+        file_id (uuid.UUID): The unique identifier for the notebook file.
+        kernel_session (KernelSession): The kernel session associated with the notebook.
+    """
 
     api_client: APIClient
     rtu_client: Optional[RTUClient]
