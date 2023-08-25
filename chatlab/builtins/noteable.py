@@ -12,6 +12,8 @@ from origami.models.api.outputs import KernelOutput, KernelOutputContent
 from origami.models.kernels import KernelSession
 from origami.models.notebook import CodeCell, MarkdownCell, make_sql_cell
 
+from chatlab.registry import FunctionRegistry
+
 from ._mediatypes import formats_for_llm
 
 logger = logging.getLogger(__name__)
@@ -20,7 +22,17 @@ logger.setLevel(logging.DEBUG)
 
 
 class NotebookClient:
-    """A notebook client for use with Noteable."""
+    """A notebook client for use with ChatLab and Noteable.
+
+    This class integrates with ChatLab to create, connect to, and manage notebooks on the Noteable platform.
+    It enables interactive experiments with OpenAI's chat models within a notebook environment.
+
+    Attributes:
+        api_client (APIClient): The API client for Noteable.
+        rtu_client (RTUClient): The Real-Time Update client for Noteable.
+        file_id (uuid.UUID): The unique identifier for the notebook file.
+        kernel_session (KernelSession): The kernel session associated with the notebook.
+    """
 
     api_client: APIClient
     rtu_client: Optional[RTUClient]
@@ -218,18 +230,15 @@ class NotebookClient:
 
     async def _get_llm_friendly_output(self, output: KernelOutput):
         """Get the output for a given output."""
-        content = output.content
+        content = output.content_for_llm
+        if content is None:
+            content = output.content
+
         if content is None:
             return None
 
         if output.type == "error":
             return await self._extract_error(content)
-
-        if 'text/llm+plain' in output.available_mimetypes:
-            # Fetch the specialized LLM+Plain directly
-            result = await self._extract_llm_plain(output)
-            if result is not None:
-                return result
 
         if content.mimetype == 'text/html':
             result = await self._extract_specific_mediatype(output, 'text/plain')
@@ -313,7 +322,7 @@ class NotebookClient:
 
         return resp_text
 
-    async def get_cell(self, cell_id: str, with_outputs: bool = False):
+    async def get_cell(self, cell_id: str, with_outputs: bool = True):
         """Get a cell by ID."""
         rtu_client = await self.get_or_create_rtu_client()
         try:
@@ -382,7 +391,23 @@ class NotebookClient:
     async def get_cell_ids(self):
         """Get a list of cell IDs."""
         rtu_client = await self.get_or_create_rtu_client()
-        return rtu_client.cell_ids
+
+        response = ""
+
+        for cell_id in rtu_client.cell_ids:
+            try:
+                _, cell = rtu_client.builder.get_cell(cell_id)
+                source = cell.source.strip()
+
+                if source.startswith("#ignore") or source.startswith("# ignore"):
+                    continue
+
+                response += f"{cell_id}\n"
+
+            except KeyError:
+                continue
+
+        return response
 
     async def shutdown(self):
         """Shutdown the notebook."""
@@ -410,9 +435,39 @@ class NotebookClient:
         ]
 
 
-__all__ = ["NotebookClient"]
+def provide_notebook_creation(registry: FunctionRegistry):
+    """Register the notebook client with the registry.
+
+    >>> from chatlab import FunctionRegistry, Chat
+    >>> registry = FunctionRegistry()
+    >>> chat = Chat(function_registry=registry)
+    >>> provide_notebook_creation(registry)
+    >>> await chat("make a notebook")
+    Notebook created at https://app.noteable.io/f/12345678-1234-1234-1234-123456789012
+    """
+
+    async def create_conversation_notebook(file_name: str):
+        """Create a notebook to use in this conversation."""
+        nc = await NotebookClient.create(
+            file_name=file_name,
+            token=os.environ.get("NOTEABLE_TOKEN"),
+            # Chatlab/Outputs project
+            project_id="c35bb93b-6902-44e5-976e-ae42859cb23e",
+        )
+
+        # Register all the regular notebook operations
+        registry.register_functions(nc.chat_functions)
+        # Let the model do `python` (which creates and runs a cell)
+        registry.python_hallucination_function = nc.python
+        registry.register_function(nc.shutdown)
+
+        return f"Notebook created at {nc.notebook_url}"
+
+    registry.register_function(create_conversation_notebook)
 
 
-# Only expose the NotebookClient to tab completion
+__all__ = ["NotebookClient", "provide_notebook_creation"]
+
+
 def __dir__():
     return __all__
