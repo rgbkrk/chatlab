@@ -12,6 +12,8 @@ from origami.models.api.outputs import KernelOutput, KernelOutputContent
 from origami.models.kernels import KernelSession
 from origami.models.notebook import CodeCell, MarkdownCell, make_sql_cell
 
+from chatlab.registry import FunctionRegistry
+
 from ._mediatypes import formats_for_llm
 
 logger = logging.getLogger(__name__)
@@ -433,9 +435,39 @@ class NotebookClient:
         ]
 
 
-__all__ = ["NotebookClient"]
+def provide_notebook_creation(registry: FunctionRegistry):
+    """Register the notebook client with the registry.
+
+    >>> from chatlab import FunctionRegistry, Chat
+    >>> registry = FunctionRegistry()
+    >>> chat = Chat(function_registry=registry)
+    >>> provide_notebook_creation(registry)
+    >>> await chat("make a notebook")
+    Notebook created at https://app.noteable.io/f/12345678-1234-1234-1234-123456789012
+    """
+
+    async def create_conversation_notebook(file_name: str):
+        """Create a notebook to use in this conversation."""
+        nc = await NotebookClient.create(
+            file_name=file_name,
+            token=os.environ.get("NOTEABLE_TOKEN"),
+            # Chatlab/Outputs project
+            project_id="c35bb93b-6902-44e5-976e-ae42859cb23e",
+        )
+
+        # Register all the regular notebook operations
+        registry.register_functions(nc.chat_functions)
+        # Let the model do `python` (which creates and runs a cell)
+        registry.python_hallucination_function = nc.python
+        registry.register_function(nc.shutdown)
+
+        return f"Notebook created at {nc.notebook_url}"
+
+    registry.register_function(create_conversation_notebook)
 
 
-# Only expose the NotebookClient to tab completion
+__all__ = ["NotebookClient", "provide_notebook_creation"]
+
+
 def __dir__():
     return __all__
