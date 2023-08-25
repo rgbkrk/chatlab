@@ -38,7 +38,13 @@ class NotebookClient:
     rtu_client: Optional[RTUClient]
     kernel_session: KernelSession
 
-    def __init__(self, api_client: APIClient, rtu_client: RTUClient, file_id: uuid.UUID, kernel_session: KernelSession):
+    def __init__(
+        self,
+        api_client: APIClient,
+        rtu_client: RTUClient,
+        file_id: uuid.UUID,
+        kernel_session: KernelSession,
+    ):
         """Create a new NotebookClient based on an existing API and RTU client."""
         self.api_client = api_client
         self.rtu_client = rtu_client
@@ -146,7 +152,10 @@ class NotebookClient:
             if not db_connection.startswith("@"):
                 db_connection = f"@{db_connection}"
             cell = make_sql_cell(
-                source=source, cell_id=cell_id, db_connection=db_connection, assign_results_to=assign_results_to
+                source=source,
+                cell_id=cell_id,
+                db_connection=db_connection,
+                assign_results_to=assign_results_to,
             )
 
         if cell is None:
@@ -164,6 +173,22 @@ class NotebookClient:
             return await self.run_cell(cell.id)
         except Exception as e:
             return f"Cell created successfully. An error happened during run: {e}"
+
+    async def update_cell_content(self, cell_id: str, patch: str) -> CodeCell | str:
+        """Update a cell's content with a `diff-match-patch` formatted patch string."""
+        rtu_client: RTUClient = await self.get_or_create_rtu_client()
+        try:
+            return await rtu_client.update_cell_content(cell_id, patch)
+        except Exception as e:
+            return f"Error updating cell content: {e}"
+
+    async def replace_cell_content(self, cell_id: str, source: str) -> CodeCell | str:
+        """Replace a cell's content with a string."""
+        rtu_client: RTUClient = await self.get_or_create_rtu_client()
+        try:
+            return await rtu_client.replace_cell_content(cell_id, source)
+        except Exception as e:
+            return f"Error replacing cell content: {e}"
 
     async def _get_llm_friendly_outputs(self, output_collection_id: uuid.UUID):
         """Get the outputs for a given output collection ID."""
@@ -187,7 +212,9 @@ class NotebookClient:
         return llm_friendly_outputs
 
     async def _extract_llm_plain(self, output: KernelOutput):
-        resp = await self.api_client.client.get(f"/outputs/{output.id}", params={"mimetype": "text/llm+plain"})
+        resp = await self.api_client.client.get(
+            f"/outputs/{output.id}", params={"mimetype": "text/llm+plain"}
+        )
         resp.raise_for_status()
 
         output_for_llm = KernelOutput.parse_obj(resp.json())
@@ -198,7 +225,9 @@ class NotebookClient:
         return output_for_llm.content.raw
 
     async def _extract_specific_mediatype(self, output: KernelOutput, mimetype: str):
-        resp = await self.api_client.client.get(f"/outputs/{output.id}", params={"mimetype": mimetype})
+        resp = await self.api_client.client.get(
+            f"/outputs/{output.id}", params={"mimetype": mimetype}
+        )
         resp.raise_for_status()
 
         output_for_llm = KernelOutput.parse_obj(resp.json())
@@ -428,6 +457,8 @@ class NotebookClient:
         """Functions to expose for LLMs."""
         return [
             self.create_cell,
+            self.update_cell_content,
+            self.replace_cell_content,
             self.run_cell,
             self.get_cell,
             self.get_cell_ids,
