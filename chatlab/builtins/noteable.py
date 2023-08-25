@@ -382,7 +382,23 @@ class NotebookClient:
     async def get_cell_ids(self):
         """Get a list of cell IDs."""
         rtu_client = await self.get_or_create_rtu_client()
-        return rtu_client.cell_ids
+
+        response = ""
+
+        for cell_id in rtu_client.cell_ids:
+            try:
+                _, cell = rtu_client.builder.get_cell(cell_id)
+                source = cell.source.strip()
+
+                if source.startswith("#ignore") or source.startswith("# ignore"):
+                    continue
+
+                response += f"{cell_id}\n"
+
+            except KeyError:
+                continue
+
+        return response
 
     async def shutdown(self):
         """Shutdown the notebook."""
