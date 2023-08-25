@@ -322,7 +322,7 @@ class NotebookClient:
 
         return resp_text
 
-    async def get_cell(self, cell_id: str, with_outputs: bool = False):
+    async def get_cell(self, cell_id: str, with_outputs: bool = True):
         """Get a cell by ID."""
         rtu_client = await self.get_or_create_rtu_client()
         try:
