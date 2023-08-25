@@ -228,18 +228,15 @@ class NotebookClient:
 
     async def _get_llm_friendly_output(self, output: KernelOutput):
         """Get the output for a given output."""
-        content = output.content
+        content = output.content_for_llm
+        if content is None:
+            content = output.content
+
         if content is None:
             return None
 
         if output.type == "error":
             return await self._extract_error(content)
-
-        if 'text/llm+plain' in output.available_mimetypes:
-            # Fetch the specialized LLM+Plain directly
-            result = await self._extract_llm_plain(output)
-            if result is not None:
-                return result
 
         if content.mimetype == 'text/html':
             result = await self._extract_specific_mediatype(output, 'text/plain')
