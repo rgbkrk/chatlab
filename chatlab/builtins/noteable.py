@@ -364,7 +364,6 @@ class NotebookClient:
         resp_text = "Datasources:\n"
 
         for datasource in datasources:
-            print(datasource.dict(exclude_unset=True, exclude_none=True))
             resp_text += f"## {datasource.name}\n"
             resp_text += f"{datasource.description}\n"
             resp_text += f"datasource_id: {datasource.sql_cell_handle}\n\n"
