@@ -437,11 +437,11 @@ class NotebookClient:
 
         return response
 
-    async def get_cell_ids(self):
-        """Get a list of cell IDs."""
+    async def get_cells_for_llm(self):
+        """Get a list of cells for the LLM."""
         rtu_client = await self.get_or_create_rtu_client()
 
-        response = ""
+        llm_cells = []
 
         for cell_id in rtu_client.cell_ids:
             try:
@@ -451,10 +451,38 @@ class NotebookClient:
                 if source.startswith("#ignore") or source.startswith("# ignore"):
                     continue
 
-                response += f"{cell_id}\n"
+                llm_cells.append(cell_id)
 
             except KeyError:
                 continue
+
+        return llm_cells
+
+    async def get_notebook(self):
+        """Get enough of the notebook to make follow up calls to get_cell"""
+        rtu_client = await self.get_or_create_rtu_client()
+
+        response = f"Notebook URL: {self.notebook_url}\n\n"
+        response += f"Notebook ID: {self.file_id}\n\n"
+        response += f"Notebook Metadata: {rtu_client.builder.nb.metadata}\n\n"
+
+        response += await self.get_cell_ids()
+
+        return response
+
+    async def get_cell_ids(self):
+        """Get a list of cell IDs."""
+        response = ""
+
+        cells = await self.get_cells_for_llm()
+
+        if len(cells) == 0:
+            return response + "\nNo cells."
+
+        response += "\nCell IDs in order:\n"
+
+        for cell_id in cells:
+            response += f"{cell_id}\n"
 
         return response
 
