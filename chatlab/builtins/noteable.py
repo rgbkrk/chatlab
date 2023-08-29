@@ -120,7 +120,7 @@ class NotebookClient:
     async def create_cell(
         self,
         source: str,
-        cell_type: Literal["code", "markdown", "sql"] = "code",
+        cell_type: Literal["code", "markdown", "sql"],
         cell_id: Optional[str] = None,
         and_run: Optional[bool] = False,
         after_cell_id: Optional[str] = None,
@@ -129,6 +129,11 @@ class NotebookClient:
     ):
         """Create a code, markdown, or SQL cell."""
         rtu_client = await self.get_or_create_rtu_client()
+
+        # We could make this optional. However, the LLM being forced to provide
+        # this
+        if cell_type is None:
+            cell_type = "code"
 
         if after_cell_id is None:
             existing_cells = rtu_client.cell_ids
@@ -458,7 +463,7 @@ class NotebookClient:
 
         return llm_cells
 
-    async def get_notebook(self):
+    async def read_notebook(self):
         """Get enough of the notebook to make follow up calls to get_cell"""
         rtu_client = await self.get_or_create_rtu_client()
 
@@ -466,7 +471,13 @@ class NotebookClient:
         response += f"Notebook ID: {self.file_id}\n\n"
         response += f"Notebook Metadata: {rtu_client.builder.nb.metadata}\n\n"
 
-        response += await self.get_cell_ids()
+        cells = await self.get_cells_for_llm()
+
+        for cell in cells:
+            response += await self.get_cell(cell, with_outputs=False)
+            response += "\n\n"
+
+        response += "NOTE: Output is not shown for cells to keep the response size to the chat model low."
 
         return response
 
@@ -498,7 +509,7 @@ class NotebookClient:
 
     async def python(self, code: str):
         """Creates a python cell, runs it, and returns output."""
-        return await self.create_cell(code, and_run=True)
+        return await self.create_cell(code, cell_type="code", and_run=True)
 
     @property
     def chat_functions(self):
@@ -509,6 +520,7 @@ class NotebookClient:
             self.run_cell,
             self.get_cell,
             self.get_cell_ids,
+            self.read_notebook,
             self.get_datasources,
         ]
 
