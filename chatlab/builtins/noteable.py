@@ -485,7 +485,7 @@ class NotebookClient:
         ]
 
 
-def provide_notebook_creation(registry: FunctionRegistry):
+def provide_notebook_creation(registry: FunctionRegistry, project_id: Optional[str] = None):
     """Register the notebook client with the registry.
 
     >>> from chatlab import FunctionRegistry, Chat
@@ -502,7 +502,7 @@ def provide_notebook_creation(registry: FunctionRegistry):
             file_name=file_name,
             token=os.environ.get("NOTEABLE_TOKEN"),
             # Chatlab/Outputs project
-            project_id="c35bb93b-6902-44e5-976e-ae42859cb23e",
+            project_id=project_id,
         )
 
         # Register all the regular notebook operations
