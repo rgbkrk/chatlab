@@ -122,8 +122,7 @@ class Chat:
                 "This key allows chatlab to communicate with OpenAI servers.\n\n"
                 "You can generate API keys in the OpenAI web interface. "
                 "See https://platform.openai.com/account/api-keys for details.\n\n"
-                # TODO: An actual docs page
-                "If you have any questions, tweet at us at https://twitter.com/chatlablib."
+                "Learn more details at https://chatlab.dev/docs/setting-api-keys for setting up keys.\n\n"
             )
         else:
             pass

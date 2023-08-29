@@ -146,6 +146,16 @@ def run_python(code: str):
     return __shell.run_cell(code)
 
 
+@expose_exception_to_llm
+def get_python_docs(module_name: str):
+    """Read docs for a Python package."""
+    import importlib
+    import inspect
+
+    package = importlib.import_module(module_name)
+    return inspect.getdoc(package)
+
+
 __all__ = ["run_python", "ChatLabShell"]
 
 
