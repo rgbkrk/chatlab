@@ -1,7 +1,7 @@
 [tool]
 [tool.poetry]
 name = "chatlab"
-version = "1.0.0-alpha.24"
+version = "1.0.0-alpha.25"
 homepage = "https://github.com/rgbkrk/chatlab"
 description = "Chat Plugin Experiments, Simplified. Create agents and give them superpowers in your notebooks."
 authors = ["Kyle Kelley <rgbkrk@gmail.com>"]
