@@ -24,7 +24,7 @@ Examples:
     ...         raise PokemonFetchError(name)
 
     >>> conversation = Chat()
-    >>> conversation.submit("Get pikachu")
+    >>> await conversation.submit("Get pikachu")
     Failed to fetch information for Pokemon 'pikachu'.
 
 """
@@ -57,7 +57,7 @@ def expose_exception_to_llm(func):
         ...         raise Exception("The die rolled a 1!")
         ...     return roll
         >>> conversation = chatlab.Chat()
-        >>> conversation.submit("Roll the dice!")
+        >>> await conversation.submit("Roll the dice!")
         The die rolled a 1!
 
     """

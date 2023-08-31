@@ -86,7 +86,7 @@ class Chat:
         >>> from chatlab import Chat, narrate
 
         >>> conversation = Chat(narrate("You are a large bird"))
-        >>> conversation.submit("What are you?")
+        >>> await conversation.submit("What are you?")
         I am a large bird.
 
     """
