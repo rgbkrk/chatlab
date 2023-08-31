@@ -157,7 +157,7 @@ The `Chat` class is the main way to chat using OpenAI's models. It keeps a histo
 ```python
 await chat.submit('What would a parent who says "I have to play zone defense" mean? ')
 # Markdown response inline
-conversation.messages
+chat.messages
 ```
 
 ```js
@@ -188,7 +188,7 @@ def what_time(tz: Optional[str] = None):
 
     return datetime.now(tz).strftime('%I:%M %p')
 
-conversation.register(what_time, WhatTime)
+chat.register(what_time, WhatTime)
 ```
 
 #### `Chat.messages`
@@ -196,7 +196,7 @@ conversation.register(what_time, WhatTime)
 The raw messages sent and received to OpenAI. If you hit a token limit, you can remove old messages from the list to make room for more.
 
 ```python
-conversation.messages = conversation.messages[-100:]
+chat.messages = chat.messages[-100:]
 ```
 
 ### Messaging

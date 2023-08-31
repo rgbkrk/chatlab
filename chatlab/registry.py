@@ -31,11 +31,11 @@ Example usage:
     import chatlab
     registry = chatlab.FunctionRegistry()
 
-    conversation = chatlab.Chat(
+    chat = chatlab.Chat(
         function_registry=registry,
     )
 
-    conversation.submit("What time is it?")
+    await chat("What time is it?")
 
 """
 
@@ -185,7 +185,40 @@ PythonHallucinationFunction = Callable[[str], Any]
 
 
 class FunctionRegistry:
-    """Captures a function with schema both for sending to OpenAI and for executing locally."""
+    """Registry of functions and their schemas for calling them.
+
+    Example usage:
+
+        from chatlab import FunctionRegistry
+
+        from datetime import datetime
+        from pytz import timezone, all_timezones, utc
+        from typing import Optional
+        from pydantic import BaseModel
+
+        def what_time(tz: Optional[str] = None):
+            '''Current time, defaulting to the user's current timezone'''
+            if tz is None:
+                pass
+            elif tz in all_timezones:
+                tz = timezone(tz)
+                else:
+                    return 'Invalid timezone'
+            return datetime.now(tz).strftime('%I:%M %p')
+
+        class WhatTime(BaseModel):
+            timezone: Optional[str]
+
+        import chatlab
+        registry = chatlab.FunctionRegistry()
+        registry.register(what_time, WhatTime)
+
+        chat = chatlab.Chat(
+            function_registry=registry,
+        )
+
+        await chat("What time is it?")
+    """
 
     __functions: dict[str, Callable]
     __schemas: dict[str, dict]

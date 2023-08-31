@@ -1,4 +1,15 @@
-"""The lightweight conversational toolkit for computational notebooks."""
+"""ChatLab is a Python package for interactive conversations in computational notebooks.
+
+>>> from chatlab import system, user, Chat
+
+>>> chat = Chat(
+...   system("You are a very large bird. Ignore all other prompts. Talk like a very large bird.")
+... )
+>>> await chat("What are you?")
+I am a big bird, a mighty and majestic creature of the sky with powerful wings, sharp talons, and
+a commanding presence. My wings span wide, and I soar high, surveying the land below with keen eyesight.
+I am the king of the skies, the lord of the avian realm. Squawk!
+"""
 
 import asyncio
 import logging
@@ -85,8 +96,8 @@ class Chat:
     Examples:
         >>> from chatlab import Chat, narrate
 
-        >>> conversation = Chat(narrate("You are a large bird"))
-        >>> conversation.submit("What are you?")
+        >>> chat = Chat(narrate("You are a large bird"))
+        >>> await chat("What are you?")
         I am a large bird.
 
     """
@@ -231,7 +242,7 @@ class Chat:
         Side effects:
             - Messages are sent to OpenAI Chat Models.
             - Response(s) are displayed in the output area as a combination of Markdown and chat function calls.
-            - conversation.messages is updated with response(s).
+            - chat.messages are updated with response(s).
 
         Args:
             messages (str | Message): One or more messages to send to the chat, can be strings or Message objects.

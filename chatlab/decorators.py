@@ -1,6 +1,6 @@
 """ChatLab decorators.
 
-This module lets you augment your functions before you register them with a ChatLab conversation.
+This module lets you augment your functions before you register them with a ChatLab chat.
 
 Examples:
     >>> from chatlab import Chat
@@ -23,8 +23,8 @@ Examples:
     ...     except requests.HTTPError:
     ...         raise PokemonFetchError(name)
 
-    >>> conversation = Chat()
-    >>> conversation.submit("Get pikachu")
+    >>> chat = Chat()
+    >>> await chat("Get pikachu")
     Failed to fetch information for Pokemon 'pikachu'.
 
 """
@@ -56,8 +56,8 @@ def expose_exception_to_llm(func):
         ...     if roll == 1:
         ...         raise Exception("The die rolled a 1!")
         ...     return roll
-        >>> conversation = chatlab.Chat()
-        >>> conversation.submit("Roll the dice!")
+        >>> chat = chatlab.Chat()
+        >>> await chat("Roll the dice!")
         The die rolled a 1!
 
     """
