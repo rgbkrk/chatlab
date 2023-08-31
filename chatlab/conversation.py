@@ -15,7 +15,7 @@ import asyncio
 import logging
 import os
 from dataclasses import dataclass
-from typing import Callable, Iterable, List, Optional, Tuple, Type, Union, cast
+from typing import Callable, Dict, Iterable, List, Optional, Tuple, Type, Union, cast, overload
 
 import openai
 import openai.error
@@ -334,15 +334,21 @@ class Chat:
             else:
                 self.messages.append(message)
 
-    @deprecated(
-        deprecated_in="1.0", removed_in="2.0", current_version=__version__, details="Use `register_function` instead."
-    )
-    def register(self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None):
-        """Register a function with the ChatLab instance.
+    @overload
+    def register(
+        self, function: None = None, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None
+    ) -> Callable:
+        ...
 
-        Deprecated in 1.0.0, removed in 2.0.0. Use `register_function` instead.
-        """
-        return self.register_function(function, parameter_schema)
+    @overload
+    def register(self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None) -> Dict:
+        ...
+
+    def register(
+        self, function: Optional[Callable] = None, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None
+    ) -> Union[Callable, Dict]:
+        """Register a function with the ChatLab instance."""
+        return self.function_registry.register(function, parameter_schema)
 
     def register_function(self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None):
         """Register a function with the ChatLab instance.
