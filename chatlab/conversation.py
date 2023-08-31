@@ -363,21 +363,6 @@ class Chat:
 
         return full_schema
 
-    def replace_hallucinated_python(
-        self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None
-    ):
-        """Replace the hallucinated python function with a custom function.
-
-        Args:
-            function (Callable): The function to register.
-
-            parameter_schema (BaseModel or dict): The pydantic model or JSON schema for the function's parameters.
-
-        """
-        full_schema = self.function_registry.register(function, parameter_schema)
-
-        return full_schema
-
     def get_history(self):
         """Returns the conversation history as a list of messages."""
         return self.messages
