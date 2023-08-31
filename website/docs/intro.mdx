@@ -76,10 +76,10 @@ await chat("**Kai**: We call tails.")
 
 In the above example, we used the `system` function to create a `Message` for the assistant to interpret. We also implicitly created user `Message`s. These are the two most common roles in a conversation you will use directly. ChatLab captures not just these messages. It also captures responses from the assistant and function calls.
 
-To understand what transpired above, let's look at each `Message` from `conversation.messages`:
+To understand what transpired above, let's look at each `Message` from `chat.messages`:
 
 ```python cell count=2
-conversation.messages
+chat.messages
 ```
 
 ```python output count=2
@@ -119,7 +119,7 @@ conversation.messages
 }
 ```
 
-As you can see, there are four roles in a conversation. Let's break those down.
+As you can see, there are four roles in a chat. Let's break those down.
 
 ### `user`
 

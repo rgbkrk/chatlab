@@ -31,11 +31,11 @@ Example usage:
     import chatlab
     registry = chatlab.FunctionRegistry()
 
-    conversation = chatlab.Chat(
+    chat = chatlab.Chat(
         function_registry=registry,
     )
 
-    await conversation.submit("What time is it?")
+    await chat("What time is it?")
 
 """
 
@@ -213,11 +213,11 @@ class FunctionRegistry:
         registry = chatlab.FunctionRegistry()
         registry.register(what_time, WhatTime)
 
-        conversation = chatlab.Chat(
+        chat = chatlab.Chat(
             function_registry=registry,
         )
 
-        await conversation.submit("What time is it?")
+        await chat("What time is it?")
     """
 
     __functions: dict[str, Callable]
