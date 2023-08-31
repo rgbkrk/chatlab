@@ -345,7 +345,15 @@ class Chat:
     def register(
         self, function: Optional[Callable] = None, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None
     ) -> Union[Callable, Dict]:
-        """Register a function with the ChatLab instance."""
+        """Register a function with the ChatLab instance. This can be used as a decorator like so:
+
+        >>> from chatlab import Chat
+        >>> chat = Chat()
+        >>> @chat.register
+        ... def my_function():
+        ...     return "Hello world!"
+        >>> await chat("Call my function")
+        """
         return self.function_registry.register(function, parameter_schema)
 
     def register_function(self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None):
