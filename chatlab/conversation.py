@@ -251,8 +251,6 @@ class Chat:
 
         """
 
-        # messages = [self.messages, *messages]
-
         full_messages: List[Message] = []
         full_messages.extend(self.messages)
         for message in messages:
