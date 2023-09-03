@@ -15,7 +15,7 @@ import asyncio
 import logging
 import os
 from dataclasses import dataclass
-from typing import Callable, Iterable, List, Optional, Tuple, Type, Union, cast
+from typing import Callable, Dict, Iterable, List, Optional, Tuple, Type, Union, cast, overload
 
 import openai
 import openai.error
@@ -251,8 +251,6 @@ class Chat:
 
         """
 
-        # messages = [self.messages, *messages]
-
         full_messages: List[Message] = []
         full_messages.extend(self.messages)
         for message in messages:
@@ -334,33 +332,32 @@ class Chat:
             else:
                 self.messages.append(message)
 
-    @deprecated(
-        deprecated_in="1.0", removed_in="2.0", current_version=__version__, details="Use `register_function` instead."
-    )
-    def register(self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None):
-        """Register a function with the ChatLab instance.
+    @overload
+    def register(
+        self, function: None = None, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None
+    ) -> Callable:
+        ...
 
-        Deprecated in 1.0.0, removed in 2.0.0. Use `register_function` instead.
+    @overload
+    def register(self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None) -> Dict:
+        ...
+
+    def register(
+        self, function: Optional[Callable] = None, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None
+    ) -> Union[Callable, Dict]:
+        """Register a function with the ChatLab instance. This can be used as a decorator like so:
+
+        >>> from chatlab import Chat
+        >>> chat = Chat()
+        >>> @chat.register
+        ... def my_function():
+        ...     return "Hello world!"
+        >>> await chat("Call my function")
         """
-        return self.register_function(function, parameter_schema)
+        return self.function_registry.register(function, parameter_schema)
 
     def register_function(self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None):
         """Register a function with the ChatLab instance.
-
-        Args:
-            function (Callable): The function to register.
-
-            parameter_schema (BaseModel or dict): The pydantic model or JSON schema for the function's parameters.
-
-        """
-        full_schema = self.function_registry.register(function, parameter_schema)
-
-        return full_schema
-
-    def replace_hallucinated_python(
-        self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None
-    ):
-        """Replace the hallucinated python function with a custom function.
 
         Args:
             function (Callable): The function to register.
