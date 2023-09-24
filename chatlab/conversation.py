@@ -172,9 +172,9 @@ class Chat:
         """
         raise Exception("This method is deprecated. Use `submit` instead.")
 
-    async def __call__(self, *messages: Union[Message, str], stream: bool = True):
+    async def __call__(self, *messages: Union[Message, str], stream: bool = True, **kwargs):
         """Send messages to the chat model and display the response."""
-        return await self.submit(*messages, stream=stream)
+        return await self.submit(*messages, stream=stream, **kwargs)
 
     async def __process_stream(
         self, resp: Iterable[Union[StreamCompletion, ChatCompletion]]
@@ -236,7 +236,7 @@ class Chat:
 
         return (finish_reason, function_view)
 
-    async def submit(self, *messages: Union[Message, str], stream: bool = True):
+    async def submit(self, *messages: Union[Message, str], stream: bool = True, **kwargs):
         """Send messages to the chat model and display the response.
 
         Side effects:
@@ -265,11 +265,12 @@ class Chat:
                 messages=full_messages,
                 **self.function_registry.api_manifest(),
                 stream=stream,
+                temperature=kwargs.get("temperature", 0),
             )
         except openai.error.RateLimitError as e:
             logger.error(f"Rate limited: {e}. Waiting 5 seconds and trying again.")
             await asyncio.sleep(5)
-            await self.submit(*messages, stream=stream)
+            await self.submit(*messages, stream=stream, **kwargs)
 
             return
 
@@ -300,7 +301,7 @@ class Chat:
             self.append(fn_message)
 
             # Reply back to the LLM with the result of the function call, allow it to continue
-            await self.submit(stream=stream)
+            await self.submit(stream=stream, **kwargs)
             return
 
         # All other finish reasons are valid for regular assistant messages
@@ -386,7 +387,7 @@ class Chat:
 
         return f"<ChatLab {len(self.messages)} messages>"
 
-    def ipython_magic_submit(self, line, cell: Optional[str] = None):
+    def ipython_magic_submit(self, line, cell: Optional[str] = None, **kwargs):
         """Submit a cell to the ChatLab instance."""
         # Line is currently unused, allowing for future expansion into allowing
         # sending messages with other roles.
@@ -395,7 +396,7 @@ class Chat:
             return
         cell = cell.strip()
 
-        asyncio.run_coroutine_threadsafe(self.submit(cell), get_asyncio_loop())
+        asyncio.run_coroutine_threadsafe(self.submit(cell, **kwargs), get_asyncio_loop())
 
     def make_magic(self, name):
         """Register the chat as an IPython magic with the given name.
