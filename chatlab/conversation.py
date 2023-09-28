@@ -352,6 +352,7 @@ class Chat:
         >>> chat = Chat()
         >>> @chat.register
         ... def my_function():
+        ...     '''Example function'''
         ...     return "Hello world!"
         >>> await chat("Call my function")
         """
