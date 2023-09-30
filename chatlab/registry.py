@@ -130,7 +130,7 @@ def generate_function_schema(
     if isinstance(parameter_schema, dict):
         parameters = parameter_schema
     elif parameter_schema is not None:
-        parameters = parameter_schema.schema()
+        parameters = parameter_schema.schema()  # type: ignore
     else:
         # extract function parameters and their type annotations
         sig = inspect.signature(function)
@@ -161,9 +161,9 @@ def generate_function_schema(
         model = create_model(
             function.__name__,
             __config__=FunctionSchemaConfig,
-            **fields,
+            **fields,  # type: ignore
         )
-        parameters: dict = model.schema()
+        parameters: dict = model.schema()  # type: ignore
 
     if "properties" not in parameters:
         parameters["properties"] = {}
