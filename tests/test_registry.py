@@ -1,11 +1,17 @@
 # flake8: noqa
+import uuid
 from unittest import mock
 from unittest.mock import MagicMock, patch
 
 import pytest
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from chatlab.registry import FunctionArgumentError, FunctionRegistry, UnknownFunctionError, generate_function_schema
+from chatlab.registry import (
+    FunctionArgumentError,
+    FunctionRegistry,
+    UnknownFunctionError,
+    generate_function_schema,
+)
 
 
 # Define a function to use in testing
@@ -17,7 +23,51 @@ def simple_func(x: int, y: str, z: bool = False):
 class SimpleModel(BaseModel):
     x: int
     y: str
-    z: bool = False
+    z: bool = Field(default=False, description="A simple boolean field")
+
+
+class SimpleClass:
+    def simple_method(self, x: int, y: str, z: bool = False):
+        """A simple test method"""
+        return f"{x}, {y}, {z}"
+
+
+def simple_func_with_model_arg(
+    x: int,
+    y: str,
+    z: bool = False,
+    model: SimpleModel = None,
+) -> str:
+    """A simple test function with a model argument"""
+    return f"{x}, {y}, {z}, {model}"
+
+
+class NestedModel(BaseModel):
+    foo: int
+    bar: str
+    baz: bool = True
+    simple_model: SimpleModel
+
+
+def simple_func_with_model_args(
+    x: int,
+    y: str,
+    z: bool = False,
+    model: SimpleModel = None,
+    nested_model: NestedModel = None,
+) -> str:
+    """A simple test function with model arguments"""
+    return f"{x}, {y}, {z}, {model}, {nested_model}"
+
+
+def simple_func_with_uuid_arg(
+    x: int,
+    y: str,
+    z: bool = False,
+    uuid: uuid.UUID = None,
+) -> str:
+    """A simple test function with a uuid argument"""
+    return f"{x}, {y}, {z}, {uuid}"
 
 
 # Test the function generation schema
@@ -39,16 +89,25 @@ def test_generate_function_schema_no_type_annotation():
         """Return back x"""
         return x
 
-    with pytest.raises(Exception, match="Type annotation must be a JSON serializable type"):
+    with pytest.raises(
+        Exception,
+        match=f"`x` parameter of no_type_annotation must have a JSON-serializable type annotation",
+    ):
         generate_function_schema(no_type_annotation)
 
 
 def test_generate_function_schema_unallowed_type():
-    def unallowed_type(x: set):
+    class NewType:
+        pass
+
+    def unallowed_type(x: NewType):
         '''Return back x'''
         return x
 
-    with pytest.raises(Exception, match="Type annotation must be a JSON serializable type"):
+    with pytest.raises(
+        ValueError,
+        match="Value not declarable with JSON Schema, field: name='x' type=NewType required=True",
+    ):
         generate_function_schema(unallowed_type)
 
 
@@ -73,9 +132,146 @@ def test_generate_function_schema():
 def test_generate_function_schema_with_model():
     schema = generate_function_schema(simple_func, SimpleModel)
     expected_schema = {
-        "name": "simple_func",
-        "description": "A simple test function",
-        "parameters": SimpleModel.schema(),
+        'name': 'simple_func',
+        'description': 'A simple test function',
+        'parameters': {
+            'type': 'object',
+            'properties': {
+                'x': {'type': 'integer'},
+                'y': {'type': 'string'},
+                'z': {
+                    'default': False,
+                    'type': 'boolean',
+                    "description": "A simple boolean field",
+                },
+            },
+            'required': ['x', 'y'],
+        },
+    }
+    assert schema == expected_schema
+
+
+def test_generate_function_schema_with_method():
+    schema = generate_function_schema(SimpleClass().simple_method)
+    expected_schema = {
+        "name": "simple_method",
+        "description": "A simple test method",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "x": {"type": "integer"},
+                "y": {"type": "string"},
+                "z": {"type": "boolean", "default": False},
+            },
+            "required": ["x", "y"],
+        },
+    }
+    assert schema == expected_schema
+
+
+def test_generate_function_schema_with_model_argument():
+    schema = generate_function_schema(simple_func_with_model_arg)
+    expected_schema = {
+        "name": "simple_func_with_model_arg",
+        "description": "A simple test function with a model argument",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                'x': {'type': 'integer'},
+                'y': {'type': 'string'},
+                'z': {'default': False, 'type': 'boolean'},
+                'model': {'$ref': '#/definitions/SimpleModel'},
+            },
+            "required": ["x", "y"],
+            "definitions": {
+                'SimpleModel': {
+                    'title': 'SimpleModel',
+                    'type': 'object',
+                    'properties': {
+                        'x': {'title': 'X', 'type': 'integer'},
+                        'y': {'title': 'Y', 'type': 'string'},
+                        'z': {
+                            'title': 'Z',
+                            'description': 'A simple boolean field',
+                            'default': False,
+                            'type': 'boolean',
+                        },
+                    },
+                    'required': ['x', 'y'],
+                }
+            },
+        },
+    }
+    assert schema == expected_schema
+
+
+def test_generate_function_schema_with_model_and_nested_model_arguments():
+    schema = generate_function_schema(simple_func_with_model_args)
+    expected_schema = {
+        "name": "simple_func_with_model_args",
+        "description": "A simple test function with model arguments",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                'x': {'type': 'integer'},
+                'y': {'type': 'string'},
+                'z': {'default': False, 'type': 'boolean'},
+                'model': {'$ref': '#/definitions/SimpleModel'},
+                'nested_model': {'$ref': '#/definitions/NestedModel'},
+            },
+            "required": ["x", "y"],
+            "definitions": {
+                'SimpleModel': {
+                    'title': 'SimpleModel',
+                    'type': 'object',
+                    'properties': {
+                        'x': {'title': 'X', 'type': 'integer'},
+                        'y': {'title': 'Y', 'type': 'string'},
+                        'z': {
+                            'title': 'Z',
+                            'description': 'A simple boolean field',
+                            'default': False,
+                            'type': 'boolean',
+                        },
+                    },
+                    'required': ['x', 'y'],
+                },
+                'NestedModel': {
+                    'title': 'NestedModel',
+                    'type': 'object',
+                    'properties': {
+                        'foo': {'title': 'Foo', 'type': 'integer'},
+                        'bar': {'title': 'Bar', 'type': 'string'},
+                        'baz': {
+                            'title': 'Baz',
+                            'default': True,
+                            'type': 'boolean',
+                        },
+                        'simple_model': {'$ref': '#/definitions/SimpleModel'},
+                    },
+                    'required': ['foo', 'bar', 'simple_model'],
+                },
+            },
+        },
+    }
+    assert schema == expected_schema
+
+
+def test_generate_function_schema_with_uuid_argument():
+    schema = generate_function_schema(simple_func_with_uuid_arg)
+    expected_schema = {
+        "name": "simple_func_with_uuid_arg",
+        "description": "A simple test function with a uuid argument",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                'x': {'type': 'integer'},
+                'y': {'type': 'string'},
+                'z': {'default': False, 'type': 'boolean'},
+                'uuid': {'type': 'string', 'format': 'uuid'},
+            },
+            "required": ["x", "y"],
+        },
     }
     assert schema == expected_schema
 
@@ -93,7 +289,8 @@ async def test_function_registry_function_argument_error():
     registry = FunctionRegistry()
     registry.register(simple_func, SimpleModel)
     with pytest.raises(
-        FunctionArgumentError, match="Invalid Function call on simple_func. Arguments must be a valid JSON object"
+        FunctionArgumentError,
+        match="Invalid Function call on simple_func. Arguments must be a valid JSON object",
     ):
         await registry.call("simple_func", arguments="not json")
 
