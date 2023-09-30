@@ -177,9 +177,6 @@ def generate_function_schema(
         parameters["required"] = []
 
     schema["parameters"] = parameters
-    # from rich import print as rprint
-
-    # breakpoint()
     return schema
 
 
