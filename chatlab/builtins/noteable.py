@@ -7,7 +7,8 @@ from typing import Literal, Optional
 import httpx
 import orjson
 import ulid
-from origami.clients.api import APIClient, RTUClient
+from origami.clients.api import APIClient
+from origami.clients.rtu import RTUClient
 from origami.models.api.outputs import KernelOutput, KernelOutputContent
 from origami.models.kernels import KernelSession
 from origami.models.notebook import CodeCell, MarkdownCell, make_sql_cell
