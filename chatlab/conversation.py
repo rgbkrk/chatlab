@@ -18,6 +18,9 @@ from dataclasses import dataclass
 from typing import Callable, Dict, Iterable, List, Optional, Tuple, Type, Union, cast, overload
 
 import openai
+from openai import OpenAI
+
+client = OpenAI()
 import openai.error
 from deprecation import deprecated
 from IPython.core.async_helpers import get_asyncio_loop
@@ -260,14 +263,12 @@ class Chat:
                 full_messages.append(message)
 
         try:
-            resp = openai.ChatCompletion.create(
-                model=self.model,
-                messages=full_messages,
-                **self.function_registry.api_manifest(),
-                stream=stream,
-                temperature=kwargs.get("temperature", 0),
-            )
-        except openai.error.RateLimitError as e:
+            resp = client.chat.completions.create(model=self.model,
+            messages=full_messages,
+            **self.function_registry.api_manifest(),
+            stream=stream,
+            temperature=kwargs.get("temperature", 0))
+        except openai.RateLimitError as e:
             logger.error(f"Rate limited: {e}. Waiting 5 seconds and trying again.")
             await asyncio.sleep(5)
             await self.submit(*messages, stream=stream, **kwargs)
