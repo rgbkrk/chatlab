@@ -20,7 +20,7 @@ import openai
 from deprecation import deprecated
 from IPython.core.async_helpers import get_asyncio_loop
 from openai import AsyncOpenAI
-from openai.types.chat import ChatCompletionChunk
+from openai.types.chat import ChatCompletion, ChatCompletionChunk
 from pydantic import BaseModel
 
 from chatlab.views.assistant_function_call import AssistantFunctionCallView
@@ -181,6 +181,28 @@ class Chat:
 
         return (finish_reason, function_view)
 
+    async def __process_full_completion(self, resp: ChatCompletion) -> Tuple[str, Optional[AssistantFunctionCallView]]:
+        assistant_view: AssistantMessageView = AssistantMessageView()
+        function_view: Optional[AssistantFunctionCallView] = None
+
+        if len(resp.choices) == 0:
+            logger.warning(f"Result has no choices: {resp}")
+            return ("stop", None)  # TODO
+
+        choice = resp.choices[0]
+
+        message = choice.message
+
+        if message.content is not None:
+            assistant_view.append(message.content)
+            assistant_view.flush()
+        if message.function_call is not None:
+            function_call = message.function_call
+            function_view = AssistantFunctionCallView(function_name=function_call.name)
+            function_view.append(function_call.arguments)
+
+        return choice.finish_reason, function_view
+
     async def submit(self, *messages: Union[Message, str], stream=True, **kwargs):
         """Send messages to the chat model and display the response.
 
@@ -208,16 +230,32 @@ class Chat:
 
             manifest = self.function_registry.api_manifest()
 
-            resp = await client.chat.completions.create(
-                model=self.model,
-                messages=full_messages,
-                **manifest,
-                # Due to this openai beta migration, we're going to assume
-                # only streaming and drop the non-streaming case for now until
-                # types are working right.
-                stream=True,
-                temperature=kwargs.get("temperature", 0),
-            )
+            if stream:
+                streaming_response = await client.chat.completions.create(
+                    model=self.model,
+                    messages=full_messages,
+                    **manifest,
+                    # Due to this openai beta migration, we're going to assume
+                    # only streaming and drop the non-streaming case for now until
+                    # types are working right.
+                    stream=True,
+                    temperature=kwargs.get("temperature", 0),
+                )
+
+                finish_reason, function_call_request = await self.__process_stream(streaming_response)
+            else:
+                full_response = await client.chat.completions.create(
+                    model=self.model,
+                    messages=full_messages,
+                    **manifest,
+                    # Due to this openai beta migration, we're going to assume
+                    # only streaming and drop the non-streaming case for now until
+                    # types are working right.
+                    stream=False,
+                    temperature=kwargs.get("temperature", 0),
+                )
+
+                finish_reason, function_call_request = await self.__process_full_completion(full_response)
 
         except openai.RateLimitError as e:
             logger.error(f"Rate limited: {e}. Waiting 5 seconds and trying again.")
@@ -227,11 +265,6 @@ class Chat:
             return
 
         self.append(*messages)
-
-        # if not stream:
-        #    resp = [resp]
-
-        finish_reason, function_call_request = await self.__process_stream(resp)
 
         if finish_reason == "function_call":
             if function_call_request is None:
