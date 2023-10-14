@@ -1,17 +1,13 @@
 # flake8: noqa
 import uuid
+from typing import Optional
 from unittest import mock
 from unittest.mock import MagicMock, patch
 
 import pytest
 from pydantic import BaseModel, Field
 
-from chatlab.registry import (
-    FunctionArgumentError,
-    FunctionRegistry,
-    UnknownFunctionError,
-    generate_function_schema,
-)
+from chatlab.registry import FunctionArgumentError, FunctionRegistry, UnknownFunctionError, generate_function_schema
 
 
 # Define a function to use in testing
@@ -36,7 +32,7 @@ def simple_func_with_model_arg(
     x: int,
     y: str,
     z: bool = False,
-    model: SimpleModel = None,
+    model: Optional[SimpleModel] = None,
 ) -> str:
     """A simple test function with a model argument"""
     return f"{x}, {y}, {z}, {model}"
@@ -53,8 +49,8 @@ def simple_func_with_model_args(
     x: int,
     y: str,
     z: bool = False,
-    model: SimpleModel = None,
-    nested_model: NestedModel = None,
+    model: Optional[SimpleModel] = None,
+    nested_model: Optional[NestedModel] = None,
 ) -> str:
     """A simple test function with model arguments"""
     return f"{x}, {y}, {z}, {model}, {nested_model}"
@@ -64,7 +60,7 @@ def simple_func_with_uuid_arg(
     x: int,
     y: str,
     z: bool = False,
-    uuid: uuid.UUID = None,
+    uuid: Optional[uuid.UUID] = None,
 ) -> str:
     """A simple test function with a uuid argument"""
     return f"{x}, {y}, {z}, {uuid}"
@@ -356,8 +352,8 @@ def test_generate_function_schema_optional_args():
         return f"{x}, {y}, {z}"
 
     schema = generate_function_schema(func_with_optional_args)
-    assert "z" in schema["parameters"]["properties"]
-    assert "z" not in schema["parameters"]["required"]
+    assert "z" in schema["parameters"]["properties"]  # type: ignore
+    assert "z" not in schema["parameters"]["required"]  # type: ignore
 
 
 # Test the generate_function_schema for function with no arguments
