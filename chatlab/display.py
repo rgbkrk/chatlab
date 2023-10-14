@@ -2,8 +2,10 @@
 
 from typing import Optional
 
+from openai.types.chat import ChatCompletionMessageParam
+
 from .components.function_details import ChatFunctionComponent
-from .messaging import Message, function_result, system
+from .messaging import function_result, system
 from .registry import FunctionArgumentError, FunctionRegistry, UnknownFunctionError
 from .views.abstracts import AutoDisplayer
 
@@ -35,7 +37,7 @@ class ChatFunctionCall(AutoDisplayer):
         self._display_id = display_id
         self.update_displays()
 
-    async def call(self) -> Message:
+    async def call(self) -> ChatCompletionMessageParam:
         """Call the function and return a stack of messages for LLM and human consumption."""
         function_name = self.function_name
         function_args = self.function_args

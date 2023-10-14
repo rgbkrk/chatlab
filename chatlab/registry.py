@@ -42,25 +42,26 @@ Example usage:
 import asyncio
 import inspect
 import json
-from enum import Enum
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    Literal,
-    Optional,
-    Type,
-    Union,
-    get_args,
-    get_origin,
-    overload,
-)
+from typing import Any, Callable, Dict, Iterable, List, Optional, Type, TypedDict, Union, get_args, get_origin, overload
 
+from openai.types.chat.completion_create_params import Function as FunctionSchema
+from openai.types.chat.completion_create_params import FunctionCall as FunctionCallOption
 from pydantic import BaseModel, create_model
 
 from .decorators import ChatlabMetadata
+
+
+class APIManifest(TypedDict, total=False):
+    """The schema for the API."""
+
+    functions: List[FunctionSchema]
+    """A list of functions that the model can call during the conversation."""
+
+    function_call: FunctionCallOption
+    """The policy for when to call functions.
+
+    One of "auto", "none", or a dictionary with a "name" key.
+    """
 
 
 class FunctionArgumentError(Exception):
@@ -109,7 +110,7 @@ class FunctionSchemaConfig:
 def generate_function_schema(
     function: Callable,
     parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
-):
+) -> FunctionSchema:
     """Generate a function schema for sending to OpenAI."""
     doc = function.__doc__
     func_name = function.__name__
@@ -121,11 +122,11 @@ def generate_function_schema(
     if not doc:
         raise Exception("Only functions with docstrings can be registered")
 
-    schema = {
-        "name": func_name,
-        "description": doc,
-        "parameters": {},
-    }
+    schema = FunctionSchema(
+        name=func_name,
+        description=doc,
+        parameters={},
+    )
 
     if isinstance(parameter_schema, dict):
         parameters = parameter_schema
@@ -144,9 +145,7 @@ def generate_function_schema(
             # determine type annotation
             if param.annotation == inspect.Parameter.empty:
                 # no annotation, raise instead of falling back to Any
-                raise Exception(
-                    f"`{name}` parameter of {func_name} must have a JSON-serializable type annotation"
-                )
+                raise Exception(f"`{name}` parameter of {func_name} must have a JSON-serializable type annotation")
             type_annotation = param.annotation
 
             # get the default value, otherwise set as required
@@ -160,7 +159,7 @@ def generate_function_schema(
         # function schema used by OpenAI
         model = create_model(
             function.__name__,
-            __config__=FunctionSchemaConfig,
+            __config__=FunctionSchemaConfig,  # type: ignore
             **fields,  # type: ignore
         )
         parameters: dict = model.schema()  # type: ignore
@@ -221,7 +220,7 @@ class FunctionRegistry:
     """
 
     __functions: dict[str, Callable]
-    __schemas: dict[str, dict]
+    __schemas: dict[str, FunctionSchema]
 
     # Allow passing in a callable that accepts a single string for the python
     # hallucination function. This is useful for testing.
@@ -232,9 +231,7 @@ class FunctionRegistry:
 
         self.python_hallucination_function = python_hallucination_function
 
-    def decorator(
-        self, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None
-    ) -> Callable:
+    def decorator(self, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None) -> Callable:
         """Create a decorator for registering functions with a schema."""
 
         def decorator(function):
@@ -254,14 +251,14 @@ class FunctionRegistry:
     @overload
     def register(
         self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None
-    ) -> Dict:
+    ) -> FunctionSchema:
         ...
 
     def register(
         self,
         function: Optional[Callable] = None,
         parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
-    ) -> Union[Callable, Dict]:
+    ) -> Union[Callable, FunctionSchema]:
         """Register a function for use in `Chat`s. Can be used as a decorator or directly to register a function.
 
         >>> registry = FunctionRegistry()
@@ -290,7 +287,7 @@ class FunctionRegistry:
 
     def register_function(
         self, function: Callable, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None
-    ) -> Dict:
+    ) -> FunctionSchema:
         """Register a single function."""
         final_schema = generate_function_schema(function, parameter_schema)
 
@@ -314,7 +311,7 @@ class FunctionRegistry:
 
         return self.__functions.get(function_name)
 
-    def get_schema(self, function_name) -> Optional[dict]:
+    def get_schema(self, function_name) -> Optional[FunctionSchema]:
         """Get a function schema by name."""
         return self.__schemas.get(function_name)
 
@@ -328,9 +325,9 @@ class FunctionRegistry:
         chatlab_metadata = getattr(function, "chatlab_metadata", ChatlabMetadata())
         return chatlab_metadata
 
-    def api_manifest(self, function_call_option: Union[str, dict] = "auto"):
-        """
-        Get a dictionary containing function definitions and calling options.
+    def api_manifest(self, function_call_option: FunctionCallOption = "auto") -> APIManifest:
+        """Get a dictionary containing function definitions and calling options.
+
         This is designed to be used with OpenAI's Chat Completion API, where the
         dictionary can be passed as keyword arguments to set the `functions` and
         `function_call` parameters.
@@ -415,9 +412,7 @@ class FunctionRegistry:
                 parameters = json.loads(arguments)
                 # TODO: Validate parameters against schema
             except json.JSONDecodeError:
-                raise FunctionArgumentError(
-                    f"Invalid Function call on {name}. Arguments must be a valid JSON object"
-                )
+                raise FunctionArgumentError(f"Invalid Function call on {name}. Arguments must be a valid JSON object")
 
         if function is None:
             raise UnknownFunctionError(f"Function {name} is not registered")
@@ -435,6 +430,6 @@ class FunctionRegistry:
         return name in self.__functions
 
     @property
-    def function_definitions(self) -> list[dict]:
+    def function_definitions(self) -> list[FunctionSchema]:
         """Get a list of function definitions."""
         return list(self.__schemas.values())

@@ -10,117 +10,12 @@ Example:
 
 """
 
-from typing import List, Optional, TypedDict, Union
+from typing import Optional
 
-from typing_extensions import TypeGuard
-
-BasicMessage = TypedDict(
-    "BasicMessage",
-    {
-        "role": str,
-        "content": str,
-    },
-)
+from openai.types.chat import ChatCompletionMessageParam
 
 
-FunctionCall = TypedDict(
-    "FunctionCall",
-    {
-        "name": str,
-        "arguments": str,
-    },
-)
-
-FunctionCallMessage = TypedDict(
-    "FunctionCallMessage",
-    {
-        "role": str,
-        "content": Optional[str],
-        "function_call": FunctionCall,
-    },
-)
-
-FunctionResultMessage = TypedDict(
-    "FunctionResultMessage",
-    {
-        "role": str,
-        "content": str,
-        "name": str,
-    },
-)
-
-
-Message = Union[BasicMessage, FunctionCallMessage, FunctionResultMessage]
-
-
-def is_function_call(message: Message) -> TypeGuard[FunctionCallMessage]:
-    """Check if a message is a function call message."""
-    return 'function_call' in message
-
-
-def is_basic_message(message: Message) -> TypeGuard[BasicMessage]:
-    """Check if a message is a basic message."""
-    return 'content' in message and 'role' in message and 'function_call' not in message
-
-
-#### STREAMING ####
-
-Delta = TypedDict(
-    "Delta",
-    {
-        "function_call": FunctionCall,
-        "content": Optional[str],
-    },
-    total=False,
-)
-
-
-StreamChoice = TypedDict(
-    "StreamChoice",
-    {
-        "finish_reason": Optional[str],
-        "delta": Delta,
-    },
-)
-
-StreamCompletion = TypedDict(
-    "StreamCompletion",
-    {
-        "choices": List[StreamChoice],
-    },
-    total=False,
-)
-
-#### NON STREAMING ####
-
-FullChoice = TypedDict(
-    "FullChoice",
-    {
-        "finish_reason": Optional[str],
-        "message": Message,
-    },
-)
-
-ChatCompletion = TypedDict(
-    "ChatCompletion",
-    {
-        "choices": List[FullChoice],
-    },
-    total=False,
-)
-
-
-def is_stream_choice(choice: Union[StreamChoice, FullChoice]) -> TypeGuard[StreamChoice]:
-    """Check if a choice is a stream choice."""
-    return 'delta' in choice
-
-
-def is_full_choice(choice: Union[StreamChoice, FullChoice]) -> TypeGuard[FullChoice]:
-    """Check if a choice is a regular choice."""
-    return 'message' in choice
-
-
-def assistant(content: str) -> BasicMessage:
+def assistant(content: str) -> ChatCompletionMessageParam:
     """Create a message from the assistant.
 
     Args:
@@ -135,7 +30,7 @@ def assistant(content: str) -> BasicMessage:
     }
 
 
-def user(content: str) -> BasicMessage:
+def user(content: str) -> ChatCompletionMessageParam:
     """Create a message from the user.
 
     Args:
@@ -150,7 +45,7 @@ def user(content: str) -> BasicMessage:
     }
 
 
-def system(content: str) -> BasicMessage:
+def system(content: str) -> ChatCompletionMessageParam:
     """Create a message from the system.
 
     Args:
@@ -165,7 +60,7 @@ def system(content: str) -> BasicMessage:
     }
 
 
-def assistant_function_call(name: str, arguments: Optional[str] = None) -> FunctionCallMessage:
+def assistant_function_call(name: str, arguments: Optional[str] = None) -> ChatCompletionMessageParam:
     """Create a function call message from the assistant.
 
     Args:
@@ -188,7 +83,7 @@ def assistant_function_call(name: str, arguments: Optional[str] = None) -> Funct
     }
 
 
-def function_result(name: str, content: str) -> FunctionResultMessage:
+def function_result(name: str, content: str) -> ChatCompletionMessageParam:
     """Create a function result message.
 
     Args:
