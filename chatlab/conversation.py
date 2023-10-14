@@ -14,13 +14,12 @@ I am the king of the skies, the lord of the avian realm. Squawk!
 import asyncio
 import logging
 import os
-from typing import Callable, List, Optional, Tuple, Type, Union, overload
+from typing import AsyncIterator, Callable, List, Optional, Tuple, Type, Union, overload
 
 import openai
 from deprecation import deprecated
 from IPython.core.async_helpers import get_asyncio_loop
 from openai import AsyncOpenAI
-from openai._streaming import AsyncStream
 from openai.types.chat import ChatCompletionChunk
 from pydantic import BaseModel
 
@@ -136,7 +135,7 @@ class Chat:
         return await self.submit(*messages, stream=stream, **kwargs)
 
     async def __process_stream(
-        self, resp: AsyncStream[ChatCompletionChunk]
+        self, resp: AsyncIterator[ChatCompletionChunk]
     ) -> Tuple[str, Optional[AssistantFunctionCallView]]:
         assistant_view: AssistantMessageView = AssistantMessageView()
         function_view: Optional[AssistantFunctionCallView] = None
