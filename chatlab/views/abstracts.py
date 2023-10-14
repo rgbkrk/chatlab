@@ -4,8 +4,7 @@ from abc import ABC, abstractmethod
 from binascii import hexlify
 
 from IPython.core import display_functions
-
-from ..messaging import Message
+from openai.types.chat import ChatCompletionMessageParam
 
 
 class AutoDisplayer(ABC):
@@ -85,11 +84,11 @@ class BufferView(ABC):
         return self.active and not self.is_empty()
 
     @abstractmethod
-    def get_message(self) -> Message:
+    def get_message(self) -> ChatCompletionMessageParam:
         """Returns the crafted message. To be overridden in subclasses."""
         pass
 
-    def flush(self):
+    def flush(self) -> ChatCompletionMessageParam:
         """Flushes the message buffer."""
         message = self.get_message()
         self.buffer = self.create_buffer()

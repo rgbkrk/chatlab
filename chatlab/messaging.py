@@ -14,8 +14,6 @@ from typing import Optional
 
 from openai.types.chat import ChatCompletionMessageParam
 
-Message = ChatCompletionMessageParam
-
 
 def assistant(content: str) -> ChatCompletionMessageParam:
     """Create a message from the assistant.

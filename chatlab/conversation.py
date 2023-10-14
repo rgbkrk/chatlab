@@ -20,7 +20,7 @@ import openai
 from deprecation import deprecated
 from IPython.core.async_helpers import get_asyncio_loop
 from openai import AsyncOpenAI
-from openai.types.chat import ChatCompletion, ChatCompletionChunk
+from openai.types.chat import ChatCompletion, ChatCompletionChunk, ChatCompletionMessageParam
 from pydantic import BaseModel
 
 from chatlab.views.assistant_function_call import AssistantFunctionCallView
@@ -28,7 +28,7 @@ from chatlab.views.assistant_function_call import AssistantFunctionCallView
 from ._version import __version__
 from .display import ChatFunctionCall
 from .errors import ChatLabError
-from .messaging import Message, human
+from .messaging import human
 from .registry import FunctionRegistry, FunctionSchema, PythonHallucinationFunction
 from .views.assistant import AssistantMessageView
 
@@ -43,7 +43,7 @@ class Chat:
     History is tracked and can be used to continue a conversation.
 
     Args:
-        initial_context (str | Message): The initial context for the conversation.
+        initial_context (str | ChatCompletionMessageParam): The initial context for the conversation.
 
         model (str): The model to use for the conversation.
 
@@ -60,14 +60,14 @@ class Chat:
 
     """
 
-    messages: List[Message]
+    messages: List[ChatCompletionMessageParam]
     model: str
     function_registry: FunctionRegistry
     allow_hallucinated_python: bool
 
     def __init__(
         self,
-        *initial_context: Union[Message, str],
+        *initial_context: Union[ChatCompletionMessageParam, str],
         model="gpt-3.5-turbo-0613",
         function_registry: Optional[FunctionRegistry] = None,
         chat_functions: Optional[List[Callable]] = None,
@@ -99,7 +99,7 @@ class Chat:
         if initial_context is None:
             initial_context = []  # type: ignore
 
-        self.messages: List[Message] = []
+        self.messages: List[ChatCompletionMessageParam] = []
 
         self.append(*initial_context)
         self.model = model
@@ -122,7 +122,7 @@ class Chat:
     )
     def chat(
         self,
-        *messages: Union[Message, str],
+        *messages: Union[ChatCompletionMessageParam, str],
     ):
         """Send messages to the chat model and display the response.
 
@@ -130,7 +130,7 @@ class Chat:
         """
         raise Exception("This method is deprecated. Use `submit` instead.")
 
-    async def __call__(self, *messages: Union[Message, str], stream=True, **kwargs):
+    async def __call__(self, *messages: Union[ChatCompletionMessageParam, str], stream=True, **kwargs):
         """Send messages to the chat model and display the response."""
         return await self.submit(*messages, stream=stream, **kwargs)
 
@@ -195,7 +195,7 @@ class Chat:
 
         if message.content is not None:
             assistant_view.append(message.content)
-            assistant_view.flush()
+            self.append(assistant_view.flush())
         if message.function_call is not None:
             function_call = message.function_call
             function_view = AssistantFunctionCallView(function_name=function_call.name)
@@ -203,7 +203,7 @@ class Chat:
 
         return choice.finish_reason, function_view
 
-    async def submit(self, *messages: Union[Message, str], stream=True, **kwargs):
+    async def submit(self, *messages: Union[ChatCompletionMessageParam, str], stream=True, **kwargs):
         """Send messages to the chat model and display the response.
 
         Side effects:
@@ -212,12 +212,13 @@ class Chat:
             - chat.messages are updated with response(s).
 
         Args:
-            messages (str | Message): One or more messages to send to the chat, can be strings or Message objects.
+            messages (str | ChatCompletionMessageParam): One or more messages to send to the chat, can be strings or
+            ChatCompletionMessageParam objects.
 
             stream: Whether to stream chat into markdown or not. If False, the entire chat will be sent once.
 
         """
-        full_messages: List[Message] = []
+        full_messages: List[ChatCompletionMessageParam] = []
         full_messages.extend(self.messages)
         for message in messages:
             if isinstance(message, str):
@@ -230,14 +231,12 @@ class Chat:
 
             manifest = self.function_registry.api_manifest()
 
+            # Due to the strict response typing based on `Literal` typing on `stream`, we have to process these two cases separately
             if stream:
                 streaming_response = await client.chat.completions.create(
                     model=self.model,
                     messages=full_messages,
                     **manifest,
-                    # Due to this openai beta migration, we're going to assume
-                    # only streaming and drop the non-streaming case for now until
-                    # types are working right.
                     stream=True,
                     temperature=kwargs.get("temperature", 0),
                 )
@@ -248,9 +247,6 @@ class Chat:
                     model=self.model,
                     messages=full_messages,
                     **manifest,
-                    # Due to this openai beta migration, we're going to assume
-                    # only streaming and drop the non-streaming case for now until
-                    # types are working right.
                     stream=False,
                     temperature=kwargs.get("temperature", 0),
                 )
@@ -300,13 +296,13 @@ class Chat:
                 f"UNKNOWN FINISH REASON: '{finish_reason}'. If you see this message, report it as an issue to https://github.com/rgbkrk/chatlab/issues"  # noqa: E501
             )
 
-    def append(self, *messages: Union[Message, str]):
+    def append(self, *messages: Union[ChatCompletionMessageParam, str]):
         """Append messages to the conversation history.
 
         Note: this does not send the messages on until `chat` is called.
 
         Args:
-            messages (str | Message): One or more messages to append to the conversation.
+            messages (str | ChatCompletionMessageParam): One or more messages to append to the conversation.
 
         """
         # Messages are either a dict respecting the {role, content} format or a str that we convert to a human message
