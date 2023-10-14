@@ -2,10 +2,6 @@
 
 from enum import Enum
 
-from openai import OpenAI
-
-client = OpenAI()
-
 
 class ChatModel(Enum):
     """Models available for use with chatlab."""
@@ -44,15 +40,3 @@ GPT_3_5_TURBO = ChatModel.GPT_3_5_TURBO.value
 GPT_3_5_TURBO_0613 = ChatModel.GPT_3_5_TURBO_0613.value
 GPT_3_5_TURBO_16K = ChatModel.GPT_3_5_TURBO_16K.value
 GPT_3_5_TURBO_16K_0613 = ChatModel.GPT_3_5_TURBO_16K_0613.value
-
-
-def list_enabled_chat_models() -> list:
-    """Return a list of valid models for use with chatlab."""
-    all_models = client.models.list()
-    return [model for model in all_models if model.id in ChatModel]
-
-
-def list_enabled_function_compatible_models() -> list:
-    """Return a list of valid models for use with chatlab."""
-    all_models = client.models.list()
-    return [model for model in all_models if model.id in FunctionCompatibleModel]
