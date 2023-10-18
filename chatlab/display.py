@@ -105,5 +105,5 @@ class ChatFunctionCall(AutoDisplayer):
         )
         return {
             "text/html": vdom_component.to_html(),
-            "application/vdom.v1+json": vdom_component.to_dict(),
+            # "application/vdom.v1+json": vdom_component.to_dict(),
         }
