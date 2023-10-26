@@ -7,7 +7,12 @@ from unittest.mock import MagicMock, patch
 import pytest
 from pydantic import BaseModel, Field
 
-from chatlab.registry import FunctionArgumentError, FunctionRegistry, UnknownFunctionError, generate_function_schema
+from chatlab.registry import (
+    FunctionArgumentError,
+    FunctionRegistry,
+    UnknownFunctionError,
+    generate_function_schema,
+)
 
 
 # Define a function to use in testing
@@ -68,7 +73,9 @@ def simple_func_with_uuid_arg(
 
 # Test the function generation schema
 def test_generate_function_schema_lambda():
-    with pytest.raises(Exception, match="Lambdas cannot be registered. Use `def` instead."):
+    with pytest.raises(
+        Exception, match="Lambdas cannot be registered. Use `def` instead."
+    ):
         generate_function_schema(lambda x: x)
 
 
@@ -76,7 +83,9 @@ def test_generate_function_schema_no_docstring():
     def no_docstring(x: int):
         return x
 
-    with pytest.raises(Exception, match="Only functions with docstrings can be registered"):
+    with pytest.raises(
+        Exception, match="Only functions with docstrings can be registered"
+    ):
         generate_function_schema(no_docstring)
 
 
@@ -97,7 +106,7 @@ def test_generate_function_schema_unallowed_type():
         pass
 
     def unallowed_type(x: NewType):
-        '''Return back x'''
+        """Return back x"""
         return x
 
     with pytest.raises(
@@ -128,20 +137,20 @@ def test_generate_function_schema():
 def test_generate_function_schema_with_model():
     schema = generate_function_schema(simple_func, SimpleModel)
     expected_schema = {
-        'name': 'simple_func',
-        'description': 'A simple test function',
-        'parameters': {
-            'type': 'object',
-            'properties': {
-                'x': {'type': 'integer'},
-                'y': {'type': 'string'},
-                'z': {
-                    'default': False,
-                    'type': 'boolean',
+        "name": "simple_func",
+        "description": "A simple test function",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "x": {"type": "integer"},
+                "y": {"type": "string"},
+                "z": {
+                    "default": False,
+                    "type": "boolean",
                     "description": "A simple boolean field",
                 },
             },
-            'required': ['x', 'y'],
+            "required": ["x", "y"],
         },
     }
     assert schema == expected_schema
@@ -173,27 +182,27 @@ def test_generate_function_schema_with_model_argument():
         "parameters": {
             "type": "object",
             "properties": {
-                'x': {'type': 'integer'},
-                'y': {'type': 'string'},
-                'z': {'default': False, 'type': 'boolean'},
-                'model': {'$ref': '#/definitions/SimpleModel'},
+                "x": {"type": "integer"},
+                "y": {"type": "string"},
+                "z": {"default": False, "type": "boolean"},
+                "model": {"$ref": "#/definitions/SimpleModel"},
             },
             "required": ["x", "y"],
             "definitions": {
-                'SimpleModel': {
-                    'title': 'SimpleModel',
-                    'type': 'object',
-                    'properties': {
-                        'x': {'title': 'X', 'type': 'integer'},
-                        'y': {'title': 'Y', 'type': 'string'},
-                        'z': {
-                            'title': 'Z',
-                            'description': 'A simple boolean field',
-                            'default': False,
-                            'type': 'boolean',
+                "SimpleModel": {
+                    "title": "SimpleModel",
+                    "type": "object",
+                    "properties": {
+                        "x": {"title": "X", "type": "integer"},
+                        "y": {"title": "Y", "type": "string"},
+                        "z": {
+                            "title": "Z",
+                            "description": "A simple boolean field",
+                            "default": False,
+                            "type": "boolean",
                         },
                     },
-                    'required': ['x', 'y'],
+                    "required": ["x", "y"],
                 }
             },
         },
@@ -209,43 +218,43 @@ def test_generate_function_schema_with_model_and_nested_model_arguments():
         "parameters": {
             "type": "object",
             "properties": {
-                'x': {'type': 'integer'},
-                'y': {'type': 'string'},
-                'z': {'default': False, 'type': 'boolean'},
-                'model': {'$ref': '#/definitions/SimpleModel'},
-                'nested_model': {'$ref': '#/definitions/NestedModel'},
+                "x": {"type": "integer"},
+                "y": {"type": "string"},
+                "z": {"default": False, "type": "boolean"},
+                "model": {"$ref": "#/definitions/SimpleModel"},
+                "nested_model": {"$ref": "#/definitions/NestedModel"},
             },
             "required": ["x", "y"],
             "definitions": {
-                'SimpleModel': {
-                    'title': 'SimpleModel',
-                    'type': 'object',
-                    'properties': {
-                        'x': {'title': 'X', 'type': 'integer'},
-                        'y': {'title': 'Y', 'type': 'string'},
-                        'z': {
-                            'title': 'Z',
-                            'description': 'A simple boolean field',
-                            'default': False,
-                            'type': 'boolean',
+                "SimpleModel": {
+                    "title": "SimpleModel",
+                    "type": "object",
+                    "properties": {
+                        "x": {"title": "X", "type": "integer"},
+                        "y": {"title": "Y", "type": "string"},
+                        "z": {
+                            "title": "Z",
+                            "description": "A simple boolean field",
+                            "default": False,
+                            "type": "boolean",
                         },
                     },
-                    'required': ['x', 'y'],
+                    "required": ["x", "y"],
                 },
-                'NestedModel': {
-                    'title': 'NestedModel',
-                    'type': 'object',
-                    'properties': {
-                        'foo': {'title': 'Foo', 'type': 'integer'},
-                        'bar': {'title': 'Bar', 'type': 'string'},
-                        'baz': {
-                            'title': 'Baz',
-                            'default': True,
-                            'type': 'boolean',
+                "NestedModel": {
+                    "title": "NestedModel",
+                    "type": "object",
+                    "properties": {
+                        "foo": {"title": "Foo", "type": "integer"},
+                        "bar": {"title": "Bar", "type": "string"},
+                        "baz": {
+                            "title": "Baz",
+                            "default": True,
+                            "type": "boolean",
                         },
-                        'simple_model': {'$ref': '#/definitions/SimpleModel'},
+                        "simple_model": {"$ref": "#/definitions/SimpleModel"},
                     },
-                    'required': ['foo', 'bar', 'simple_model'],
+                    "required": ["foo", "bar", "simple_model"],
                 },
             },
         },
@@ -261,10 +270,10 @@ def test_generate_function_schema_with_uuid_argument():
         "parameters": {
             "type": "object",
             "properties": {
-                'x': {'type': 'integer'},
-                'y': {'type': 'string'},
-                'z': {'default': False, 'type': 'boolean'},
-                'uuid': {'type': 'string', 'format': 'uuid'},
+                "x": {"type": "integer"},
+                "y": {"type": "string"},
+                "z": {"default": False, "type": "boolean"},
+                "uuid": {"type": "string", "format": "uuid"},
             },
             "required": ["x", "y"],
         },
@@ -276,7 +285,9 @@ def test_generate_function_schema_with_uuid_argument():
 @pytest.mark.asyncio
 async def test_function_registry_unknown_function():
     registry = FunctionRegistry()
-    with pytest.raises(UnknownFunctionError, match="Function unknown is not registered"):
+    with pytest.raises(
+        UnknownFunctionError, match="Function unknown is not registered"
+    ):
         await registry.call("unknown")
 
 
@@ -295,14 +306,18 @@ async def test_function_registry_function_argument_error():
 async def test_function_registry_call():
     registry = FunctionRegistry()
     registry.register(simple_func, SimpleModel)
-    result = await registry.call("simple_func", arguments='{"x": 1, "y": "str", "z": true}')
+    result = await registry.call(
+        "simple_func", arguments='{"x": 1, "y": "str", "z": true}'
+    )
     assert result == "1, str, True"
 
 
 # Testing for registry's register method with an invalid function
 def test_function_registry_register_invalid_function():
     registry = FunctionRegistry()
-    with pytest.raises(Exception, match="Lambdas cannot be registered. Use `def` instead."):
+    with pytest.raises(
+        Exception, match="Lambdas cannot be registered. Use `def` instead."
+    ):
         registry.register(lambda x: x)
 
 
@@ -335,20 +350,20 @@ def test_function_registry_function_definitions():
 async def test_function_registry_call_python_hallucination_invalid():
     registry = FunctionRegistry(python_hallucination_function=None)
     with pytest.raises(Exception, match="Function python is not registered"):
-        await registry.call("python", arguments='1 + 4')
+        await registry.call("python", arguments="1 + 4")
 
 
 @pytest.mark.asyncio
 async def test_ensure_python_hallucination_not_enabled_by_default():
     registry = FunctionRegistry()
     with pytest.raises(Exception, match="Function python is not registered"):
-        await registry.call("python", arguments='123 + 456')
+        await registry.call("python", arguments="123 + 456")
 
 
 # Test the generate_function_schema for function with optional arguments
 def test_generate_function_schema_optional_args():
     def func_with_optional_args(x: int, y: str, z: bool = False):
-        '''A function with optional arguments'''
+        """A function with optional arguments"""
         return f"{x}, {y}, {z}"
 
     schema = generate_function_schema(func_with_optional_args)
@@ -372,7 +387,9 @@ def test_generate_function_schema_no_args():
 async def test_function_registry_call_edge_cases():
     registry = FunctionRegistry()
     with pytest.raises(UnknownFunctionError):
-        await registry.call("totes_not_real", arguments='{"x": 1, "y": "str", "z": true}')
+        await registry.call(
+            "totes_not_real", arguments='{"x": 1, "y": "str", "z": true}'
+        )
 
     with pytest.raises(UnknownFunctionError):
         await registry.call(None)  # type: ignore

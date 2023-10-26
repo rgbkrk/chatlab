@@ -17,4 +17,11 @@ run_cell = deprecated(
 # compose all the file, shell, and python functions into one list for ease of use
 os_functions = file_functions + shell_functions + [run_python, get_python_docs]
 
-__all__ = ["run_python", "get_python_docs", "run_cell", "file_functions", "shell_functions", "os_functions"]
+__all__ = [
+    "run_python",
+    "get_python_docs",
+    "run_cell",
+    "file_functions",
+    "shell_functions",
+    "os_functions",
+]

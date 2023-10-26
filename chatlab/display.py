@@ -56,11 +56,15 @@ class ChatFunctionCall(AutoDisplayer):
             self.finished = True
             self.set_state("No function named")
             self.function_result = repr(e)
-            return system(f"Function {function_name} not found in function registry: {e}")
+            return system(
+                f"Function {function_name} not found in function registry: {e}"
+            )
         except Exception as e:
             # Check to see if the user has requested that the exception be exposed to LLM.
             # If not, then we just raise it and let the user handle it.
-            chatlab_metadata = self.function_registry.get_chatlab_metadata(function_name)
+            chatlab_metadata = self.function_registry.get_chatlab_metadata(
+                function_name
+            )
 
             if not chatlab_metadata.expose_exception_to_llm:
                 # Bubble up the exception to the user

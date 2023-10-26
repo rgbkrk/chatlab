@@ -52,7 +52,7 @@ def test_assistant_function_call_view_get():
     assert message == {
         "role": "assistant",
         "content": None,
-        'function_call': {
+        "function_call": {
             "name": "compute_pi",
             "arguments": "you can do it",
         },

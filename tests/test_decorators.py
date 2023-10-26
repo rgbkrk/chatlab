@@ -27,7 +27,7 @@ def test_expose_exception_to_llm_decorator():
 
 def test_no_decorator():
     """Tests a function without the decorator."""
-    assert not hasattr(no_exception, 'chatlab_metadata')
+    assert not hasattr(no_exception, "chatlab_metadata")
 
 
 def test_decorator_raises_exception():

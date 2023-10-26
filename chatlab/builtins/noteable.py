@@ -102,7 +102,9 @@ class NotebookClient:
         # We have to track the kernel_session for now
         kernel_session = await api_client.launch_kernel(file_id)
 
-        cn = NotebookClient(api_client, rtu_client, file_id=file_id, kernel_session=kernel_session)
+        cn = NotebookClient(
+            api_client, rtu_client, file_id=file_id, kernel_session=kernel_session
+        )
 
         return cn
 
@@ -165,7 +167,9 @@ class NotebookClient:
             )
 
         if cell is None:
-            return f"Unknown cell type {cell_type}. Valid types are: markdown, code, sql."
+            return (
+                f"Unknown cell type {cell_type}. Valid types are: markdown, code, sql."
+            )
 
         logger.info(f"Adding cell {cell_id} to notebook")
         cell = await rtu_client.add_cell(cell=cell, after_id=after_cell_id)
@@ -197,7 +201,7 @@ class NotebookClient:
             _, cell = rtu_client.builder.get_cell(cell_id)
 
             # Pull the old cell type, as long as it's not a "raw" cell
-            if cell_type is None and cell.cell_type != 'raw':
+            if cell_type is None and cell.cell_type != "raw":
                 cell_type = cell.cell_type
 
             if cell_type is not None:
@@ -209,7 +213,10 @@ class NotebookClient:
                     conn = f"@{conn}"
 
                 await rtu_client.change_cell_type(
-                    cell_id, cell_type, db_connection=conn, assign_results_to=assign_results_to
+                    cell_id,
+                    cell_type,
+                    db_connection=conn,
+                    assign_results_to=assign_results_to,
                 )
         except Exception as e:
             return f"Error replacing cell content: {e}"
@@ -223,7 +230,9 @@ class NotebookClient:
 
     async def _get_llm_friendly_outputs(self, output_collection_id: uuid.UUID):
         """Get the outputs for a given output collection ID."""
-        output_collection = await self.api_client.get_output_collection(output_collection_id)
+        output_collection = await self.api_client.get_output_collection(
+            output_collection_id
+        )
 
         outputs = output_collection.outputs
 
@@ -243,7 +252,9 @@ class NotebookClient:
         return llm_friendly_outputs
 
     async def _extract_llm_plain(self, output: KernelOutput):
-        resp = await self.api_client.client.get(f"/outputs/{output.id}", params={"mimetype": "text/llm+plain"})
+        resp = await self.api_client.client.get(
+            f"/outputs/{output.id}", params={"mimetype": "text/llm+plain"}
+        )
         resp.raise_for_status()
 
         output_for_llm = KernelOutput.parse_obj(resp.json())
@@ -254,7 +265,9 @@ class NotebookClient:
         return output_for_llm.content.raw
 
     async def _extract_specific_mediatype(self, output: KernelOutput, mimetype: str):
-        resp = await self.api_client.client.get(f"/outputs/{output.id}", params={"mimetype": mimetype})
+        resp = await self.api_client.client.get(
+            f"/outputs/{output.id}", params={"mimetype": mimetype}
+        )
         resp.raise_for_status()
 
         output_for_llm = KernelOutput.parse_obj(resp.json())
@@ -296,16 +309,16 @@ class NotebookClient:
         if output.type == "error":
             return await self._extract_error(content)
 
-        if content.mimetype == 'text/html':
-            result = await self._extract_specific_mediatype(output, 'text/plain')
+        if content.mimetype == "text/html":
+            result = await self._extract_specific_mediatype(output, "text/plain")
             if result is not None:
                 return result
 
-        if content.mimetype == 'application/vnd.dataresource+json':
+        if content.mimetype == "application/vnd.dataresource+json":
             # TODO: Bring back a smaller representation to allow the LLM to do analysis
             return "<!-- DataFrame shown in notebook that user can see -->"
 
-        if content.mimetype == 'application/vnd.plotly.v1+json':
+        if content.mimetype == "application/vnd.plotly.v1+json":
             return "<!-- Plotly shown in notebook that user can see -->"
         if content.url is not None:
             return "<!-- Large output too large for chat. It is available in the notebook that the user can see -->"
@@ -317,7 +330,9 @@ class NotebookClient:
 
         for format in formats_for_llm:
             if format in mimetypes:
-                resp = await self.api_client.client.get(f"/outputs/{output.id}?mimetype={format}")
+                resp = await self.api_client.client.get(
+                    f"/outputs/{output.id}?mimetype={format}"
+                )
                 resp.raise_for_status()
                 if resp.status_code == 200:
                     return
@@ -406,7 +421,9 @@ class NotebookClient:
             response += cell.source
             return response
 
-        source_type = rtu_client.builder.nb.metadata.get("kernelspec", {}).get("language", "")
+        source_type = rtu_client.builder.nb.metadata.get("kernelspec", {}).get(
+            "language", ""
+        )
 
         if cell.metadata.get("noteable", {}).get("cell_type") == "sql":
             source_type = "sql"
@@ -526,7 +543,9 @@ class NotebookClient:
         ]
 
 
-def provide_notebook_creation(registry: FunctionRegistry, project_id: Optional[str] = None):
+def provide_notebook_creation(
+    registry: FunctionRegistry, project_id: Optional[str] = None
+):
     """Register the notebook client with the registry.
 
     >>> from chatlab import FunctionRegistry, Chat

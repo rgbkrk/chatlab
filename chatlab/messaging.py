@@ -25,8 +25,8 @@ def assistant(content: str) -> ChatCompletionMessageParam:
         A dictionary representing the assistant's message.
     """
     return {
-        'role': 'assistant',
-        'content': content,
+        "role": "assistant",
+        "content": content,
     }
 
 
@@ -40,8 +40,8 @@ def user(content: str) -> ChatCompletionMessageParam:
         A dictionary representing the user's message.
     """
     return {
-        'role': 'user',
-        'content': content,
+        "role": "user",
+        "content": content,
     }
 
 
@@ -55,12 +55,14 @@ def system(content: str) -> ChatCompletionMessageParam:
         A dictionary representing the system's message.
     """
     return {
-        'role': 'system',
-        'content': content,
+        "role": "system",
+        "content": content,
     }
 
 
-def assistant_function_call(name: str, arguments: Optional[str] = None) -> ChatCompletionMessageParam:
+def assistant_function_call(
+    name: str, arguments: Optional[str] = None
+) -> ChatCompletionMessageParam:
     """Create a function call message from the assistant.
 
     Args:
@@ -71,14 +73,14 @@ def assistant_function_call(name: str, arguments: Optional[str] = None) -> ChatC
         A dictionary representing a function call message from the assistant.
     """
     if arguments is None:
-        arguments = ''
+        arguments = ""
 
     return {
-        'role': 'assistant',
-        'content': None,
-        'function_call': {
-            'name': name,
-            'arguments': arguments,
+        "role": "assistant",
+        "content": None,
+        "function_call": {
+            "name": name,
+            "arguments": arguments,
         },
     }
 
@@ -94,9 +96,9 @@ def function_result(name: str, content: str) -> ChatCompletionMessageParam:
         A dictionary representing a function result message.
     """
     return {
-        'role': 'function',
-        'content': content,
-        'name': name,
+        "role": "function",
+        "content": content,
+        "name": name,
     }
 
 

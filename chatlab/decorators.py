@@ -61,7 +61,7 @@ def expose_exception_to_llm(func):
         The die rolled a 1!
 
     """
-    if not hasattr(func, 'chatlab_metadata'):
+    if not hasattr(func, "chatlab_metadata"):
         func.chatlab_metadata = ChatlabMetadata()
 
     # Make sure that chatlab_metadata is an instance of ChatlabMetadata
