@@ -69,47 +69,12 @@ noteable = ["noteable-origami", "python-ulid"]
 
 test = [
     "pytest",
-    "black",
-    "isort",
+    "ruff",
     "mypy",
-    "flake8",
-    "flake8-docstrings",
     "pytest-cov"
 ]
 
 dev = ["tox", "pre-commit", "virtualenv", "pip", "twine", "toml", "bump2version"]
-
-[tool.black]
-line-length = 120
-skip-string-normalization = true
-target-version = ['py37', 'py38']
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
-
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
-line_length = 120
-skip_gitignore = true
-# you can skip files as below
-#skip_glob = docs/conf.py
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
