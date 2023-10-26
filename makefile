@@ -4,11 +4,9 @@ sources = chatlab
 test: format lint unittest
 
 format:
-	isort $(sources) tests
-	black $(sources) tests
+	ruff format .
 
 lint:
-	flake8 $(sources) tests
 	mypy $(sources) tests
 
 unittest:
