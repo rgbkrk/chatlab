@@ -18,7 +18,7 @@ class AutoDisplayer(ABC):
 
     def generate_display_id(self) -> str:
         """Generate a display ID."""
-        return hexlify(os.urandom(8)).decode('ascii')
+        return hexlify(os.urandom(8)).decode("ascii")
 
     def display(self):
         """Display the object with a display ID to allow updating."""

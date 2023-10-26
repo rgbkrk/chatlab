@@ -13,7 +13,7 @@ I am the king of the skies, the lord of the avian realm. Squawk!
 """
 
 __author__ = """Kyle Kelley"""
-__email__ = 'rgbkrk@gmail.com'
+__email__ = "rgbkrk@gmail.com"
 
 from deprecation import deprecated
 
@@ -21,7 +21,16 @@ from . import models
 from ._version import __version__
 from .conversation import Chat
 from .decorators import ChatlabMetadata, expose_exception_to_llm
-from .messaging import ai, assistant, assistant_function_call, function_result, human, narrate, system, user
+from .messaging import (
+    ai,
+    assistant,
+    assistant_function_call,
+    function_result,
+    human,
+    narrate,
+    system,
+    user,
+)
 from .registry import FunctionRegistry
 from .views.markdown import Markdown
 
@@ -33,7 +42,12 @@ class Session(Chat):
     Session is deprecated. Use `Chat` instead.
     """
 
-    @deprecated(deprecated_in="0.13.0", removed_in="1.0.0", current_version=__version__, details="Use `Chat` instead.")
+    @deprecated(
+        deprecated_in="0.13.0",
+        removed_in="1.0.0",
+        current_version=__version__,
+        details="Use `Chat` instead.",
+    )
     def __init__(self, *args, **kwargs):
         """Initialize a Session with an optional initial context of messages.
 
@@ -48,7 +62,12 @@ class Conversation(Chat):
     Conversation is deprecated. Use `Chat` instead.
     """
 
-    @deprecated(deprecated_in="1.0.0", removed_in="1.1.0", current_version=__version__, details="Use `Chat` instead.")
+    @deprecated(
+        deprecated_in="1.0.0",
+        removed_in="1.1.0",
+        current_version=__version__,
+        details="Use `Chat` instead.",
+    )
     def __init__(self, *args, **kwargs):
         """Initialize a Session with an optional initial context of messages.
 

@@ -27,17 +27,24 @@ colors = {
 
 def function_logo():
     """Styled 𝑓 logo component for use in the chat function component."""
-    return span("𝑓", style=dict(color=colors["light"], paddingRight="5px", paddingLeft="5px"))
+    return span(
+        "𝑓", style=dict(color=colors["light"], paddingRight="5px", paddingLeft="5px")
+    )
 
 
 def function_verbage(state: str):
     """Simple styled state component."""
-    return span(state, style=dict(color=colors["darkest"], paddingRight="5px", paddingLeft="5px"))
+    return span(
+        state,
+        style=dict(color=colors["darkest"], paddingRight="5px", paddingLeft="5px"),
+    )
 
 
 def inline_pre(text: str):
     """A simple preformatted monospace component that works in all Jupyter frontends."""
-    return span(text, style=dict(unicodeBidi="embed", fontFamily="monospace", whiteSpace="pre"))
+    return span(
+        text, style=dict(unicodeBidi="embed", fontFamily="monospace", whiteSpace="pre")
+    )
 
 
 def raw_function_interface_heading(text: str):
@@ -80,7 +87,9 @@ def ChatFunctionComponent(
     input_element = div()
     if input is not None:
         input = input.strip()
-        input_element = div(raw_function_interface_heading("Input:"), raw_function_interface(input))
+        input_element = div(
+            raw_function_interface_heading("Input:"), raw_function_interface(input)
+        )
 
     output_element = div()
     if output is not None:
@@ -91,7 +100,9 @@ def ChatFunctionComponent(
         )
 
     return div(
-        style(".chatlab-chat-details summary > *  { display: inline; color: #27374D; }"),
+        style(
+            ".chatlab-chat-details summary > *  { display: inline; color: #27374D; }"
+        ),
         details(
             summary(
                 function_logo(),

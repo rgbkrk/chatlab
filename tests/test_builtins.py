@@ -3,7 +3,14 @@ import pytest
 
 from chatlab import FunctionRegistry
 from chatlab.builtins import os_functions
-from chatlab.builtins.files import get_file_size, is_directory, is_file, list_files, read_file, write_file
+from chatlab.builtins.files import (
+    get_file_size,
+    is_directory,
+    is_file,
+    list_files,
+    read_file,
+    write_file,
+)
 from chatlab.builtins.shell import run_shell_command
 
 

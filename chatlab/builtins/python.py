@@ -16,8 +16,12 @@ def apply_llm_formatter(shell: InteractiveShell):
     """Apply the LLM formatter to the given shell."""
     llm_formatter = register_llm_formatter(shell)
 
-    llm_formatter.for_type_by_name('pandas.core.frame', 'DataFrame', format_dataframe_for_llm)
-    llm_formatter.for_type_by_name('pandas.core.series', 'Series', format_series_for_llm)
+    llm_formatter.for_type_by_name(
+        "pandas.core.frame", "DataFrame", format_dataframe_for_llm
+    )
+    llm_formatter.for_type_by_name(
+        "pandas.core.series", "Series", format_series_for_llm
+    )
 
 
 def get_or_create_ipython() -> InteractiveShell:
@@ -61,7 +65,7 @@ class ChatLabShell:
         except Exception as e:
             self.shell.showtraceback = original_showtraceback  # type: ignore
             formatted = TracebackException.from_exception(e, limit=3).format(chain=True)
-            plaintext_traceback = '\n'.join(formatted)
+            plaintext_traceback = "\n".join(formatted)
 
             return plaintext_traceback
 
@@ -76,25 +80,27 @@ class ChatLabShell:
 
             # Create a formatted traceback that includes the last 3 frames
             # and the exception message
-            formatted = TracebackException.from_exception(exception, limit=3).format(chain=True)
-            plaintext_traceback = '\n'.join(formatted)
+            formatted = TracebackException.from_exception(exception, limit=3).format(
+                chain=True
+            )
+            plaintext_traceback = "\n".join(formatted)
 
             return plaintext_traceback
 
         outputs = ""
 
-        if captured.stdout is not None and captured.stdout.strip() != '':
+        if captured.stdout is not None and captured.stdout.strip() != "":
             stdout = captured.stdout
             # Truncate stdout if it's too long
             if len(stdout) > 1000:
-                stdout = stdout[:500] + '...[TRUNCATED]...' + stdout[-500:]
+                stdout = stdout[:500] + "...[TRUNCATED]..." + stdout[-500:]
 
             outputs += f"STDOUT:\n{stdout}\n\n"
 
-        if captured.stderr is not None and captured.stderr.strip() != '':
+        if captured.stderr is not None and captured.stderr.strip() != "":
             stderr = captured.stderr
             if len(stderr) > 1000:
-                stdout = stderr[:500] + '...[TRUNCATED]...' + stderr[-500:]
+                stdout = stderr[:500] + "...[TRUNCATED]..." + stderr[-500:]
             outputs += f"STDERR:\n{stderr}\n\n"
 
         if captured.outputs is not None:

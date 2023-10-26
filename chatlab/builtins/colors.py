@@ -23,24 +23,24 @@ class Palette:
     @colors.setter
     def colors(self, colors: List[str]):
         self._colors = colors
-        self.html = '<div>'
+        self.html = "<div>"
         for color in colors:
             self.html += f'<div style="background-color:{color}; width:50px; height:50px; display:inline-block;"></div>'
-        self.html += '</div>'
+        self.html += "</div>"
 
     def _repr_html_(self):
         return self.html
 
     def __repr__(self):
         """Returns a string representation of the palette."""
-        return f'Palette({self.colors}, {self.name})'
+        return f"Palette({self.colors}, {self.name})"
 
 
 palettes: Dict[str, Palette] = {}
 
 
 def _generate_palette_name(colors: List[str]) -> str:
-    hash_object = hashlib.sha1(''.join(colors).encode())
+    hash_object = hashlib.sha1("".join(colors).encode())
     return f"palette-{hash_object.hexdigest()}"
 
 

@@ -59,7 +59,7 @@ async def is_file(file_path: str) -> bool:
 
 
 @expose_exception_to_llm
-async def write_file(file_path: str, content: str, mode: str = 'w') -> None:
+async def write_file(file_path: str, content: str, mode: str = "w") -> None:
     """Write content to a file.
 
     Args:
@@ -75,7 +75,7 @@ async def write_file(file_path: str, content: str, mode: str = 'w') -> None:
 
 
 @expose_exception_to_llm
-async def read_file(file_path: str, mode: str = 'r') -> str:
+async def read_file(file_path: str, mode: str = "r") -> str:
     """Read content from a file.
 
     Args:
@@ -104,4 +104,11 @@ async def is_directory(directory: str) -> bool:
     return is_directory
 
 
-chat_functions = [list_files, get_file_size, is_file, is_directory, write_file, read_file]
+chat_functions = [
+    list_files,
+    get_file_size,
+    is_file,
+    is_directory,
+    write_file,
+    read_file,
+]
