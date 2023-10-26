@@ -12,21 +12,18 @@ repos:
           - id: check-merge-conflict
           - id: check-yaml
             args: [--unsafe]
-    - repo: https://github.com/pre-commit/mirrors-isort
-      rev: v5.8.0
+    # Run the Ruff formatter.
+    - repo: https://github.com/astral-sh/ruff-pre-commit
+      # Ruff version.
+      rev: v0.0.291
       hooks:
-          - id: isort
-            args: ["--filter-files"]
-    - repo: https://github.com/ambv/black
-      rev: 23.3.0
+        - id: ruff-format
+    # Run the Ruff linter.
+    - repo: https://github.com/astral-sh/ruff-pre-commit
+      # Ruff version.
+      rev: v0.0.291
       hooks:
-          - id: black
-            language_version: python3.11
-    - repo: https://github.com/pycqa/flake8
-      rev: 3.9.2
-      hooks:
-          - id: flake8
-            additional_dependencies: [flake8-typing-imports==1.10.0]
+        - id: ruff
     - repo: https://github.com/pre-commit/mirrors-mypy
       rev: v0.901
       hooks:
