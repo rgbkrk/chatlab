@@ -237,7 +237,7 @@ This project uses poetry for dependency management. To get started, clone the re
 poetry install -E dev -E test
 ```
 
-We use `black`, `isort`, and `mypy`.
+We use `ruff` and `mypy`.
 
 ## Contributing
 
