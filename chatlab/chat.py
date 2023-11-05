@@ -20,11 +20,7 @@ import openai
 from deprecation import deprecated
 from IPython.core.async_helpers import get_asyncio_loop
 from openai import AsyncOpenAI
-from openai.types.chat import (
-    ChatCompletion,
-    ChatCompletionChunk,
-    ChatCompletionMessageParam,
-)
+from openai.types.chat import ChatCompletion, ChatCompletionChunk, ChatCompletionMessageParam
 from pydantic import BaseModel
 
 from chatlab.views.assistant_function_call import AssistantFunctionCallView
@@ -114,9 +110,7 @@ class Chat:
 
                 python_hallucination_function = run_cell
 
-            self.function_registry = FunctionRegistry(
-                python_hallucination_function=python_hallucination_function
-            )
+            self.function_registry = FunctionRegistry(python_hallucination_function=python_hallucination_function)
         else:
             self.function_registry = function_registry
 
@@ -139,9 +133,7 @@ class Chat:
         """
         raise Exception("This method is deprecated. Use `submit` instead.")
 
-    async def __call__(
-        self, *messages: Union[ChatCompletionMessageParam, str], stream=True, **kwargs
-    ):
+    async def __call__(self, *messages: Union[ChatCompletionMessageParam, str], stream=True, **kwargs):
         """Send messages to the chat model and display the response."""
         return await self.submit(*messages, stream=stream, **kwargs)
 
@@ -175,9 +167,7 @@ class Chat:
                         function_view = AssistantFunctionCallView(function_call.name)
                     if function_call.arguments is not None:
                         if function_view is None:
-                            raise ValueError(
-                                "Function arguments provided without function name"
-                            )
+                            raise ValueError("Function arguments provided without function name")
                         function_view.append(function_call.arguments)
             if choice.finish_reason is not None:
                 finish_reason = choice.finish_reason
@@ -194,9 +184,7 @@ class Chat:
 
         return (finish_reason, function_view)
 
-    async def __process_full_completion(
-        self, resp: ChatCompletion
-    ) -> Tuple[str, Optional[AssistantFunctionCallView]]:
+    async def __process_full_completion(self, resp: ChatCompletion) -> Tuple[str, Optional[AssistantFunctionCallView]]:
         assistant_view: AssistantMessageView = AssistantMessageView()
         function_view: Optional[AssistantFunctionCallView] = None
 
@@ -218,9 +206,7 @@ class Chat:
 
         return choice.finish_reason, function_view
 
-    async def submit(
-        self, *messages: Union[ChatCompletionMessageParam, str], stream=True, **kwargs
-    ):
+    async def submit(self, *messages: Union[ChatCompletionMessageParam, str], stream=True, **kwargs):
         """Send messages to the chat model and display the response.
 
         Side effects:
@@ -248,7 +234,8 @@ class Chat:
 
             manifest = self.function_registry.api_manifest()
 
-            # Due to the strict response typing based on `Literal` typing on `stream`, we have to process these two cases separately
+            # Due to the strict response typing based on `Literal` typing on `stream`, we have to process these
+            # two cases separately
             if stream:
                 streaming_response = await client.chat.completions.create(
                     model=self.model,
@@ -258,9 +245,7 @@ class Chat:
                     temperature=kwargs.get("temperature", 0),
                 )
 
-                finish_reason, function_call_request = await self.__process_stream(
-                    streaming_response
-                )
+                finish_reason, function_call_request = await self.__process_stream(streaming_response)
             else:
                 full_response = await client.chat.completions.create(
                     model=self.model,
@@ -413,9 +398,7 @@ class Chat:
             return
         cell = cell.strip()
 
-        asyncio.run_coroutine_threadsafe(
-            self.submit(cell, **kwargs), get_asyncio_loop()
-        )
+        asyncio.run_coroutine_threadsafe(self.submit(cell, **kwargs), get_asyncio_loop())
 
     def make_magic(self, name):
         """Register the chat as an IPython magic with the given name.
@@ -435,6 +418,4 @@ class Chat:
         if ip is None:
             raise Exception("IPython is not available.")
 
-        ip.register_magic_function(
-            self.ipython_magic_submit, magic_kind="line_cell", magic_name=name
-        )
+        ip.register_magic_function(self.ipython_magic_submit, magic_kind="line_cell", magic_name=name)

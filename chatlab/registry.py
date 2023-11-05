@@ -108,9 +108,7 @@ JSON_SCHEMA_TYPES = {
 
 def is_optional_type(t):
     """Check if a type is Optional."""
-    return (
-        get_origin(t) is Union and len(get_args(t)) == 2 and type(None) in get_args(t)
-    )
+    return get_origin(t) is Union and len(get_args(t)) == 2 and type(None) in get_args(t)
 
 
 def is_union_type(t):
@@ -162,9 +160,7 @@ def generate_function_schema(
             # determine type annotation
             if param.annotation == inspect.Parameter.empty:
                 # no annotation, raise instead of falling back to Any
-                raise Exception(
-                    f"`{name}` parameter of {func_name} must have a JSON-serializable type annotation"
-                )
+                raise Exception(f"`{name}` parameter of {func_name} must have a JSON-serializable type annotation")
             type_annotation = param.annotation
 
             # get the default value, otherwise set as required
@@ -253,9 +249,7 @@ class FunctionRegistry:
 
         self.python_hallucination_function = python_hallucination_function
 
-    def decorator(
-        self, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None
-    ) -> Callable:
+    def decorator(self, parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None) -> Callable:
         """Create a decorator for registering functions with a schema."""
 
         def decorator(function):
@@ -324,9 +318,7 @@ class FunctionRegistry:
 
         return final_schema
 
-    def register_functions(
-        self, functions: Union[Iterable[Callable], dict[str, Callable]]
-    ):
+    def register_functions(self, functions: Union[Iterable[Callable], dict[str, Callable]]):
         """Register a dictionary of functions."""
         if isinstance(functions, dict):
             functions = functions.values()
@@ -355,9 +347,7 @@ class FunctionRegistry:
         chatlab_metadata = getattr(function, "chatlab_metadata", ChatlabMetadata())
         return chatlab_metadata
 
-    def api_manifest(
-        self, function_call_option: FunctionCallOption = "auto"
-    ) -> APIManifest:
+    def api_manifest(self, function_call_option: FunctionCallOption = "auto") -> APIManifest:
         """Get a dictionary containing function definitions and calling options.
 
         This is designed to be used with OpenAI's Chat Completion API, where the
@@ -447,9 +437,7 @@ class FunctionRegistry:
                 parameters = json.loads(arguments)
                 # TODO: Validate parameters against schema
             except json.JSONDecodeError:
-                raise FunctionArgumentError(
-                    f"Invalid Function call on {name}. Arguments must be a valid JSON object"
-                )
+                raise FunctionArgumentError(f"Invalid Function call on {name}. Arguments must be a valid JSON object")
 
         if function is None:
             raise UnknownFunctionError(f"Function {name} is not registered")

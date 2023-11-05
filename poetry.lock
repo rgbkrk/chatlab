@@ -2489,6 +2489,17 @@ files = [
 ]
 
 [[package]]
+name = "types-orjson"
+version = "3.6.2"
+description = "Typing stubs for orjson"
+optional = false
+python-versions = "*"
+files = [
+    {file = "types-orjson-3.6.2.tar.gz", hash = "sha256:cf9afcc79a86325c7aff251790338109ed6f6b1bab09d2d4262dd18c85a3c638"},
+    {file = "types_orjson-3.6.2-py3-none-any.whl", hash = "sha256:22ee9a79236b6b0bfb35a0684eded62ad930a88a56797fa3c449b026cf7dbfe4"},
+]
+
+[[package]]
 name = "types-toml"
 version = "0.10.8.7"
 description = "Typing stubs for toml"
@@ -2688,4 +2699,4 @@ test = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9.0,<3.13"
-content-hash = "6eb7545220b44cb8a043f26d27899433e2f9bd420fad69bcb3dca6d621537569"
+content-hash = "e3ab2f754cd2050de0bd4135ae10f031287ae3be33d974d5f8b2b391dce22392"

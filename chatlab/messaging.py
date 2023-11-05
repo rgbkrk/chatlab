@@ -60,9 +60,7 @@ def system(content: str) -> ChatCompletionMessageParam:
     }
 
 
-def assistant_function_call(
-    name: str, arguments: Optional[str] = None
-) -> ChatCompletionMessageParam:
+def assistant_function_call(name: str, arguments: Optional[str] = None) -> ChatCompletionMessageParam:
     """Create a function call message from the assistant.
 
     Args:
