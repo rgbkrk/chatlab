@@ -15,9 +15,7 @@ async def run_shell_command(command: str):
     Returns:
     - str: the output of the shell command
     """
-    process = await asyncio.create_subprocess_shell(
-        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
+    process = await asyncio.create_subprocess_shell(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = await process.communicate()
 
     resp = f"Return Code: {process.returncode}\n"

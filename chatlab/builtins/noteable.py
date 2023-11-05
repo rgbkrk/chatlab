@@ -102,9 +102,7 @@ class NotebookClient:
         # We have to track the kernel_session for now
         kernel_session = await api_client.launch_kernel(file_id)
 
-        cn = NotebookClient(
-            api_client, rtu_client, file_id=file_id, kernel_session=kernel_session
-        )
+        cn = NotebookClient(api_client, rtu_client, file_id=file_id, kernel_session=kernel_session)
 
         return cn
 
@@ -167,9 +165,7 @@ class NotebookClient:
             )
 
         if cell is None:
-            return (
-                f"Unknown cell type {cell_type}. Valid types are: markdown, code, sql."
-            )
+            return f"Unknown cell type {cell_type}. Valid types are: markdown, code, sql."
 
         logger.info(f"Adding cell {cell_id} to notebook")
         cell = await rtu_client.add_cell(cell=cell, after_id=after_cell_id)
@@ -230,9 +226,7 @@ class NotebookClient:
 
     async def _get_llm_friendly_outputs(self, output_collection_id: uuid.UUID):
         """Get the outputs for a given output collection ID."""
-        output_collection = await self.api_client.get_output_collection(
-            output_collection_id
-        )
+        output_collection = await self.api_client.get_output_collection(output_collection_id)
 
         outputs = output_collection.outputs
 
@@ -252,9 +246,7 @@ class NotebookClient:
         return llm_friendly_outputs
 
     async def _extract_llm_plain(self, output: KernelOutput):
-        resp = await self.api_client.client.get(
-            f"/outputs/{output.id}", params={"mimetype": "text/llm+plain"}
-        )
+        resp = await self.api_client.client.get(f"/outputs/{output.id}", params={"mimetype": "text/llm+plain"})
         resp.raise_for_status()
 
         output_for_llm = KernelOutput.parse_obj(resp.json())
@@ -265,9 +257,7 @@ class NotebookClient:
         return output_for_llm.content.raw
 
     async def _extract_specific_mediatype(self, output: KernelOutput, mimetype: str):
-        resp = await self.api_client.client.get(
-            f"/outputs/{output.id}", params={"mimetype": mimetype}
-        )
+        resp = await self.api_client.client.get(f"/outputs/{output.id}", params={"mimetype": mimetype})
         resp.raise_for_status()
 
         output_for_llm = KernelOutput.parse_obj(resp.json())
@@ -330,9 +320,7 @@ class NotebookClient:
 
         for format in formats_for_llm:
             if format in mimetypes:
-                resp = await self.api_client.client.get(
-                    f"/outputs/{output.id}?mimetype={format}"
-                )
+                resp = await self.api_client.client.get(f"/outputs/{output.id}?mimetype={format}")
                 resp.raise_for_status()
                 if resp.status_code == 200:
                     return
@@ -421,9 +409,7 @@ class NotebookClient:
             response += cell.source
             return response
 
-        source_type = rtu_client.builder.nb.metadata.get("kernelspec", {}).get(
-            "language", ""
-        )
+        source_type = rtu_client.builder.nb.metadata.get("kernelspec", {}).get("language", "")
 
         if cell.metadata.get("noteable", {}).get("cell_type") == "sql":
             source_type = "sql"
@@ -543,9 +529,7 @@ class NotebookClient:
         ]
 
 
-def provide_notebook_creation(
-    registry: FunctionRegistry, project_id: Optional[str] = None
-):
+def provide_notebook_creation(registry: FunctionRegistry, project_id: Optional[str] = None):
     """Register the notebook client with the registry.
 
     >>> from chatlab import FunctionRegistry, Chat

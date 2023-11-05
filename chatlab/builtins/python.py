@@ -16,12 +16,8 @@ def apply_llm_formatter(shell: InteractiveShell):
     """Apply the LLM formatter to the given shell."""
     llm_formatter = register_llm_formatter(shell)
 
-    llm_formatter.for_type_by_name(
-        "pandas.core.frame", "DataFrame", format_dataframe_for_llm
-    )
-    llm_formatter.for_type_by_name(
-        "pandas.core.series", "Series", format_series_for_llm
-    )
+    llm_formatter.for_type_by_name("pandas.core.frame", "DataFrame", format_dataframe_for_llm)
+    llm_formatter.for_type_by_name("pandas.core.series", "Series", format_series_for_llm)
 
 
 def get_or_create_ipython() -> InteractiveShell:
@@ -80,9 +76,7 @@ class ChatLabShell:
 
             # Create a formatted traceback that includes the last 3 frames
             # and the exception message
-            formatted = TracebackException.from_exception(exception, limit=3).format(
-                chain=True
-            )
+            formatted = TracebackException.from_exception(exception, limit=3).format(chain=True)
             plaintext_traceback = "\n".join(formatted)
 
             return plaintext_traceback

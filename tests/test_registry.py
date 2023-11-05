@@ -73,9 +73,7 @@ def simple_func_with_uuid_arg(
 
 # Test the function generation schema
 def test_generate_function_schema_lambda():
-    with pytest.raises(
-        Exception, match="Lambdas cannot be registered. Use `def` instead."
-    ):
+    with pytest.raises(Exception, match="Lambdas cannot be registered. Use `def` instead."):
         generate_function_schema(lambda x: x)
 
 
@@ -83,9 +81,7 @@ def test_generate_function_schema_no_docstring():
     def no_docstring(x: int):
         return x
 
-    with pytest.raises(
-        Exception, match="Only functions with docstrings can be registered"
-    ):
+    with pytest.raises(Exception, match="Only functions with docstrings can be registered"):
         generate_function_schema(no_docstring)
 
 
@@ -285,9 +281,7 @@ def test_generate_function_schema_with_uuid_argument():
 @pytest.mark.asyncio
 async def test_function_registry_unknown_function():
     registry = FunctionRegistry()
-    with pytest.raises(
-        UnknownFunctionError, match="Function unknown is not registered"
-    ):
+    with pytest.raises(UnknownFunctionError, match="Function unknown is not registered"):
         await registry.call("unknown")
 
 
@@ -306,18 +300,14 @@ async def test_function_registry_function_argument_error():
 async def test_function_registry_call():
     registry = FunctionRegistry()
     registry.register(simple_func, SimpleModel)
-    result = await registry.call(
-        "simple_func", arguments='{"x": 1, "y": "str", "z": true}'
-    )
+    result = await registry.call("simple_func", arguments='{"x": 1, "y": "str", "z": true}')
     assert result == "1, str, True"
 
 
 # Testing for registry's register method with an invalid function
 def test_function_registry_register_invalid_function():
     registry = FunctionRegistry()
-    with pytest.raises(
-        Exception, match="Lambdas cannot be registered. Use `def` instead."
-    ):
+    with pytest.raises(Exception, match="Lambdas cannot be registered. Use `def` instead."):
         registry.register(lambda x: x)
 
 
@@ -387,9 +377,7 @@ def test_generate_function_schema_no_args():
 async def test_function_registry_call_edge_cases():
     registry = FunctionRegistry()
     with pytest.raises(UnknownFunctionError):
-        await registry.call(
-            "totes_not_real", arguments='{"x": 1, "y": "str", "z": true}'
-        )
+        await registry.call("totes_not_real", arguments='{"x": 1, "y": "str", "z": true}')
 
     with pytest.raises(UnknownFunctionError):
         await registry.call(None)  # type: ignore

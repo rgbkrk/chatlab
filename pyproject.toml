@@ -44,6 +44,8 @@ python-ulid = { version = "^1.1.0", optional = true }
 noteable-origami = { version = "^1.0.0a5", allow-prereleases = true, optional = true }
 typing-extensions = "^4.7.1"
 aiofiles = "^23.1.0"
+types-aiofiles = "^23.2.0.0"
+mypy = "^1.6.1"
 
 [tool.poetry.group.dev.dependencies]
 tox = "^4.4.11"
@@ -63,6 +65,7 @@ types-toml = "^0.10.8.6"
 pandas = "^2.0.2"
 pytest-asyncio = "^0.21.1"
 types-aiofiles = "^23.1.0.5"
+types-orjson = "^3.6.2"
 
 [tool.poetry.extras]
 noteable = ["noteable-origami", "python-ulid"]
@@ -76,9 +79,24 @@ test = [
 
 dev = ["tox", "pre-commit", "virtualenv", "pip", "twine", "toml", "bump2version"]
 
+[[tool.mypy.overrides]]
+module = [
+    "aiofiles",
+    "orjson",
+    "vdom",
+    "repr_llm.*",
+    "origami.*",
+    "deprecation"
+]
+
+ignore_missing_imports = true
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 addopts = "--cov --cov-report=lcov:lcov.info --cov-report=term --cov-report=html"
+
+[tool.ruff]
+line-length = 120
