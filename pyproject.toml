@@ -33,7 +33,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.9.0,<3.12"
+python = ">=3.9.0,<3.13"
 ipython = ">=7.0.0,<9.0.0"
 openai = {version = "^1.0.0b2", allow-prereleases = true}
 pydantic = ">=1.9.0,<2.0.0"
