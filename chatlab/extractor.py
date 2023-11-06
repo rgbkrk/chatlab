@@ -32,6 +32,7 @@ from functools import wraps
 from typing import Any, Callable
 
 from docstring_parser import parse
+from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel, create_model, validate_arguments
 
 
@@ -67,18 +68,12 @@ class openai_function:
 
         parameters = self.validate_func.model.model_json_schema()
         parameters["properties"] = {
-            k: v
-            for k, v in parameters["properties"].items()
-            if k not in ("v__duplicate_kwargs", "args", "kwargs")
+            k: v for k, v in parameters["properties"].items() if k not in ("v__duplicate_kwargs", "args", "kwargs")
         }
         for param in self.docstring.params:
-            if (name := param.arg_name) in parameters["properties"] and (
-                description := param.description
-            ):
+            if (name := param.arg_name) in parameters["properties"] and (description := param.description):
                 parameters["properties"][name]["description"] = description
-        parameters["required"] = sorted(
-            k for k, v in parameters["properties"].items() if "default" not in v
-        )
+        parameters["required"] = sorted(k for k, v in parameters["properties"].items() if "default" not in v)
         self.openai_schema = {
             "name": self.func.__name__,
             "description": self.docstring.short_description,
@@ -93,7 +88,7 @@ class openai_function:
 
         return wrapper(*args, **kwargs)
 
-    def from_response(self, completion, throw_error=True, strict: bool = None):
+    def from_message(self, message: ChatCompletionMessageParam, strict: bool = False):
         """
         Parse the response from OpenAI's API and return the function call
 
@@ -104,13 +99,9 @@ class openai_function:
         Returns:
             result (any): result of the function call
         """
-        message = completion["choices"][0]["message"]
 
-        if throw_error:
-            assert "function_call" in message, "No function call detected"
-            assert (
-                message["function_call"]["name"] == self.openai_schema["name"]
-            ), "Function name does not match"
+        assert "function_call" in message, "No function call detected"
+        assert message["function_call"]["name"] == self.openai_schema["name"], "Function name does not match"
 
         function_call = message["function_call"]
         arguments = json.loads(function_call["arguments"], strict=strict)
@@ -157,7 +148,7 @@ class OpenAISchema(BaseModel):
 
     """
 
-    @property
+    @classmethod
     def openai_schema(cls):
         """Return the schema in the format of OpenAI's schema as jsonschema.
 
@@ -169,27 +160,20 @@ class OpenAISchema(BaseModel):
         """
         schema = cls.model_json_schema()
         docstring = parse(cls.__doc__ or "")
-        parameters = {
-            k: v for k, v in schema.items() if k not in ("title", "description")
-        }
+        parameters = {k: v for k, v in schema.items() if k not in ("title", "description")}
         for param in docstring.params:
-            if (name := param.arg_name) in parameters["properties"] and (
-                description := param.description
-            ):
+            if (name := param.arg_name) in parameters["properties"] and (description := param.description):
                 if "description" not in parameters["properties"][name]:
                     parameters["properties"][name]["description"] = description
 
-        parameters["required"] = sorted(
-            k for k, v in parameters["properties"].items() if "default" not in v
-        )
+        parameters["required"] = sorted(k for k, v in parameters["properties"].items() if "default" not in v)
 
         if "description" not in schema:
             if docstring.short_description:
                 schema["description"] = docstring.short_description
             else:
                 schema["description"] = (
-                    f"Correctly extracted `{cls.__name__}` with all "
-                    f"the required parameters with correct types"
+                    f"Correctly extracted `{cls.__name__}` with all " f"the required parameters with correct types"
                 )
 
         return {
@@ -221,9 +205,7 @@ class OpenAISchema(BaseModel):
 
         if throw_error:
             assert "function_call" in message, "No function call detected"
-            assert (
-                message["function_call"]["name"] == cls.openai_schema["name"]
-            ), "Function name does not match"
+            assert message["function_call"]["name"] == cls.openai_schema["name"], "Function name does not match"
 
         return cls.model_validate_json(
             message["function_call"]["arguments"],
