@@ -42,25 +42,13 @@ Example usage:
 import asyncio
 import inspect
 import json
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    Optional,
-    Type,
-    TypedDict,
-    Union,
-    get_args,
-    get_origin,
-    overload,
-)
+from typing import (Any, Callable, Dict, Iterable, List, Optional, Type,
+                    TypedDict, Union, get_args, get_origin, overload)
 
-from openai.types.chat.completion_create_params import Function as FunctionSchema
-from openai.types.chat.completion_create_params import (
-    FunctionCall as FunctionCallOption,
-)
+from openai.types.chat.completion_create_params import \
+    Function as FunctionSchema
+from openai.types.chat.completion_create_params import \
+    FunctionCall as FunctionCallOption
 from pydantic import BaseModel, create_model
 
 from .decorators import ChatlabMetadata
@@ -146,7 +134,7 @@ def generate_function_schema(
     if isinstance(parameter_schema, dict):
         parameters = parameter_schema
     elif parameter_schema is not None:
-        parameters = parameter_schema.schema()  # type: ignore
+        parameters = parameter_schema.model_json_schema()  # type: ignore
     else:
         # extract function parameters and their type annotations
         sig = inspect.signature(function)
@@ -177,7 +165,7 @@ def generate_function_schema(
             __config__=FunctionSchemaConfig,  # type: ignore
             **fields,  # type: ignore
         )
-        parameters: dict = model.schema()  # type: ignore
+        parameters: dict = model.model_json_schema()  # type: ignore
 
     if "properties" not in parameters:
         parameters["properties"] = {}
