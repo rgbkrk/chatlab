@@ -14,13 +14,15 @@ I am the king of the skies, the lord of the avian realm. Squawk!
 import asyncio
 import logging
 import os
-from typing import AsyncIterator, Callable, List, Optional, Tuple, Type, Union, overload
+from typing import (AsyncIterator, Callable, List, Optional, Tuple, Type,
+                    Union, overload)
 
 import openai
 from deprecation import deprecated
 from IPython.core.async_helpers import get_asyncio_loop
 from openai import AsyncOpenAI
-from openai.types.chat import ChatCompletion, ChatCompletionChunk, ChatCompletionMessageParam
+from openai.types.chat import (ChatCompletion, ChatCompletionChunk,
+                               ChatCompletionMessageParam)
 from pydantic import BaseModel
 
 from chatlab.views.assistant_function_call import AssistantFunctionCallView
@@ -29,7 +31,8 @@ from ._version import __version__
 from .display import ChatFunctionCall
 from .errors import ChatLabError
 from .messaging import human
-from .registry import FunctionRegistry, FunctionSchema, PythonHallucinationFunction
+from .registry import (FunctionRegistry, FunctionSchema,
+                       PythonHallucinationFunction)
 from .views.assistant import AssistantMessageView
 
 logger = logging.getLogger(__name__)
@@ -205,6 +208,7 @@ class Chat:
             function_view.append(function_call.arguments)
 
         return choice.finish_reason, function_view
+
 
     async def submit(self, *messages: Union[ChatCompletionMessageParam, str], stream=True, **kwargs):
         """Send messages to the chat model and display the response.
