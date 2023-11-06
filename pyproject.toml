@@ -46,6 +46,7 @@ typing-extensions = "^4.7.1"
 aiofiles = "^23.1.0"
 types-aiofiles = "^23.2.0.0"
 mypy = "^1.6.1"
+docstring-parser = "^0.15"
 
 [tool.poetry.group.dev.dependencies]
 tox = "^4.4.11"
