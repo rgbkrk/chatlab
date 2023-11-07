@@ -5,14 +5,10 @@ from unittest import mock
 from unittest.mock import MagicMock, patch
 
 import pytest
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PydanticInvalidForJsonSchema
 
-from chatlab.registry import (
-    FunctionArgumentError,
-    FunctionRegistry,
-    UnknownFunctionError,
-    generate_function_schema,
-)
+from chatlab.registry import (FunctionArgumentError, FunctionRegistry,
+                              UnknownFunctionError, generate_function_schema)
 
 
 # Define a function to use in testing
@@ -106,8 +102,8 @@ def test_generate_function_schema_unallowed_type():
         return x
 
     with pytest.raises(
-        ValueError,
-        match="Value not declarable with JSON Schema, field: name='x' type=NewType required=True",
+        expected_exception=PydanticInvalidForJsonSchema,
+        match="Cannot generate a JsonSchema for core_schema.IsInstanceSchema",
     ):
         generate_function_schema(unallowed_type)
 
@@ -181,10 +177,10 @@ def test_generate_function_schema_with_model_argument():
                 "x": {"type": "integer"},
                 "y": {"type": "string"},
                 "z": {"default": False, "type": "boolean"},
-                "model": {"$ref": "#/definitions/SimpleModel"},
+                "model": {"$ref": "#/$defs/SimpleModel"},
             },
             "required": ["x", "y"],
-            "definitions": {
+            "$defs": {
                 "SimpleModel": {
                     "title": "SimpleModel",
                     "type": "object",
@@ -217,11 +213,11 @@ def test_generate_function_schema_with_model_and_nested_model_arguments():
                 "x": {"type": "integer"},
                 "y": {"type": "string"},
                 "z": {"default": False, "type": "boolean"},
-                "model": {"$ref": "#/definitions/SimpleModel"},
-                "nested_model": {"$ref": "#/definitions/NestedModel"},
+                "model": {"$ref": "#/$defs/SimpleModel"},
+                "nested_model": {"$ref": "#/$defs/NestedModel"},
             },
             "required": ["x", "y"],
-            "definitions": {
+            "$defs": {
                 "SimpleModel": {
                     "title": "SimpleModel",
                     "type": "object",
@@ -248,7 +244,7 @@ def test_generate_function_schema_with_model_and_nested_model_arguments():
                             "default": True,
                             "type": "boolean",
                         },
-                        "simple_model": {"$ref": "#/definitions/SimpleModel"},
+                        "simple_model": {"$ref": "#/$defs/SimpleModel"},
                     },
                     "required": ["foo", "bar", "simple_model"],
                 },

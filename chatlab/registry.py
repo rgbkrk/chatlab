@@ -151,10 +151,19 @@ def generate_function_schema(
                 raise Exception(f"`{name}` parameter of {func_name} must have a JSON-serializable type annotation")
             type_annotation = param.annotation
 
-            # get the default value, otherwise set as required
-            default_value = ...
+            # determine if there is a default value
             if param.default != inspect.Parameter.empty:
                 default_value = param.default
+            else:
+                default_value = ...
+
+            # Check if the annotation is Union that includes None, indicating an optional parameter
+            if get_origin(type_annotation) is Union:
+                args = get_args(type_annotation)
+                if len(args) == 2 and type(None) in args:
+                    # It's an optional parameter
+                    type_annotation = next(arg for arg in args if arg is not type(None))
+                    default_value = None if default_value is ... else default_value
 
             fields[name] = (type_annotation, default_value)
 
