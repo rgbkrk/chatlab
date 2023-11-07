@@ -177,7 +177,7 @@ def test_generate_function_schema_with_model_argument():
                 "x": {"type": "integer"},
                 "y": {"type": "string"},
                 "z": {"default": False, "type": "boolean"},
-                "model": {"$ref": "#/$defs/SimpleModel"},
+                "model":{'allOf': [{'$ref': '#/$defs/SimpleModel'}], 'default': None},
             },
             "required": ["x", "y"],
             "$defs": {
@@ -213,8 +213,8 @@ def test_generate_function_schema_with_model_and_nested_model_arguments():
                 "x": {"type": "integer"},
                 "y": {"type": "string"},
                 "z": {"default": False, "type": "boolean"},
-                "model": {"$ref": "#/$defs/SimpleModel"},
-                "nested_model": {"$ref": "#/$defs/NestedModel"},
+                "model": {'allOf': [{'$ref': '#/$defs/SimpleModel'}], 'default': None},
+                "nested_model": {'allOf': [{'$ref': '#/$defs/NestedModel'}], 'default': None},
             },
             "required": ["x", "y"],
             "$defs": {
@@ -265,7 +265,7 @@ def test_generate_function_schema_with_uuid_argument():
                 "x": {"type": "integer"},
                 "y": {"type": "string"},
                 "z": {"default": False, "type": "boolean"},
-                "uuid": {"type": "string", "format": "uuid"},
+                "uuid": {"type": "string", "format": "uuid", "default": None},
             },
             "required": ["x", "y"],
         },
