@@ -7,8 +7,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from pydantic import BaseModel, Field, PydanticInvalidForJsonSchema
 
-from chatlab.registry import (FunctionArgumentError, FunctionRegistry,
-                              UnknownFunctionError, generate_function_schema)
+from chatlab.registry import FunctionArgumentError, FunctionRegistry, UnknownFunctionError, generate_function_schema
 
 
 # Define a function to use in testing
@@ -177,7 +176,7 @@ def test_generate_function_schema_with_model_argument():
                 "x": {"type": "integer"},
                 "y": {"type": "string"},
                 "z": {"default": False, "type": "boolean"},
-                "model":{'allOf': [{'$ref': '#/$defs/SimpleModel'}], 'default': None},
+                "model": {"allOf": [{"$ref": "#/$defs/SimpleModel"}], "default": None},
             },
             "required": ["x", "y"],
             "$defs": {
@@ -213,8 +212,8 @@ def test_generate_function_schema_with_model_and_nested_model_arguments():
                 "x": {"type": "integer"},
                 "y": {"type": "string"},
                 "z": {"default": False, "type": "boolean"},
-                "model": {'allOf': [{'$ref': '#/$defs/SimpleModel'}], 'default': None},
-                "nested_model": {'allOf': [{'$ref': '#/$defs/NestedModel'}], 'default': None},
+                "model": {"allOf": [{"$ref": "#/$defs/SimpleModel"}], "default": None},
+                "nested_model": {"allOf": [{"$ref": "#/$defs/NestedModel"}], "default": None},
             },
             "required": ["x", "y"],
             "$defs": {

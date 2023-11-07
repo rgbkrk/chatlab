@@ -42,13 +42,10 @@ Example usage:
 import asyncio
 import inspect
 import json
-from typing import (Any, Callable, Dict, Iterable, List, Optional, Type,
-                    TypedDict, Union, get_args, get_origin, overload)
+from typing import Any, Callable, Dict, Iterable, List, Optional, Type, TypedDict, Union, get_args, get_origin, overload
 
-from openai.types.chat.completion_create_params import \
-    Function as FunctionSchema
-from openai.types.chat.completion_create_params import \
-    FunctionCall as FunctionCallOption
+from openai.types.chat.completion_create_params import Function as FunctionSchema
+from openai.types.chat.completion_create_params import FunctionCall as FunctionCallOption
 from pydantic import BaseModel, create_model
 
 from .decorators import ChatlabMetadata
