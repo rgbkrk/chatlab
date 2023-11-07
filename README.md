@@ -8,7 +8,7 @@ ChatLab is a Python package that makes it easy to experiment with OpenAI's chat 
 
 Best yet, it's interactive in the notebook!
 
-⚠️ NOTE: The following docs are for the `1.0.0-alpha` release and `main`. They will not work with the `0.16.0` release. Check out [chatlab.dev](https://chatlab.dev) for the latest docs. For the pre-release, check out [pre.chatlab.dev](https://pre.chatlab.dev).
+⚠️ NOTE: The following docs are for `main`. They may not work with the `1.0.0` release. Check out [chatlab.dev](https://chatlab.dev) for the latest docs. For the pre-release, check out [pre.chatlab.dev](https://pre.chatlab.dev).
 
 ## Introduction
 
