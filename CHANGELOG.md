@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.1]
 
+### Documented
+
+- New Knowledge Graph example
+- Switched all docs to [chatlab.dev](https://chatlab.dev)
+- No more `--pre` required for installs
+
+
+## [1.0.0]
+
+
 ### Added
 
 -   📚 Documentation now available at [chatlab.dev](https://chatlab.dev)
