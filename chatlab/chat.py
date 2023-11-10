@@ -14,12 +14,13 @@ I am the king of the skies, the lord of the avian realm. Squawk!
 import asyncio
 import logging
 import os
-from typing import AsyncIterator, Callable, List, Optional, Tuple, Type, Union, overload
+from typing import Callable, List, Optional, Tuple, Type, Union, overload
 
 import openai
 from deprecation import deprecated
 from IPython.core.async_helpers import get_asyncio_loop
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, AsyncStream
+from openai.types import FunctionDefinition
 from openai.types.chat import ChatCompletion, ChatCompletionChunk, ChatCompletionMessageParam
 from pydantic import BaseModel
 
@@ -29,7 +30,7 @@ from ._version import __version__
 from .display import ChatFunctionCall
 from .errors import ChatLabError
 from .messaging import human
-from .registry import FunctionRegistry, FunctionSchema, PythonHallucinationFunction
+from .registry import FunctionRegistry, PythonHallucinationFunction
 from .views.assistant import AssistantMessageView
 
 logger = logging.getLogger(__name__)
@@ -138,7 +139,7 @@ class Chat:
         return await self.submit(*messages, stream=stream, **kwargs)
 
     async def __process_stream(
-        self, resp: AsyncIterator[ChatCompletionChunk]
+        self, resp: AsyncStream[ChatCompletionChunk]
     ) -> Tuple[str, Optional[AssistantFunctionCallView]]:
         assistant_view: AssistantMessageView = AssistantMessageView()
         function_view: Optional[AssistantFunctionCallView] = None
@@ -232,7 +233,7 @@ class Chat:
         try:
             client = AsyncOpenAI()
 
-            manifest = self.function_registry.api_manifest()
+            api_manifest = self.function_registry.api_manifest()
 
             # Due to the strict response typing based on `Literal` typing on `stream`, we have to process these
             # two cases separately
@@ -240,7 +241,7 @@ class Chat:
                 streaming_response = await client.chat.completions.create(
                     model=self.model,
                     messages=full_messages,
-                    **manifest,
+                    **api_manifest,
                     stream=True,
                     temperature=kwargs.get("temperature", 0),
                 )
@@ -250,7 +251,7 @@ class Chat:
                 full_response = await client.chat.completions.create(
                     model=self.model,
                     messages=full_messages,
-                    **manifest,
+                    **api_manifest,
                     stream=False,
                     temperature=kwargs.get("temperature", 0),
                 )
@@ -333,14 +334,14 @@ class Chat:
         self,
         function: Callable,
         parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
-    ) -> FunctionSchema:
+    ) -> FunctionDefinition:
         ...
 
     def register(
         self,
         function: Optional[Callable] = None,
         parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
-    ) -> Union[Callable, FunctionSchema]:
+    ) -> Union[Callable, FunctionDefinition]:
         """Register a function with the ChatLab instance.
 
         This can be used as a decorator like so:
