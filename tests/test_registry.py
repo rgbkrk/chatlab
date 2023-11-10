@@ -122,7 +122,7 @@ def test_generate_function_schema():
             "required": ["x", "y"],
         },
     }
-    assert schema == expected_schema
+    assert schema.model_dump() == expected_schema
 
 
 def test_generate_function_schema_with_model():
@@ -144,7 +144,7 @@ def test_generate_function_schema_with_model():
             "required": ["x", "y"],
         },
     }
-    assert schema == expected_schema
+    assert schema.model_dump() == expected_schema
 
 
 def test_generate_function_schema_with_method():
@@ -162,7 +162,7 @@ def test_generate_function_schema_with_method():
             "required": ["x", "y"],
         },
     }
-    assert schema == expected_schema
+    assert schema.model_dump() == expected_schema
 
 
 def test_generate_function_schema_with_model_argument():
@@ -198,7 +198,7 @@ def test_generate_function_schema_with_model_argument():
             },
         },
     }
-    assert schema == expected_schema
+    assert schema.model_dump() == expected_schema
 
 
 def test_generate_function_schema_with_model_and_nested_model_arguments():
@@ -250,7 +250,7 @@ def test_generate_function_schema_with_model_and_nested_model_arguments():
             },
         },
     }
-    assert schema == expected_schema
+    assert schema.model_dump() == expected_schema
 
 
 def test_generate_function_schema_with_uuid_argument():
@@ -269,7 +269,7 @@ def test_generate_function_schema_with_uuid_argument():
             "required": ["x", "y"],
         },
     }
-    assert schema == expected_schema
+    assert schema.model_dump() == expected_schema
 
 
 # Test the function registry
@@ -327,7 +327,7 @@ def test_function_registry_function_definitions():
     registry.register(simple_func, SimpleModel)
     function_definitions = registry.function_definitions
     assert len(function_definitions) == 1
-    assert function_definitions[0]["name"] == "simple_func"
+    assert function_definitions[0].name == "simple_func"
 
 
 # Test that we do not allow python hallucination when False
@@ -352,8 +352,8 @@ def test_generate_function_schema_optional_args():
         return f"{x}, {y}, {z}"
 
     schema = generate_function_schema(func_with_optional_args)
-    assert "z" in schema["parameters"]["properties"]  # type: ignore
-    assert "z" not in schema["parameters"]["required"]  # type: ignore
+    assert "z" in schema.parameters["properties"]  # type: ignore
+    assert "z" not in schema.parameters["required"]  # type: ignore
 
 
 # Test the generate_function_schema for function with no arguments
@@ -363,8 +363,8 @@ def test_generate_function_schema_no_args():
         pass
 
     schema = generate_function_schema(func_no_args)
-    assert schema["parameters"]["properties"] == {}
-    assert schema["parameters"]["required"] == []
+    assert schema.parameters["properties"] == {}
+    assert schema.parameters["required"] == []
 
 
 # Testing edge cases with call method

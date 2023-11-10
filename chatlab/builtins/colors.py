@@ -44,7 +44,7 @@ def _generate_palette_name(colors: List[str]) -> str:
     return f"palette-{hash_object.hexdigest()}"
 
 
-def show_colors(colors: List[str], store_as: Optional[str]):
+def show_colors(colors: List[str], store_as: Optional[str] = None):
     """Shows a list of CSS colors for the user in their notebook."""
     global palettes
 

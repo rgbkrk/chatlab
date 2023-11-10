@@ -44,8 +44,8 @@ import inspect
 import json
 from typing import Any, Callable, Dict, Iterable, List, Optional, Type, TypedDict, Union, get_args, get_origin, overload
 
-from openai.types.chat.completion_create_params import Function as FunctionSchema
-from openai.types.chat.completion_create_params import FunctionCall as FunctionCallOption
+from openai.types import FunctionDefinition
+from openai.types.chat.completion_create_params import Function, FunctionCall
 from pydantic import BaseModel, create_model
 
 from .decorators import ChatlabMetadata
@@ -54,10 +54,10 @@ from .decorators import ChatlabMetadata
 class APIManifest(TypedDict, total=False):
     """The schema for the API."""
 
-    functions: List[FunctionSchema]
+    functions: List[Function]
     """A list of functions that the model can call during the conversation."""
 
-    function_call: FunctionCallOption
+    function_call: FunctionCall
     """The policy for when to call functions.
 
     One of "auto", "none", or a dictionary with a "name" key.
@@ -110,7 +110,7 @@ class FunctionSchemaConfig:
 def generate_function_schema(
     function: Callable,
     parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
-) -> FunctionSchema:
+) -> FunctionDefinition:
     """Generate a function schema for sending to OpenAI."""
     doc = function.__doc__
     func_name = function.__name__
@@ -122,7 +122,7 @@ def generate_function_schema(
     if not doc:
         raise Exception("Only functions with docstrings can be registered")
 
-    schema = FunctionSchema(
+    schema = FunctionDefinition(
         name=func_name,
         description=doc,
         parameters={},
@@ -184,12 +184,21 @@ def generate_function_schema(
     if "required" not in parameters:
         parameters["required"] = []
 
-    schema["parameters"] = parameters
+    schema.parameters = parameters
     return schema
 
 
 # Declare the type for the python hallucination
 PythonHallucinationFunction = Callable[[str], Any]
+
+
+def adapt_function_definition(fd: FunctionDefinition) -> Function:
+    """Adapt a FunctionDefinition to a Function for working with the OpenAI API."""
+    return {
+        "name": fd.name,
+        "parameters": fd.parameters,
+        "description": fd.description if fd.description is not None else "",
+    }
 
 
 class FunctionRegistry:
@@ -229,7 +238,7 @@ class FunctionRegistry:
     """
 
     __functions: dict[str, Callable]
-    __schemas: dict[str, FunctionSchema]
+    __schemas: dict[str, FunctionDefinition]
 
     # Allow passing in a callable that accepts a single string for the python
     # hallucination function. This is useful for testing.
@@ -265,14 +274,14 @@ class FunctionRegistry:
         self,
         function: Callable,
         parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
-    ) -> FunctionSchema:
+    ) -> FunctionDefinition:
         ...
 
     def register(
         self,
         function: Optional[Callable] = None,
         parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
-    ) -> Union[Callable, FunctionSchema]:
+    ) -> Union[Callable, FunctionDefinition]:
         """Register a function for use in `Chat`s. Can be used as a decorator or directly to register a function.
 
         >>> registry = FunctionRegistry()
@@ -303,7 +312,7 @@ class FunctionRegistry:
         self,
         function: Callable,
         parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
-    ) -> FunctionSchema:
+    ) -> FunctionDefinition:
         """Register a single function."""
         final_schema = generate_function_schema(function, parameter_schema)
 
@@ -327,7 +336,7 @@ class FunctionRegistry:
 
         return self.__functions.get(function_name)
 
-    def get_schema(self, function_name) -> Optional[FunctionSchema]:
+    def get_schema(self, function_name) -> Optional[FunctionDefinition]:
         """Get a function schema by name."""
         return self.__schemas.get(function_name)
 
@@ -341,7 +350,7 @@ class FunctionRegistry:
         chatlab_metadata = getattr(function, "chatlab_metadata", ChatlabMetadata())
         return chatlab_metadata
 
-    def api_manifest(self, function_call_option: FunctionCallOption = "auto") -> APIManifest:
+    def api_manifest(self, function_call_option: FunctionCall = "auto") -> APIManifest:
         """Get a dictionary containing function definitions and calling options.
 
         This is designed to be used with OpenAI's Chat Completion API, where the
@@ -394,12 +403,14 @@ class FunctionRegistry:
                     stream=True,
                 )
         """
-        if len(self.function_definitions) == 0:
+        function_definitions = [adapt_function_definition(f) for f in self.__schemas.values()]
+
+        if len(function_definitions) == 0:
             # When there are no functions, we can't send an empty functions array to OpenAI
             return {}
 
         return {
-            "functions": self.function_definitions,
+            "functions": function_definitions,
             "function_call": function_call_option,
         }
 
@@ -449,6 +460,6 @@ class FunctionRegistry:
         return name in self.__functions
 
     @property
-    def function_definitions(self) -> list[FunctionSchema]:
+    def function_definitions(self) -> list[FunctionDefinition]:
         """Get a list of function definitions."""
         return list(self.__schemas.values())
