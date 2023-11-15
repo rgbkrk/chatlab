@@ -246,6 +246,8 @@ class Chat:
                     temperature=kwargs.get("temperature", 0),
                 )
 
+                self.append(*messages)
+
                 finish_reason, function_call_request = await self.__process_stream(streaming_response)
             else:
                 full_response = await client.chat.completions.create(
@@ -255,6 +257,8 @@ class Chat:
                     stream=False,
                     temperature=kwargs.get("temperature", 0),
                 )
+
+                self.append(*messages)
 
                 (
                     finish_reason,
@@ -267,8 +271,6 @@ class Chat:
             await self.submit(*messages, stream=stream, **kwargs)
 
             return
-
-        self.append(*messages)
 
         if finish_reason == "function_call":
             if function_call_request is None:
