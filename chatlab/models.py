@@ -5,6 +5,7 @@ from enum import Enum
 
 class ChatModel(Enum):
     """Models available for use with chatlab."""
+
     GPT_4_1106_PREVIEW = "gpt-4-1106-preview"
     GPT_4_VISION_PREVIEW = "gpt-4-vision-preview"
 
