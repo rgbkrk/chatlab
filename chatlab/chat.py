@@ -69,6 +69,8 @@ class Chat:
     def __init__(
         self,
         *initial_context: Union[ChatCompletionMessageParam, str],
+        base_url=None,
+        api_key=None,
         model="gpt-3.5-turbo-0613",
         function_registry: Optional[FunctionRegistry] = None,
         chat_functions: Optional[List[Callable]] = None,
@@ -85,8 +87,8 @@ class Chat:
         """
         # Sometimes people set the API key with an environment variables and sometimes
         # they set it on the openai module. We'll check both.
-        openai_api_key = os.getenv("OPENAI_API_KEY") or openai.api_key
-        if openai_api_key is None:
+        openai_api_key = api_key or os.getenv("OPENAI_API_KEY") or openai.api_key
+        if openai_api_key is None or not isinstance(openai_api_key, str):
             raise ChatLabError(
                 "You must set the environment variable `OPENAI_API_KEY` to use this package.\n"
                 "This key allows chatlab to communicate with OpenAI servers.\n\n"
@@ -96,6 +98,9 @@ class Chat:
             )
         else:
             pass
+
+        self.api_key = openai_api_key
+        self.base_url = base_url
 
         if initial_context is None:
             initial_context = []  # type: ignore
@@ -231,7 +236,10 @@ class Chat:
                 full_messages.append(message)
 
         try:
-            client = AsyncOpenAI()
+            client = AsyncOpenAI(
+                api_key=self.api_key,
+                base_url=self.base_url,
+            )
 
             api_manifest = self.function_registry.api_manifest()
 
