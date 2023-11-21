@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 1.1.0
+
+- Support setting a custom `base_url`
+
+```python
+from chatlab import Chat
+chat = Chat(
+  base_url="http://localhost:8000/v1",
+  api_key="functionary"
+)
+```
+
 ## [1.0.3]
 
 ### Fixed
