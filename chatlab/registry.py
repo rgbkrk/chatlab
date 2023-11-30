@@ -42,7 +42,21 @@ Example usage:
 import asyncio
 import inspect
 import json
-from typing import Any, Callable, Dict, Iterable, List, Optional, Type, TypedDict, Union, get_args, get_origin, overload
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Type,
+    TypedDict,
+    Union,
+    cast,
+    get_args,
+    get_origin,
+    overload,
+)
 
 from openai.types import FunctionDefinition
 from openai.types.chat.completion_create_params import Function, FunctionCall
@@ -453,11 +467,10 @@ class FunctionRegistry:
             arg_value = parameters.get(param_name)
 
             # Check if parameter type is a subclass of BaseModel and deserialize JSON into Pydantic model
-            if issubclass(param_type, BaseModel):
+            if inspect.isclass(param_type) and issubclass(param_type, BaseModel):
                 prepared_arguments[param_name] = param_type.model_validate(arg_value)
             else:
-                prepared_arguments[param_name] = arg_value
-
+                prepared_arguments[param_name] = cast(Any, arg_value)
 
         if asyncio.iscoroutinefunction(function):
             result = await function(**prepared_arguments)
