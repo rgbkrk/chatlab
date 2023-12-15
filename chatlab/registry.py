@@ -58,7 +58,7 @@ from typing import (
     overload,
 )
 
-from openai.types import FunctionDefinition
+from openai.types import FunctionDefinition, FunctionParameters
 from openai.types.chat.completion_create_params import Function, FunctionCall
 from pydantic import BaseModel, create_model
 
@@ -210,7 +210,7 @@ def adapt_function_definition(fd: FunctionDefinition) -> Function:
     """Adapt a FunctionDefinition to a Function for working with the OpenAI API."""
     return {
         "name": fd.name,
-        "parameters": fd.parameters,
+        "parameters": cast(FunctionParameters, fd.parameters),
         "description": fd.description if fd.description is not None else "",
     }
 
