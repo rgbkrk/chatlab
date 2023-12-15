@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Drop Noteable builtin
 - ⏃ Automatically instantiate pydantic models when they are passed as parameters to a function call
 
 ## [1.1.1]

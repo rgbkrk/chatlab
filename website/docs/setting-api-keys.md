@@ -29,17 +29,6 @@ Create a `.env` file in the same directory as your notebook and add the followin
 OPENAI_API_KEY=<your key>
 ```
 
-## Noteable
-
-Navigate to your [Secrets](https://app.noteable.io/r/secrets) page, click "Create a Secret" and add your key.
-
-![](/img/noteable_secrets_ui.png)
-
-Name: `OPENAI_API_KEY`
-Value: `<your key>`
-
-The "Private" option provides the secrets to only you when executing. "Space" level secrets will be available to all your collaborators in the space.
-
 ## Colab, Kaggle, and other cloud notebooks
 
 ### Just `getpass`

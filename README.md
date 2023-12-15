@@ -8,7 +8,7 @@ ChatLab is a Python package that makes it easy to experiment with OpenAI's chat 
 
 Best yet, it's interactive in the notebook!
 
-⚠️ NOTE: The following docs are for `main`. Check out [chatlab.dev](https://chatlab.dev) for the docs for the most recent release. 
+⚠️ NOTE: The following docs are for `main`. Check out [chatlab.dev](https://chatlab.dev) for the docs for the most recent release.
 
 ## Introduction
 
@@ -63,7 +63,7 @@ pip install chatlab
 
 You'll need to set your `OPENAI_API_KEY` environment variable. You can find your API key on your [OpenAI account page](https://platform.openai.com/account/api-keys). I recommend setting it in an `.env` file when working locally.
 
-On hosted environments like Noteable, set it in your Secrets to keep it safe from prying LLM eyes.
+On hosted notebook environments, set it in your Secrets to keep it safe from prying LLM eyes.
 
 ## What can `Chat`s enable _you_ to do?
 
@@ -75,7 +75,7 @@ Where `Chat`s take it next level is with _Chat Functions_. You can
 -   register the function in your `Chat`
 -   watch as Chat Models call your functions!
 
-You may recall this kind of behavior from [ChatGPT Plugins](https://noteable.io/chatgpt-plugin-for-notebook/). Now, you can take this even further with your own custom code.
+You may recall this kind of behavior from ChatGPT Plugins. Now, you can take this even further with your own custom code.
 
 As an example, let's give the large language models the ability to tell time.
 
