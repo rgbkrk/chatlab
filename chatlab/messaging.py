@@ -100,6 +100,24 @@ def function_result(name: str, content: str) -> ChatCompletionMessageParam:
     }
 
 
+def tool_result(tool_call_id: str, name: str, content: str) -> ChatCompletionMessageParam:
+    """Create a tool result message.
+
+    Args:
+        tool_call_id: The ID of the tool call.
+        name: The name of the tool.
+        content: The content of the message.
+
+    Returns:
+        A dictionary representing a tool result message.
+    """
+    return {
+        "role": "tool",
+        "content": content,
+        "name": name,
+        "tool_call_id": tool_call_id,
+    }
+
 # Aliases
 narrate = system
 human = user

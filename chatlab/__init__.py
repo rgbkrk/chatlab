@@ -30,6 +30,7 @@ from .messaging import (
     narrate,
     system,
     user,
+    tool_result
 )
 from .registry import FunctionRegistry
 from .views.markdown import Markdown
@@ -85,6 +86,7 @@ __all__ = [
     "assistant",
     "assistant_function_call",
     "function_result",
+    "tool_result",
     "models",
     "Session",
     "Chat",
