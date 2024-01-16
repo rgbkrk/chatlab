@@ -428,6 +428,10 @@ class FunctionRegistry:
             "function_call": function_call_option,
         }
 
+    @property
+    def tools(self):
+        return [{"type": "function", "function": adapt_function_definition(f)} for f in self.__schemas.values()]
+
     async def call(self, name: str, arguments: Optional[str] = None) -> Any:
         """Call a function by name with the given parameters."""
         if name is None:

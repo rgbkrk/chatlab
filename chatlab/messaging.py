@@ -12,7 +12,7 @@ Example:
 
 from typing import Optional
 
-from openai.types.chat import ChatCompletionMessageParam
+from openai.types.chat import ChatCompletionMessageParam, ChatCompletionToolMessageParam
 
 
 def assistant(content: str) -> ChatCompletionMessageParam:
@@ -99,6 +99,22 @@ def function_result(name: str, content: str) -> ChatCompletionMessageParam:
         "name": name,
     }
 
+
+def tool_result(tool_call_id: str, content: str) -> ChatCompletionToolMessageParam:
+    """Create a tool result message.
+
+    Args:
+        tool_call_id: The ID of the tool call.
+        content: The content of the message.
+
+    Returns:
+        A dictionary representing a tool result message.
+    """
+    return {
+        "role": "tool",
+        "content": content,
+        "tool_call_id": tool_call_id,
+    }
 
 # Aliases
 narrate = system
