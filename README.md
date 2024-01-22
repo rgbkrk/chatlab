@@ -8,7 +8,15 @@ ChatLab is a Python package that makes it easy to experiment with OpenAI's chat 
 
 Best yet, it's interactive in the notebook!
 
-⚠️ NOTE: The following docs are for `main`. Check out [chatlab.dev](https://chatlab.dev) for the docs for the most recent release.
+## Notebooks to get started with
+
+* [Learning the Basics](./notebooks/basics.ipynb)
+* [Recommend and Visualize Color Palettes](./notebooks/color-picker.ipynb)
+* [Introduction to the Function Registry](./notebooks/function-registry.ipynb)
+* [Creating Knowledge Graphs with Pydantic](./notebooks/knowledge-graph.ipynb)
+* [Direct Parallel Function Calling](./notebooks/parallel-function-calling.ipynb)
+* [Let the Model do some Data Science](./notebooks/the-data-science-helper.ipynb)
+
 
 ## Introduction
 
