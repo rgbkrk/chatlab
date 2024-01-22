@@ -62,7 +62,12 @@ from openai.types import FunctionDefinition, FunctionParameters
 from openai.types.chat.completion_create_params import Function, FunctionCall
 from pydantic import BaseModel, create_model
 
+from chatlab.messaging import tool_result
+
 from .decorators import ChatlabMetadata
+
+from openai.types.chat import ChatCompletionToolMessageParam
+from openai.types.chat.chat_completion_message_tool_call import ChatCompletionMessageToolCall
 
 
 class APIManifest(TypedDict, total=False):
@@ -481,6 +486,13 @@ class FunctionRegistry:
         else:
             result = function(**prepared_arguments)
         return result
+
+    async def run_tool(self, tool: ChatCompletionMessageToolCall) -> ChatCompletionToolMessageParam:
+        result = await self.call(tool.function.name, tool.function.arguments)
+        # TODO: Bring over the special result formatter from chatlab.Chat
+        tool_call_response = tool_result(tool.id, content=str(result))
+        # tool_call_response["name"] = tool.function.name
+        return tool_call_response
 
     def __contains__(self, name) -> bool:
         """Check if a function is registered by name."""

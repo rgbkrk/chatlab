@@ -82,7 +82,6 @@ def assistant_function_call(name: str, arguments: Optional[str] = None) -> ChatC
         },
     }
 
-
 def function_result(name: str, content: str) -> ChatCompletionMessageParam:
     """Create a function result message.
 

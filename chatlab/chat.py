@@ -21,7 +21,12 @@ from deprecation import deprecated
 from IPython.core.async_helpers import get_asyncio_loop
 from openai import AsyncOpenAI, AsyncStream
 from openai.types import FunctionDefinition
-from openai.types.chat import ChatCompletion, ChatCompletionChunk, ChatCompletionMessageParam
+from openai.types.chat import (
+    ChatCompletion,
+    ChatCompletionChunk,
+    ChatCompletionMessageParam,
+    ChatCompletionAssistantMessageParam,
+)
 from pydantic import BaseModel
 
 from chatlab.views.assistant_function_call import AssistantFunctionCallView
@@ -32,6 +37,9 @@ from .errors import ChatLabError
 from .messaging import human
 from .registry import FunctionRegistry, PythonHallucinationFunction
 from .views.assistant import AssistantMessageView
+
+from .tool_call import ToolCallBuilder
+
 
 logger = logging.getLogger(__name__)
 
@@ -145,10 +153,12 @@ class Chat:
 
     async def __process_stream(
         self, resp: AsyncStream[ChatCompletionChunk]
-    ) -> Tuple[str, Optional[AssistantFunctionCallView]]:
+    ) -> Tuple[str, Optional[AssistantFunctionCallView], ToolCallBuilder]:
         assistant_view: AssistantMessageView = AssistantMessageView()
         function_view: Optional[AssistantFunctionCallView] = None
         finish_reason = None
+
+        tool_call_builder = ToolCallBuilder()
 
         async for result in resp:  # Go through the results of the stream
             choices = result.choices
@@ -175,6 +185,10 @@ class Chat:
                         if function_view is None:
                             raise ValueError("Function arguments provided without function name")
                         function_view.append(function_call.arguments)
+
+                elif choice.delta.tool_calls is not None:
+                    tool_call_builder.update(*choice.delta.tool_calls)
+
             if choice.finish_reason is not None:
                 finish_reason = choice.finish_reason
                 break
@@ -188,9 +202,11 @@ class Chat:
         if finish_reason is None:
             raise ValueError("No finish reason provided by OpenAI")
 
-        return (finish_reason, function_view)
+        return (finish_reason, function_view, tool_call_builder)
 
-    async def __process_full_completion(self, resp: ChatCompletion) -> Tuple[str, Optional[AssistantFunctionCallView]]:
+    async def __process_full_completion(
+        self, resp: ChatCompletion
+    ) -> Tuple[str, Optional[AssistantFunctionCallView], ToolCallBuilder]:
         assistant_view: AssistantMessageView = AssistantMessageView()
         function_view: Optional[AssistantFunctionCallView] = None
 
@@ -202,6 +218,8 @@ class Chat:
 
         message = choice.message
 
+        tool_call_builder = ToolCallBuilder()
+
         if message.content is not None:
             assistant_view.append(message.content)
             self.append(assistant_view.flush())
@@ -209,8 +227,10 @@ class Chat:
             function_call = message.function_call
             function_view = AssistantFunctionCallView(function_name=function_call.name)
             function_view.append(function_call.arguments)
+        if message.tool_calls is not None:
+            raise NotImplementedError("Tool calls are not yet supported")
 
-        return choice.finish_reason, function_view
+        return choice.finish_reason, function_view, tool_call_builder
 
     async def submit(self, *messages: Union[ChatCompletionMessageParam, str], stream=True, **kwargs):
         """Send messages to the chat model and display the response.
@@ -241,43 +261,59 @@ class Chat:
                 base_url=self.base_url,
             )
 
-            api_manifest = self.function_registry.api_manifest()
-
             # Due to the strict response typing based on `Literal` typing on `stream`, we have to process these
             # two cases separately
             if stream:
                 streaming_response = await client.chat.completions.create(
                     model=self.model,
                     messages=full_messages,
-                    **api_manifest,
+                    tools=self.function_registry.tools,
                     stream=True,
                     temperature=kwargs.get("temperature", 0),
                 )
 
                 self.append(*messages)
 
-                finish_reason, function_call_request = await self.__process_stream(streaming_response)
+                finish_reason, function_call_request, tool_call_builder = await self.__process_stream(
+                    streaming_response
+                )
             else:
                 full_response = await client.chat.completions.create(
                     model=self.model,
                     messages=full_messages,
-                    **api_manifest,
+                    tools=self.function_registry.tools,
                     stream=False,
                     temperature=kwargs.get("temperature", 0),
                 )
 
                 self.append(*messages)
 
-                (
-                    finish_reason,
-                    function_call_request,
-                ) = await self.__process_full_completion(full_response)
+                (finish_reason, function_call_request, tool_call_builder) = await self.__process_full_completion(
+                    full_response
+                )
 
         except openai.RateLimitError as e:
             logger.error(f"Rate limited: {e}. Waiting 5 seconds and trying again.")
             await asyncio.sleep(5)
             await self.submit(*messages, stream=stream, **kwargs)
 
+            return
+
+        if finish_reason == "tool_calls":
+            tool_calls = tool_call_builder.finalize()
+            self.append(
+                ChatCompletionAssistantMessageParam(
+                    role="assistant",
+                    tool_calls=tool_calls,
+                    # TODO: content and name may have been specified. I did not collect it above during streaming.
+                )
+            )
+
+            async for message in tool_call_builder.run(self.function_registry):
+                # TODO: Reintroduce the visual display
+                self.append(message)
+
+            await self.submit(stream=stream, **kwargs)
             return
 
         if finish_reason == "function_call":
