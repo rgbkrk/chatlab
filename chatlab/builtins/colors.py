@@ -1,6 +1,6 @@
 """Color hacking in the notebook.
 
-This module exposes a function that will store """
+This module exposes a function that will display a color palette in a notebook"""
 import hashlib
 from typing import Dict, List, Optional
 
