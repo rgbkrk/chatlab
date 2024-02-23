@@ -1,0 +1,97 @@
+---
+title: Color Picker
+description: Example use of Chatlab for visual output from function calls
+---
+
+import ChatFunctionCall from "@site/src/components/ChatFunctionCall";
+import { OutputBlock } from "@site/src/components/cell";
+import { ColorPalette } from "@site/src/components/ColorPalette";
+
+Tool and function calls can return rich HTML output into notebooks. 
+In this example, we expose a function `show_colors` to the model to let it display the color palette it chooses.
+The function itself uses the Ipython function `display()` in order to use `_repr_html_()` to create a visual display in the notebook.
+This reuses the standard method of displaying rich information in notebooks.
+
+```python cell count=1
+from chatlab import Chat, models, system
+from chatlab.builtins.colors import show_colors
+
+chat = Chat(
+    system("Format responses in markdown,. You are a skilled designer."),
+    chat_functions=[show_colors],
+    model=models.GPT_4_1106_PREVIEW,
+)
+```
+
+```python cell count=2
+await chat("Create a palette for a portfolio site with a dark theme.")
+```
+
+<OutputBlock count={2}>
+  <ChatFunctionCall
+    open
+    name="show_colors"
+    input={'{\n  {"colors":["#1A1A1D","#4E4E50","#6F2232","#950740","#C3073F","#10A674","#A1D6E2","#1995AD"]}\n}'}
+    output="Displayed colors for user and stored as `palettes['palette-b63311ad114c9aca3f933c3d5cfcd7b6d8de202b']`."
+  />
+<br />
+<ColorPalette colors={["#1A1A1D", "#4E4E50", "#6F2232", "#950740", "#C3073F", "#10A674", "#A1D6E2", "#1995AD"]} />
+
+
+For your portfolio site with a dark theme, I've created a color palette that balances dark tones with vibrant accents to give it a modern and professional look. Here's the breakdown of the palette:
+
+1. **#1A1A1D** - This deep, dark gray serves as the primary background color, providing a sleek and unobtrusive backdrop for your content.
+
+2. **#4E4E50** - A slightly lighter shade of gray, perfect for secondary elements, such as sidebars or footers, to create a subtle contrast against the primary background.
+
+3. **#6F2232** - A dark, rich burgundy that can be used for important call-to-action buttons or for highlighting key achievements, adding a touch of elegance and seriousness.
+
+4. **#950740** - A brighter shade of red, which can be used sparingly to draw attention to specific elements like badges or progress bars.
+
+5. **#C3073F** - A vivid crimson for accents that demand immediate attention, such as notifications or error messages.
+
+6. **#10A674** - A calming teal that provides a refreshing contrast to the warm reds, ideal for links, icons, or progress indicators.
+
+7. **#A1D6E2** - A soft, light blue for background highlights or for large areas that need a touch of color without overwhelming the dark theme.
+
+8. **#1995AD** - A strong cyan that can be used for headings or to emphasize important text, ensuring readability and maintaining the site's dynamic feel.
+
+This palette combines the depth and sophistication of dark shades with the energy and clarity of brighter, accentuating colors. It's designed to create a visually appealing and user-friendly interface that will make your portfolio stand out. Remember to use the brighter colors judiciously to maintain the overall dark theme and to ensure that the content remains the focal point.
+
+</OutputBlock>
+
+
+```python cell count=3
+await chat("Can you make a neon version now?")
+```
+
+<OutputBlock count={3}>
+  <ChatFunctionCall
+    open
+    name="show_colors"
+    input={'{\n  {"colors":["#0F0F0F","#212121","#2BFF00","#00FFFF","#FF00FF","#FF0000","#FFD300","#FFFFFF"]}\n}'}
+    output="Displayed colors for user and stored as `palettes['palette-cc4e5aa4fe6075fe6cca355d3c407a76f5f89e2c']`."
+  />
+<br />
+<ColorPalette colors={["#0F0F0F","#212121","#2BFF00","#00FFFF","#FF00FF","#FF0000","#FFD300","#FFFFFF"]} />
+
+For a neon-themed portfolio site with a dark background, I've curated a palette that combines the intensity of neon colors with a deep, dark base to ensure that the vivid colors truly pop. Here's the breakdown of the neon palette:
+
+1. **#0F0F0F** - A very dark, almost black color that will serve as the primary background, creating a canvas that makes neon colors stand out sharply.
+
+2. **#212121** - A slightly lighter shade of dark gray for secondary backgrounds or to differentiate sections without detracting from the neon effect.
+
+3. **#2BFF00** - A bright, electric neon green for highlights and interactive elements like buttons or links, ensuring they catch the user's eye.
+
+4. **#00FFFF** - Neon cyan for informational callouts or to accentuate key areas such as skill bars or active menu items.
+
+5. **#FF00FF** - A vibrant neon magenta to draw attention to special achievements, awards, or for hover states on interactive elements.
+
+6. **#FF0000** - A bold neon red that can be used for urgent notifications, warnings, or as a dynamic accent color for important content.
+
+7. **#FFD300** - A glowing neon yellow for less critical information that still requires emphasis, such as tags or category labels.
+
+8. **#FFFFFF** - Pure white for text and icons to ensure maximum readability against the dark, neon-lit background.
+
+This neon palette is designed to give your portfolio a striking, futuristic look that is both engaging and memorable. The key to using this palette effectively is to balance the bright neon colors with plenty of dark space to avoid overwhelming the viewer and to maintain a clean, professional appearance. Use the neon colors strategically to guide visitors through your portfolio and highlight the most important aspects of your work.
+</OutputBlock>

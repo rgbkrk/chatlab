@@ -98,6 +98,12 @@ const config = {
                         position: "left",
                         label: "API",
                     },
+                    {
+                        type: "docSidebar",
+                        sidebarId: "examplesSidebar",
+                        position: "left",
+                        label: "Examples",
+                    },
                     // { to: "/blog", label: "Blog", position: "left" },
                     {
                         href: "https://github.com/rgbkrk/chatlab",
