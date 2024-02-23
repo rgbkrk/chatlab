@@ -1,0 +1,310 @@
+---
+title: Knowledge Graph
+description: Tool calling can both create and visualize complex knowledge graphs
+---
+
+import ChatFunctionCall from "@site/src/components/ChatFunctionCall";
+import { OutputBlock } from "@site/src/components/cell";
+
+By registering a single function that takes a Pydantic data type as input, the knowledge contained by an LLM (or in documents given as context), can be converted into structured data. 
+Here, the data is visualized with GraphViz.
+
+```python cell count=1
+from graphviz import Digraph
+from pydantic import BaseModel, Field
+from typing import List
+from chatlab import Chat, system
+
+
+class Node(BaseModel):
+    id: int
+    label: str
+    color: str
+
+
+class Edge(BaseModel):
+    source: int
+    target: int
+    label: str
+    color: str = "black"
+
+
+class KnowledgeGraph(BaseModel):
+    nodes: List[Node] = Field(..., default_factory=list)
+    edges: List[Edge] = Field(..., default_factory=list)
+
+
+def visualize_knowledge_graph(kg: KnowledgeGraph, comment: str = "Knowledge Graph"):
+    """Visualizes a knowledge graph using graphviz."""
+    dot = Digraph(comment=comment)
+
+    for node in kg.nodes:
+        dot.node(str(node.id), node.label, color=node.color)
+
+    for edge in kg.edges:
+        dot.edge(str(edge.source), str(edge.target), label=edge.label, color=edge.color)
+
+    display(dot)
+
+    return "<<Graphic displayed inline for the user to see>>"
+
+
+chat = Chat(
+    system(
+        "You are running inside a jupyter notebook. Your responses appear as markdown in the notebook. Functions you run can produce side effects."
+    ),
+    model="gpt-4-1106-preview",
+    chat_functions=[visualize_knowledge_graph],
+)
+
+await chat("Visually teach me about the process of brewing coffee.", temperature=0.9)
+```
+
+
+<OutputBlock count={1}>
+  <ChatFunctionCall
+    open
+    name="visualize_knowledge_graph"
+    input={'{\n  "kg": {\n    "nodes": [\n      {\n        "id": 1,\n        "label": "Water",\n        "color": "blue"\n      },\n      {\n        "id": 2,\n        "label": "Coffee Grinder",\n        "color": "grey"\n      },\n      {\n        "id": 3,\n        "label": "Coffee Beans",\n        "color": "brown"\n      },\n      {\n        "id": 4,\n        "label": "Grind Beans",\n        "color": "orange"\n      },\n      {\n        "id": 5,\n        "label": "Coffee Filter",\n        "color": "white"\n      },\n      {\n        "id": 6,\n        "label": "Coffee Machine",\n        "color": "black"\n      },\n      {\n        "id": 7,\n        "label": "Heat Water",\n        "color": "orange"\n      },\n      {\n        "id": 8,\n        "label": "Place Grounds in Filter",\n        "color": "orange"\n      },\n      {\n        "id": 9,\n        "label": "Pour Water into Machine",\n        "color": "orange"\n      },\n      {\n        "id": 10,\n        "label": "Brew",\n        "color": "orange"\n      },\n      {\n        "id": 11,\n        "label": "Coffee",\n        "color": "darkbrown"\n      }\n    ],\n    "edges": [\n      {\n        "source": 3,\n        "target": 2,\n        "label": "is ground by"\n      },\n      {\n        "source": 2,\n        "target": 4,\n        "label": "to"\n      },\n      {\n        "source": 4,\n        "target": 5,\n        "label": "place into"\n      },\n      {\n        "source": 5,\n        "target": 6,\n        "label": "insert into"\n      },\n      {\n        "source": 1,\n        "target": 7,\n        "label": "is used in"\n      },\n      {\n        "source": 7,\n        "target": 6,\n        "label": "pour into"\n      },\n      {\n        "source": 9,\n        "target": 6,\n        "label": "start"\n      },\n      {\n        "source": 6,\n        "target": 10,\n        "label": "to"\n      },\n      {\n        "source": 10,\n        "target": 11,\n        "label": "produce"\n      }\n    ]\n  },\n  "comment": "Coffee Brewing Process"\n}'}
+    output="<<Graphic displayed inline for the user to see>>"
+  />
+<br />
+Warning: darkbrown is not a known color.
+<br />
+
+<svg viewBox="0.00 0.00 476.98 575.00" height="575pt" width="477pt">
+    <g transform="scale(1 1) rotate(0) translate(4 571)" id="graph0">
+        <polygon points="-4,4 -4,-571 472.98,-571 472.98,4 -4,4" stroke="none" fill="white"></polygon>
+        <g id="node1">
+            <ellipse ry="18" rx="33.44" cy="-372" cx="52.89" stroke="blue" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-366.95" x="52.89" text-anchor="middle">Water</text>
+        </g>
+        <g id="node7">
+            <ellipse ry="18" rx="52.89" cy="-283.5" cx="52.89" stroke="orange" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-278.45" x="52.89" text-anchor="middle">Heat Water</text>
+        </g>
+        <g id="edge5">
+            <path d="M52.89,-353.91C52.89,-342.26 52.89,-326.55 52.89,-313.02" stroke="black" fill="none"></path>
+            <polygon points="56.39,-313.36 52.89,-303.36 49.39,-313.36 56.39,-313.36" stroke="black" fill="black"></polygon>
+            <text font-size="14.00" font-family="Times,serif" y="-322.7" x="78.76" text-anchor="middle">is used in</text>
+        </g>
+        <g id="node2">
+            <ellipse ry="18" rx="67.22" cy="-460.5" cx="181.89" stroke="grey" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-455.45" x="181.89" text-anchor="middle">Coffee Grinder</text>
+        </g>
+        <g id="node4">
+            <ellipse ry="18" rx="57.49" cy="-372" cx="181.89" stroke="orange" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-366.95" x="181.89" text-anchor="middle">Grind Beans</text>
+        </g>
+        <g id="edge2">
+            <path d="M181.89,-442.41C181.89,-430.76 181.89,-415.05 181.89,-401.52" stroke="black" fill="none"></path>
+            <polygon points="185.39,-401.86 181.89,-391.86 178.39,-401.86 185.39,-401.86" stroke="black" fill="black"></polygon>
+            <text font-size="14.00" font-family="Times,serif" y="-411.2" x="187.14" text-anchor="middle">to</text>
+        </g>
+        <g id="node3">
+            <ellipse ry="18" rx="61.08" cy="-549" cx="181.89" stroke="brown" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-543.95" x="181.89" text-anchor="middle">Coffee Beans</text>
+        </g>
+        <g id="edge1">
+            <path d="M181.89,-530.91C181.89,-519.26 181.89,-503.55 181.89,-490.02" stroke="black" fill="none"></path>
+            <polygon points="185.39,-490.36 181.89,-480.36 178.39,-490.36 185.39,-490.36" stroke="black" fill="black"></polygon>
+            <text font-size="14.00" font-family="Times,serif" y="-499.7" x="216.01" text-anchor="middle">is ground by</text>
+        </g>
+        <g id="node5">
+            <ellipse ry="18" rx="58.52" cy="-283.5" cx="181.89" stroke="white" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-278.45" x="181.89" text-anchor="middle">Coffee Filter</text>
+        </g>
+        <g id="edge3">
+            <path d="M181.89,-353.91C181.89,-342.26 181.89,-326.55 181.89,-313.02" stroke="black" fill="none"></path>
+            <polygon points="185.39,-313.36 181.89,-303.36 178.39,-313.36 185.39,-313.36" stroke="black" fill="black"></polygon>
+            <text font-size="14.00" font-family="Times,serif" y="-322.7" x="208.51" text-anchor="middle">place into</text>
+        </g>
+        <g id="node6">
+            <ellipse ry="18" rx="71.31" cy="-195" cx="181.89" stroke="black" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-189.95" x="181.89" text-anchor="middle">Coffee Machine</text>
+        </g>
+        <g id="edge4">
+            <path d="M181.89,-265.41C181.89,-253.76 181.89,-238.05 181.89,-224.52" stroke="black" fill="none"></path>
+            <polygon points="185.39,-224.86 181.89,-214.86 178.39,-224.86 185.39,-224.86" stroke="black" fill="black"></polygon>
+            <text font-size="14.00" font-family="Times,serif" y="-234.2" x="209.26" text-anchor="middle">insert into</text>
+        </g>
+        <g id="node10">
+            <ellipse ry="18" rx="30.88" cy="-106.5" cx="181.89" stroke="orange" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-101.45" x="181.89" text-anchor="middle">Brew</text>
+        </g>
+        <g id="edge8">
+            <path d="M181.89,-176.91C181.89,-165.26 181.89,-149.55 181.89,-136.02" stroke="black" fill="none"></path>
+            <polygon points="185.39,-136.36 181.89,-126.36 178.39,-136.36 185.39,-136.36" stroke="black" fill="black"></polygon>
+            <text font-size="14.00" font-family="Times,serif" y="-145.7" x="187.14" text-anchor="middle">to</text>
+        </g>
+        <g id="edge6">
+            <path d="M75.61,-266.84C90.55,-256.57 110.58,-242.9 128.39,-231 134.44,-226.95 140.91,-222.68 147.18,-218.57" stroke="black" fill="none"></path>
+            <polygon points="149.06,-221.52 155.51,-213.11 145.23,-215.66 149.06,-221.52" stroke="black" fill="black"></polygon>
+            <text font-size="14.00" font-family="Times,serif" y="-234.2" x="153.64" text-anchor="middle">pour into</text>
+        </g>
+        <g id="node8">
+            <ellipse ry="18" rx="97.41" cy="-549" cx="357.89" stroke="orange" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-543.95" x="357.89" text-anchor="middle">Place Grounds in Filter</text>
+        </g>
+        <g id="node9">
+            <ellipse ry="18" rx="105.09" cy="-283.5" cx="363.89" stroke="orange" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-278.45" x="363.89" text-anchor="middle">Pour Water into Machine</text>
+        </g>
+        <g id="edge7">
+            <path d="M329.23,-266.03C299.48,-251.89 256.5,-231.46 224.63,-216.31" stroke="black" fill="none"></path>
+            <polygon points="226.18,-213.18 215.65,-212.05 223.18,-219.5 226.18,-213.18" stroke="black" fill="black"></polygon>
+            <text font-size="14.00" font-family="Times,serif" y="-234.2" x="300.51" text-anchor="middle">start</text>
+        </g>
+        <g id="node11">
+            <ellipse ry="18" rx="36" cy="-18" cx="181.89" stroke="maroon" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-12.95" x="181.89" text-anchor="middle">Coffee</text>
+        </g>
+        <g id="edge9">
+            <path d="M181.89,-88.41C181.89,-76.76 181.89,-61.05 181.89,-47.52" stroke="black" fill="none"></path>
+            <polygon points="185.39,-47.86 181.89,-37.86 178.39,-47.86 185.39,-47.86" stroke="black" fill="black"></polygon>
+            <text font-size="14.00" font-family="Times,serif" y="-57.2" x="203.64" text-anchor="middle">produce</text>
+        </g>
+    </g>
+</svg>
+
+
+The process of brewing coffee involves several key steps and components as illustrated in the knowledge graph:
+
+1. **Coffee Beans** are the starting material. They are whole, raw beans that need to be ground before brewing.
+2. **Coffee Grinder** is used to grind the coffee beans into grounds.
+3. **Grind Beans** is the process of breaking down coffee beans into smaller particles to increase the surface area for extraction.
+4. **Coffee Filter** is used to hold the coffee grounds and prevent them from getting into the final brew.
+5. **Coffee Machine** is the apparatus that will heat the water, pour it over the grounds, and brew the coffee.
+6. **Water** is a crucial ingredient in coffee brewing.
+7. **Heat Water** is the process to bring the water to the right temperature for brewing.
+8. **Place Grounds in Filter** involves putting the ground coffee into the filter.
+9. **Pour Water into Machine** is the action of adding water to the coffee machine for heating and brewing.
+10. **Brew** is the actual process where hot water is passed through the grounds, extracting flavors and compounds to create coffee.
+11. **Coffee** is the final product, a brewed beverage ready for consumption.
+
+To summarize the brewing process, you start with whole coffee beans, grind them, place the grounds in a filter, insert the filter into the coffee machine, heat water, pour the water into the machine, and then start the machine to brew the coffee, resulting in the final beverage.
+</OutputBlock>
+
+```python cell count=2
+await chat("A warning came up saying that darkbrown is not a known color.")
+```
+
+<OutputBlock count={2}>
+  <ChatFunctionCall
+    open
+    name="visualize_knowledge_graph"
+    input={'{\n  "kg": {\n    "nodes": [\n      { "id": 1, "label": "Water", "color": "blue" },\n      { "id": 2, "label": "Coffee Grinder", "color": "grey" },\n      { "id": 3, "label": "Coffee Beans", "color": "brown" },\n      { "id": 4, "label": "Grind Beans", "color": "orange" },\n      { "id": 5, "label": "Coffee Filter", "color": "white" },\n      { "id": 6, "label": "Coffee Machine", "color": "black" },\n      { "id": 7, "label": "Heat Water", "color": "orange" },\n      { "id": 8, "label": "Place Grounds in Filter", "color": "orange" },\n      { "id": 9, "label": "Pour Water into Machine", "color": "orange" },\n      { "id": 10, "label": "Brew", "color": "orange" },\n      { "id": 11, "label": "Coffee", "color": "maroon" }\n    ],\n    "edges": [\n      { "source": 3, "target": 2, "label": "is ground by" },\n      { "source": 2, "target": 4, "label": "to" },\n      { "source": 4, "target": 5, "label": "place into" },\n      { "source": 5, "target": 6, "label": "insert into" },\n      { "source": 1, "target": 7, "label": "is used in" },\n      { "source": 7, "target": 6, "label": "pour into" },\n      { "source": 9, "target": 6, "label": "start" },\n      { "source": 6, "target": 10, "label": "to" },\n      { "source": 10, "target": 11, "label": "produce" }\n    ]\n  },\n  "comment": "Coffee Brewing Process"\n}\n'}
+    output="<<Graphic displayed inline for the user to see>>"
+  />
+<br />
+<svg viewBox="0.00 0.00 476.98 575.00" height="575pt" width="477pt">
+    <g transform="scale(1 1) rotate(0) translate(4 571)" id="graph0">
+        <polygon points="-4,4 -4,-571 472.98,-571 472.98,4 -4,4" stroke="none" fill="white"></polygon>
+        <g  id="node1">
+            <ellipse ry="18" rx="33.44" cy="-372" cx="52.89" stroke="blue" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-366.95" x="52.89" text-anchor="middle">Water</text>
+        </g>
+        <g  id="node7">
+            <ellipse ry="18" rx="52.89" cy="-283.5" cx="52.89" stroke="orange" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-278.45" x="52.89" text-anchor="middle">Heat Water</text>
+        </g>
+        <g id="edge5">
+            <path d="M52.89,-353.91C52.89,-342.26 52.89,-326.55 52.89,-313.02" stroke="black" fill="none"></path>
+            <polygon points="56.39,-313.36 52.89,-303.36 49.39,-313.36 56.39,-313.36" stroke="black" fill="black"></polygon>
+            <text font-size="14.00" font-family="Times,serif" y="-322.7" x="78.76" text-anchor="middle">is used in</text>
+        </g>
+        <g  id="node2">
+            <ellipse ry="18" rx="67.22" cy="-460.5" cx="181.89" stroke="grey" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-455.45" x="181.89" text-anchor="middle">Coffee Grinder</text>
+        </g>
+        <g  id="node4">
+            <ellipse ry="18" rx="57.49" cy="-372" cx="181.89" stroke="orange" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-366.95" x="181.89" text-anchor="middle">Grind Beans</text>
+        </g>
+        <g id="edge2">
+            <path d="M181.89,-442.41C181.89,-430.76 181.89,-415.05 181.89,-401.52" stroke="black" fill="none"></path>
+            <polygon points="185.39,-401.86 181.89,-391.86 178.39,-401.86 185.39,-401.86" stroke="black" fill="black"></polygon>
+            <text font-size="14.00" font-family="Times,serif" y="-411.2" x="187.14" text-anchor="middle">to</text>
+        </g>
+        <g  id="node3">
+            <ellipse ry="18" rx="61.08" cy="-549" cx="181.89" stroke="brown" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-543.95" x="181.89" text-anchor="middle">Coffee Beans</text>
+        </g>
+        <g id="edge1">
+            <path d="M181.89,-530.91C181.89,-519.26 181.89,-503.55 181.89,-490.02" stroke="black" fill="none"></path>
+            <polygon points="185.39,-490.36 181.89,-480.36 178.39,-490.36 185.39,-490.36" stroke="black" fill="black"></polygon>
+            <text font-size="14.00" font-family="Times,serif" y="-499.7" x="216.01" text-anchor="middle">is ground by</text>
+        </g>
+        <g  id="node5">
+            <ellipse ry="18" rx="58.52" cy="-283.5" cx="181.89" stroke="white" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-278.45" x="181.89" text-anchor="middle">Coffee Filter</text>
+        </g>
+        <g id="edge3">
+            <path d="M181.89,-353.91C181.89,-342.26 181.89,-326.55 181.89,-313.02" stroke="black" fill="none"></path>
+            <polygon points="185.39,-313.36 181.89,-303.36 178.39,-313.36 185.39,-313.36" stroke="black" fill="black"></polygon>
+            <text font-size="14.00" font-family="Times,serif" y="-322.7" x="208.51" text-anchor="middle">place into</text>
+        </g>
+        <g  id="node6">
+            <ellipse ry="18" rx="71.31" cy="-195" cx="181.89" stroke="black" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-189.95" x="181.89" text-anchor="middle">Coffee Machine</text>
+        </g>
+        <g id="edge4">
+            <path d="M181.89,-265.41C181.89,-253.76 181.89,-238.05 181.89,-224.52" stroke="black" fill="none"></path>
+            <polygon points="185.39,-224.86 181.89,-214.86 178.39,-224.86 185.39,-224.86" stroke="black" fill="black"></polygon>
+            <text font-size="14.00" font-family="Times,serif" y="-234.2" x="209.26" text-anchor="middle">insert into</text>
+        </g>
+        <g  id="node10">
+            <ellipse ry="18" rx="30.88" cy="-106.5" cx="181.89" stroke="orange" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-101.45" x="181.89" text-anchor="middle">Brew</text>
+        </g>
+        <g id="edge8">
+            <path d="M181.89,-176.91C181.89,-165.26 181.89,-149.55 181.89,-136.02" stroke="black" fill="none"></path>
+            <polygon points="185.39,-136.36 181.89,-126.36 178.39,-136.36 185.39,-136.36" stroke="black" fill="black"></polygon>
+            <text font-size="14.00" font-family="Times,serif" y="-145.7" x="187.14" text-anchor="middle">to</text>
+        </g>
+        <g id="edge6">
+            <path d="M75.61,-266.84C90.55,-256.57 110.58,-242.9 128.39,-231 134.44,-226.95 140.91,-222.68 147.18,-218.57" stroke="black" fill="none"></path>
+            <polygon points="149.06,-221.52 155.51,-213.11 145.23,-215.66 149.06,-221.52" stroke="black" fill="black"></polygon>
+            <text font-size="14.00" font-family="Times,serif" y="-234.2" x="153.64" text-anchor="middle">pour into</text>
+        </g>
+        <g  id="node8">
+            <ellipse ry="18" rx="97.41" cy="-549" cx="357.89" stroke="orange" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-543.95" x="357.89" text-anchor="middle">Place Grounds in Filter</text>
+        </g>
+        <g  id="node9">
+            <ellipse ry="18" rx="105.09" cy="-283.5" cx="363.89" stroke="orange" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-278.45" x="363.89" text-anchor="middle">Pour Water into Machine</text>
+        </g>
+        <g id="edge7">
+            <path d="M329.23,-266.03C299.48,-251.89 256.5,-231.46 224.63,-216.31" stroke="black" fill="none"></path>
+            <polygon points="226.18,-213.18 215.65,-212.05 223.18,-219.5 226.18,-213.18" stroke="black" fill="black"></polygon>
+            <text font-size="14.00" font-family="Times,serif" y="-234.2" x="300.51" text-anchor="middle">start</text>
+        </g>
+        <g  id="node11">
+            <ellipse ry="18" rx="36" cy="-18" cx="181.89" stroke="maroon" fill="none"></ellipse>
+            <text font-size="14.00" font-family="Times,serif" y="-12.95" x="181.89" text-anchor="middle">Coffee</text>
+        </g>
+        <g id="edge9">
+            <path d="M181.89,-88.41C181.89,-76.76 181.89,-61.05 181.89,-47.52" stroke="black" fill="none"></path>
+            <polygon points="185.39,-47.86 181.89,-37.86 178.39,-47.86 185.39,-47.86" stroke="black" fill="black"></polygon>
+            <text font-size="14.00" font-family="Times,serif" y="-57.2" x="203.64" text-anchor="middle">produce</text>
+        </g>
+    </g>
+</svg>
+
+Here is the corrected visualization of the coffee brewing process:
+
+1. **Coffee Beans** are the starting material. They are whole, raw beans that need to be ground before brewing.
+2. **Coffee Grinder** is used to grind the coffee beans into grounds.
+3. **Grind Beans** is the process of breaking down coffee beans into smaller particles to increase the surface area for extraction.
+4. **Coffee Filter** is used to hold the coffee grounds and prevent them from getting into the final brew.
+5. **Coffee Machine** is the apparatus that will heat the water, pour it over the grounds, and brew the coffee.
+6. **Water** is a crucial ingredient in coffee brewing.
+7. **Heat Water** is the process to bring the water to the right temperature for brewing.
+8. **Place Grounds in Filter** involves putting the ground coffee into the filter.
+9. **Pour Water into Machine** is the action of adding water to the coffee machine for heating and brewing.
+10. **Brew** is the actual process where hot water is passed through the grounds, extracting flavors and compounds to create coffee.
+11. **Coffee** is the final product, a brewed beverage ready for consumption, represented here with the color maroon.
+
+The process flow is as follows: Coffee beans are ground by a coffee grinder, the grounds are placed into a coffee filter, which is then inserted into the coffee machine. Water is heated and poured into the machine, which then starts the brewing process, resulting in the production of coffee.
+</OutputBlock>
