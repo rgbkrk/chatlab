@@ -24,14 +24,11 @@ from openai.types import FunctionDefinition
 from openai.types.chat import ChatCompletion, ChatCompletionChunk, ChatCompletionMessageParam
 from pydantic import BaseModel
 
-from chatlab.views.assistant_function_call import AssistantFunctionCallView
-
 from ._version import __version__
-from .display import ChatFunctionCall
 from .errors import ChatLabError
 from .messaging import human
 from .registry import FunctionRegistry, PythonHallucinationFunction
-from .views.assistant import AssistantMessageView
+from .views import ToolArguments, AssistantMessageView
 
 logger = logging.getLogger(__name__)
 
@@ -145,9 +142,9 @@ class Chat:
 
     async def __process_stream(
         self, resp: AsyncStream[ChatCompletionChunk]
-    ) -> Tuple[str, Optional[AssistantFunctionCallView]]:
-        assistant_view: AssistantMessageView = AssistantMessageView()
-        function_view: Optional[AssistantFunctionCallView] = None
+    ) -> Tuple[str, Optional[ToolArguments]]:
+        assistant_view: AssistantMessageView = AssistantMessageView(content="")
+        function_view: Optional[ToolArguments] = None
         finish_reason = None
 
         async for result in resp:  # Go through the results of the stream
@@ -162,27 +159,31 @@ class Chat:
             # Is stream choice?
             if choice.delta is not None:
                 if choice.delta.content is not None:
+                    assistant_view.display_once()
                     assistant_view.append(choice.delta.content)
                 elif choice.delta.function_call is not None:
                     function_call = choice.delta.function_call
                     if function_call.name is not None:
-                        if assistant_view.in_progress():
+                        if not assistant_view.finished:
                             # Flush out the finished assistant message
-                            message = assistant_view.flush()
+                            message = assistant_view.get_message()
                             self.append(message)
-                        function_view = AssistantFunctionCallView(function_call.name)
+                        # IDs are for the tool calling apparatus from newer versions of the API
+                        # We will make use of it later.
+                        function_view = ToolArguments(id="TBD", name=function_call.name)
+                        function_view.display()
                     if function_call.arguments is not None:
                         if function_view is None:
                             raise ValueError("Function arguments provided without function name")
-                        function_view.append(function_call.arguments)
+                        function_view.append_arguments(function_call.arguments)
             if choice.finish_reason is not None:
                 finish_reason = choice.finish_reason
                 break
 
         # Wrap up the previous assistant
         # Note: This will also wrap up the assistant's message when it ran out of tokens
-        if assistant_view.in_progress():
-            message = assistant_view.flush()
+        if not assistant_view.finished:
+            message = assistant_view.get_message()
             self.append(message)
 
         if finish_reason is None:
@@ -190,9 +191,9 @@ class Chat:
 
         return (finish_reason, function_view)
 
-    async def __process_full_completion(self, resp: ChatCompletion) -> Tuple[str, Optional[AssistantFunctionCallView]]:
-        assistant_view: AssistantMessageView = AssistantMessageView()
-        function_view: Optional[AssistantFunctionCallView] = None
+    async def __process_full_completion(self, resp: ChatCompletion) -> Tuple[str, Optional[ToolArguments]]:
+        assistant_view: AssistantMessageView = AssistantMessageView(content="")
+        function_view: Optional[ToolArguments] = None
 
         if len(resp.choices) == 0:
             logger.warning(f"Result has no choices: {resp}")
@@ -203,12 +204,13 @@ class Chat:
         message = choice.message
 
         if message.content is not None:
+            assistant_view.display_once()
             assistant_view.append(message.content)
-            self.append(assistant_view.flush())
+            self.append(assistant_view.get_message())
         if message.function_call is not None:
             function_call = message.function_call
-            function_view = AssistantFunctionCallView(function_name=function_call.name)
-            function_view.append(function_call.arguments)
+            function_view = ToolArguments(id="TBD", name=function_call.name, arguments=function_call.arguments)
+            function_view.display()
 
         return choice.finish_reason, function_view
 
@@ -286,17 +288,12 @@ class Chat:
                     "Function call was the stated function_call reason without having a complete function call. If you see this, report it as an issue to https://github.com/rgbkrk/chatlab/issues"  # noqa: E501
                 )
             # Record the attempted call from the LLM
-            self.append(function_call_request.get_message())
+            self.append(function_call_request.get_function_message())
 
-            chat_function = ChatFunctionCall(
-                **function_call_request.finalize(),
-                function_registry=self.function_registry,
-            )
+            function_called = await function_call_request.call(function_registry=self.function_registry)
 
-            # Make the call
-            fn_message = await chat_function.call()
             # Include the response (or error) for the model
-            self.append(fn_message)
+            self.append(function_called.get_function_called_message())
 
             # Reply back to the LLM with the result of the function call, allow it to continue
             await self.submit(stream=stream, **kwargs)

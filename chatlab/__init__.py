@@ -33,7 +33,7 @@ from .messaging import (
     tool_result
 )
 from .registry import FunctionRegistry
-from .views.markdown import Markdown
+from spork import Markdown
 
 
 # Deprecate Session in favor of Chat

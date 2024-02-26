@@ -17,7 +17,6 @@ classifiers=[
     'License :: OSI Approved :: BSD License',
     'Natural Language :: English',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
@@ -45,6 +44,7 @@ typing-extensions = "^4.7.1"
 aiofiles = "^23.1.0"
 types-aiofiles = "^23.2.0.0"
 mypy = "^1.6.1"
+spork = "^1.2.0"
 
 [tool.poetry.group.dev.dependencies]
 tox = "^4.4.11"

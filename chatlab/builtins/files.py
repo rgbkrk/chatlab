@@ -12,7 +12,7 @@ import os
 
 import aiofiles
 
-from chatlab.decorators import expose_exception_to_llm
+from ..decorators import expose_exception_to_llm
 
 
 @expose_exception_to_llm

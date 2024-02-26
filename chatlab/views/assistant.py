@@ -1,19 +1,20 @@
-"""Views for the buffers."""
+from spork import Markdown
 
 from ..messaging import assistant
-from .abstracts import BufferView
-from .markdown import Markdown
 
-
-class AssistantMessageView(BufferView):
-    """A view for the assistant's message."""
-
-    buffer: Markdown
-
-    def create_buffer(self, content: str = "") -> Markdown:
-        """Creates the specific buffer for the view."""
-        return Markdown(content)
+class AssistantMessageView(Markdown):
+    finished: bool = False
+    has_displayed: bool = False
 
     def get_message(self):
-        """Returns the crafted message."""
-        return assistant(self.content)
+        return assistant(content=self.content)
+
+    def display(self):
+        super().display()
+        self.has_displayed = True
+
+    def display_once(self):
+        if not self.has_displayed:
+            self.display()
+
+

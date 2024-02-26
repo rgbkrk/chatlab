@@ -7,7 +7,7 @@ from IPython.utils.capture import capture_output
 from repr_llm import register_llm_formatter
 from repr_llm.pandas import format_dataframe_for_llm, format_series_for_llm
 
-from chatlab.decorators import expose_exception_to_llm
+from ..decorators import expose_exception_to_llm
 
 from ._mediatypes import pluck_richest_text, redisplay_superrich
 
