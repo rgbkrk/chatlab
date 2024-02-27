@@ -460,7 +460,7 @@ class FunctionRegistry:
 
         parameters: dict = {}
 
-        if arguments is not None:
+        if arguments is not None and arguments != "":
             try:
                 parameters = json.loads(arguments)
             except json.JSONDecodeError:

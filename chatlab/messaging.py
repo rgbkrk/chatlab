@@ -10,9 +10,13 @@ Example:
 
 """
 
-from typing import Optional
+from typing import Optional, Iterable, Protocol, List
 
-from openai.types.chat import ChatCompletionMessageParam, ChatCompletionToolMessageParam
+from openai.types.chat import (
+    ChatCompletionMessageParam,
+    ChatCompletionToolMessageParam,
+    ChatCompletionMessageToolCallParam,
+)
 
 
 def assistant(content: str) -> ChatCompletionMessageParam:
@@ -100,7 +104,29 @@ def function_result(name: str, content: str) -> ChatCompletionMessageParam:
     }
 
 
-def tool_result(tool_call_id: str, content: str) -> ChatCompletionToolMessageParam:
+class HasGetToolArgumentsParameter(Protocol):
+    def get_tool_arguments_parameter(self) -> ChatCompletionMessageToolCallParam:
+        ...
+
+
+def assistant_tool_calls(tool_calls: Iterable[HasGetToolArgumentsParameter]) -> ChatCompletionMessageParam:
+    converted_tool_calls: List[ChatCompletionMessageToolCallParam] = []
+
+    for tool_call in tool_calls:
+        converted_tool_calls.append(tool_call.get_tool_arguments_parameter())
+
+    return {
+        "role": "assistant",
+        "tool_calls": converted_tool_calls,
+    }
+
+
+class ChatCompletionToolMessageParamWithName(ChatCompletionToolMessageParam):
+    name: Optional[str]
+    """The name of the tool."""
+
+
+def tool_result(tool_call_id: str, content: str, name: str) -> ChatCompletionToolMessageParamWithName:
     """Create a tool result message.
 
     Args:
@@ -112,9 +138,11 @@ def tool_result(tool_call_id: str, content: str) -> ChatCompletionToolMessagePar
     """
     return {
         "role": "tool",
+        "name": name,
         "content": content,
         "tool_call_id": tool_call_id,
     }
+
 
 # Aliases
 narrate = system

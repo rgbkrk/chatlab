@@ -2,8 +2,9 @@ from spork import Markdown
 
 from ..messaging import assistant
 
+
 class AssistantMessageView(Markdown):
-    content: str= ""
+    content: str = ""
     finished: bool = False
     has_displayed: bool = False
 
@@ -17,5 +18,3 @@ class AssistantMessageView(Markdown):
     def display_once(self):
         if not self.has_displayed:
             self.display()
-
-
