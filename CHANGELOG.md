@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0]
+
+- Support parallel tool calling by default in `Chat`.
+- Legacy support for function calling is available by passing `legacy_function_calling=True` to the `Chat` constructor.
+
 ## [1.3.0]
 
 - Support tool call format from `FunctionRegistry`. Enables parallel function calling (note: not in `Chat` yet). https://github.com/rgbkrk/chatlab/pull/122

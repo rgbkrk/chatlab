@@ -4,10 +4,14 @@ from ..components.function_details import ChatFunctionComponent
 
 from ..registry import FunctionRegistry, FunctionArgumentError, UnknownFunctionError
 
-from ..messaging import assistant_function_call, function_result
-    
+from ..messaging import assistant_function_call, function_result, tool_result
+
+from openai.types.chat import ChatCompletionMessageToolCallParam
+
+
 class ToolCalled(AutoUpdate):
     """Once a tool has finished up, this is the view."""
+
     id: str
     name: str
     arguments: str = ""
@@ -15,17 +19,16 @@ class ToolCalled(AutoUpdate):
     result: str = ""
 
     def render(self):
-        return ChatFunctionComponent(
-            name=self.name,
-            verbage="ok",
-            input=self.arguments,
-            output=self.result
-        )
-    
+        return ChatFunctionComponent(name=self.name, verbage="ok", input=self.arguments, output=self.result)
+
     # TODO: This is only here for legacy function calling
     def get_function_called_message(self):
         return function_result(self.name, self.result)
 
+    def get_tool_called_message(self):
+        # NOTE: OpenAI has mismatched types where it doesn't include the `name`
+        # xref: https://github.com/openai/openai-python/issues/1078
+        return tool_result(tool_call_id=self.id, content=self.result, name=self.name)
 
 
 class ToolArguments(AutoUpdate):
@@ -39,26 +42,21 @@ class ToolArguments(AutoUpdate):
     def get_function_message(self):
         return assistant_function_call(self.name, self.arguments)
 
+    def get_tool_arguments_parameter(self) -> ChatCompletionMessageToolCallParam:
+        return {"id": self.id, "function": {"name": self.name, "arguments": self.arguments}, "type": "function"}
+
     def render(self):
-        return ChatFunctionComponent(
-            name=self.name,
-            verbage=self.verbage,
-            input=self.arguments
-        )
-    
+        return ChatFunctionComponent(name=self.name, verbage=self.verbage, input=self.arguments)
+
     def append_arguments(self, arguments: str):
         self.arguments += arguments
-    
+
     def apply_result(self, result: str):
         """Replaces the existing display with a new one that shows the result of the tool being called."""
         return ToolCalled(
-            id=self.id,
-            name=self.name,
-            arguments=self.arguments,
-            result=result,
-            display_id=self.display_id
+            id=self.id, name=self.name, arguments=self.arguments, result=result, display_id=self.display_id
         )
-    
+
     async def call(self, function_registry: FunctionRegistry) -> ToolCalled:
         """Call the function and return a stack of messages for LLM and human consumption."""
         function_name = self.name
@@ -113,4 +111,3 @@ class ToolArguments(AutoUpdate):
         self.verbage = "Ran"
 
         return self.apply_result(repr_llm)
-
