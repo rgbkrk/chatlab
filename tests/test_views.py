@@ -5,12 +5,12 @@ from chatlab.views import AssistantMessageView, ToolArguments
 
 
 def test_assistant_message_view_creation():
-    amv = AssistantMessageView(content="")
+    amv = AssistantMessageView()
     assert isinstance(amv, AssistantMessageView)
 
 
 def test_assistant_message_get():
-    amv = AssistantMessageView(content="")
+    amv = AssistantMessageView()
     amv.append("test")
     message = amv.get_message()
 

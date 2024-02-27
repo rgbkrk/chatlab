@@ -3,6 +3,7 @@ from spork import Markdown
 from ..messaging import assistant
 
 class AssistantMessageView(Markdown):
+    content: str= ""
     finished: bool = False
     has_displayed: bool = False
 

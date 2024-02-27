@@ -143,7 +143,7 @@ class Chat:
     async def __process_stream(
         self, resp: AsyncStream[ChatCompletionChunk]
     ) -> Tuple[str, Optional[ToolArguments]]:
-        assistant_view: AssistantMessageView = AssistantMessageView(content="")
+        assistant_view: AssistantMessageView = AssistantMessageView()
         function_view: Optional[ToolArguments] = None
         finish_reason = None
 
@@ -192,7 +192,7 @@ class Chat:
         return (finish_reason, function_view)
 
     async def __process_full_completion(self, resp: ChatCompletion) -> Tuple[str, Optional[ToolArguments]]:
-        assistant_view: AssistantMessageView = AssistantMessageView(content="")
+        assistant_view: AssistantMessageView = AssistantMessageView()
         function_view: Optional[ToolArguments] = None
 
         if len(resp.choices) == 0:
