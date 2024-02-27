@@ -73,6 +73,7 @@ class Chat:
         chat_functions: Optional[List[Callable]] = None,
         allow_hallucinated_python: bool = False,
         python_hallucination_function: Optional[PythonHallucinationFunction] = None,
+        legacy_function_calling: bool = False,
     ):
         """Initialize a Chat with an optional initial context of messages.
 
@@ -98,6 +99,8 @@ class Chat:
 
         self.api_key = openai_api_key
         self.base_url = base_url
+
+        self.legacy_function_calling = legacy_function_calling
 
         if initial_context is None:
             initial_context = []  # type: ignore
@@ -295,28 +298,32 @@ class Chat:
                 base_url=self.base_url,
             )
 
+            chat_create_kwargs = {
+                "model": self.model,
+                "messages": full_messages,
+                "temperature": kwargs.get("temperature", 0),
+            }
+
             # Due to the strict response typing based on `Literal` typing on `stream`, we have to process these
             # two cases separately
             if stream:
+                if self.legacy_function_calling:
+                    chat_create_kwargs.update(self.function_registry.api_manifest())
+                else:
+                    chat_create_kwargs["tools"] = self.function_registry.tools
+
                 streaming_response = await client.chat.completions.create(
-                    model=self.model,
-                    messages=full_messages,
-                    tools=self.function_registry.tools,
+                    **chat_create_kwargs,
                     stream=True,
-                    temperature=kwargs.get("temperature", 0),
                 )
 
                 self.append(*messages)
 
                 finish_reason, function_call_request, tool_arguments = await self.__process_stream(streaming_response)
             else:
-                # TODO: Process tools for non stream
                 full_response = await client.chat.completions.create(
-                    model=self.model,
-                    messages=full_messages,
-                    tools=self.function_registry.tools,
+                    **chat_create_kwargs,
                     stream=False,
-                    temperature=kwargs.get("temperature", 0),
                 )
 
                 self.append(*messages)
