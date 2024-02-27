@@ -1,12 +1,21 @@
+from typing import Callable, Optional
+from pydantic import ValidationError
 from spork import AutoUpdate
+
+import warnings
 
 from ..components.function_details import ChatFunctionComponent
 
-from ..registry import FunctionRegistry, FunctionArgumentError, UnknownFunctionError
+from ..registry import FunctionRegistry, FunctionArgumentError, UnknownFunctionError, extract_model_from_function
 
 from ..messaging import assistant_function_call, function_result, tool_result
 
 from openai.types.chat import ChatCompletionMessageToolCallParam
+
+from IPython.display import display
+from IPython.core.getipython import get_ipython
+
+from instructor.dsl.partialjson import JSONParser
 
 
 class ToolCalled(AutoUpdate):
@@ -19,7 +28,7 @@ class ToolCalled(AutoUpdate):
     result: str = ""
 
     def render(self):
-        return ChatFunctionComponent(name=self.name, verbage="ok", input=self.arguments, output=self.result)
+        return ChatFunctionComponent(name=self.name, verbage=self.verbage, input=self.arguments, output=self.result)
 
     # TODO: This is only here for legacy function calling
     def get_function_called_message(self):
@@ -38,6 +47,8 @@ class ToolArguments(AutoUpdate):
     verbage: str = "Receiving arguments for"
     finished: bool = False
 
+    custom_render: Optional[Callable] = None
+
     # TODO: This is only here for legacy function calling
     def get_function_message(self):
         return assistant_function_call(self.name, self.arguments)
@@ -45,7 +56,73 @@ class ToolArguments(AutoUpdate):
     def get_tool_arguments_parameter(self) -> ChatCompletionMessageToolCallParam:
         return {"id": self.id, "function": {"name": self.name, "arguments": self.arguments}, "type": "function"}
 
+    def format_as_raw(self):
+        ip = get_ipython()
+
+        if ip is None or ip.display_formatter is None:
+            return
+
+        rendered = self.render()
+
+        if rendered is None:
+            return
+
+        data, metadata = ip.display_formatter.format(rendered)  # type: ignore
+        return data
+
+    def display(self) -> None:
+        raw_format = self.format_as_raw()
+
+        if raw_format is None:
+            display(None, display_id=self.display_id)
+            return
+
+        # First display will always display the raw format
+        display(raw_format, raw=True, display_id=self.display_id)
+
+    def update(self) -> None:
+        """
+        Update the display with the current state of the object.
+
+        This method is intended to be called after modifications to the object
+        to refresh the display in the notebook environment.
+        """
+        raw_format = self.format_as_raw()
+
+        if raw_format is None:
+            return
+
+        display(raw_format, raw=True, update=True, display_id=self.display_id)
+
     def render(self):
+        if self.custom_render is not None:
+            # We use the same definition as was in the original function
+            try:
+                parser = JSONParser()
+                possible_args = parser.parse(self.arguments)
+
+                Model = extract_model_from_function(self.name, self.custom_render)
+                # model = Model.model_validate(possible_args)
+                model = Model(**possible_args)
+
+                # Pluck the kwargs out from the crafted model, as we can't pass the pydantic model as the arguments
+                # However any "inner" models should retain their pydantic Model nature
+                kwargs = {k: getattr(model, k) for k in model.__dict__.keys()}
+
+            except FunctionArgumentError:
+                return None
+            except ValidationError:
+                return None
+
+            try:
+                return self.custom_render(**kwargs)
+            except Exception as e:
+                # Exception in userland code
+                # Would be preferable to bubble up, however
+                # it might be due to us passing a not-quite model
+                warnings.warn_explicit(f"Exception in userland code: {e}", UserWarning, "chatlab", 0)
+                raise
+
         return ChatFunctionComponent(name=self.name, verbage=self.verbage, input=self.arguments)
 
     def append_arguments(self, arguments: str):

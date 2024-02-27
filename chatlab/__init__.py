@@ -32,6 +32,7 @@ from .messaging import (
 )
 from .registry import FunctionRegistry
 from spork import Markdown
+from instructor import Partial
 
 __version__ = __version__
 
@@ -51,4 +52,5 @@ __all__ = [
     "FunctionRegistry",
     "ChatlabMetadata",
     "expose_exception_to_llm",
+    "Partial",
 ]

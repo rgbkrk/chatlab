@@ -60,11 +60,12 @@ from typing import (
 
 from openai.types import FunctionDefinition, FunctionParameters
 from openai.types.chat.completion_create_params import Function, FunctionCall
-from pydantic import BaseModel, create_model
+from pydantic import BaseModel, Field, create_model
 
 from openai.types.chat import ChatCompletionToolParam
 
 from .decorators import ChatlabMetadata
+from .errors import ChatLabError
 
 
 class APIManifest(TypedDict, total=False):
@@ -80,13 +81,13 @@ class APIManifest(TypedDict, total=False):
     """
 
 
-class FunctionArgumentError(Exception):
+class FunctionArgumentError(ChatLabError):
     """Exception raised when a function is called with invalid arguments."""
 
     pass
 
 
-class UnknownFunctionError(Exception):
+class UnknownFunctionError(ChatLabError):
     """Exception raised when a function is called that is not registered."""
 
     pass
@@ -123,6 +124,49 @@ class FunctionSchemaConfig:
     arbitrary_types_allowed = True
 
 
+def extract_model_from_function(func_name: str, function: Callable) -> Type[BaseModel]:
+    # extract function parameters and their type annotations
+    sig = inspect.signature(function)
+
+    fields = {}
+    required_fields = []
+    for name, param in sig.parameters.items():
+        # skip 'self' for class methods
+        if name == "self":
+            continue
+
+        # determine type annotation
+        if param.annotation == inspect.Parameter.empty:
+            # no annotation, raise instead of falling back to Any
+            raise Exception(f"`{name}` parameter of {func_name} must have a JSON-serializable type annotation")
+        type_annotation = param.annotation
+
+        default_value: Any = ...
+
+        # determine if there is a default value
+        if param.default != inspect.Parameter.empty:
+            default_value = param.default
+        else:
+            required_fields.append(name)
+
+        # Check if the annotation is Union that includes None, indicating an optional parameter
+        if get_origin(type_annotation) is Union:
+            args = get_args(type_annotation)
+            if len(args) == 2 and type(None) in args:
+                type_annotation = next(arg for arg in args if arg is not type(None))
+                default_value = None
+
+        fields[name] = (type_annotation, Field(default=default_value) if default_value is not ... else ...)
+
+    model = create_model(
+        function.__name__,
+        __config__=FunctionSchemaConfig,  # type: ignore
+        __required__=required_fields,
+        **fields,  # type: ignore
+    )
+    return model
+
+
 def generate_function_schema(
     function: Callable,
     parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
@@ -149,44 +193,7 @@ def generate_function_schema(
     elif parameter_schema is not None:
         parameters = parameter_schema.model_json_schema()  # type: ignore
     else:
-        # extract function parameters and their type annotations
-        sig = inspect.signature(function)
-
-        fields = {}
-        for name, param in sig.parameters.items():
-            # skip 'self' for class methods
-            if name == "self":
-                continue
-
-            # determine type annotation
-            if param.annotation == inspect.Parameter.empty:
-                # no annotation, raise instead of falling back to Any
-                raise Exception(f"`{name}` parameter of {func_name} must have a JSON-serializable type annotation")
-            type_annotation = param.annotation
-
-            # determine if there is a default value
-            if param.default != inspect.Parameter.empty:
-                default_value = param.default
-            else:
-                default_value = ...
-
-            # Check if the annotation is Union that includes None, indicating an optional parameter
-            if get_origin(type_annotation) is Union:
-                args = get_args(type_annotation)
-                if len(args) == 2 and type(None) in args:
-                    # It's an optional parameter
-                    type_annotation = next(arg for arg in args if arg is not type(None))
-                    default_value = None if default_value is ... else default_value
-
-            fields[name] = (type_annotation, default_value)
-
-        # create the pydantic model and return its JSON schema to pass into the 'parameters' part of the
-        # function schema used by OpenAI
-        model = create_model(
-            function.__name__,
-            __config__=FunctionSchemaConfig,  # type: ignore
-            **fields,  # type: ignore
-        )
+        model = extract_model_from_function(func_name, function)
         parameters: dict = model.model_json_schema()  # type: ignore
 
     if "properties" not in parameters:
@@ -458,6 +465,7 @@ class FunctionRegistry:
 
         function = possible_function
 
+        # TODO: Use the model extractor here
         prepared_arguments = extract_arguments(name, function, arguments)
 
         if asyncio.iscoroutinefunction(function):
@@ -465,7 +473,6 @@ class FunctionRegistry:
         else:
             result = function(**prepared_arguments)
         return result
-
 
     def __contains__(self, name) -> bool:
         """Check if a function is registered by name."""
@@ -480,23 +487,23 @@ class FunctionRegistry:
 
 
 def extract_arguments(name: str, function: Callable, arguments: Optional[str]) -> dict:
+    dict_arguments = {}
     if arguments is not None and arguments != "":
         try:
-            arguments = json.loads(arguments)
+            dict_arguments = json.loads(arguments)
         except json.JSONDecodeError:
             raise FunctionArgumentError(f"Invalid Function call on {name}. Arguments must be a valid JSON object")
 
-    parameters: dict = {}
     prepared_arguments = {}
 
     for param_name, param in inspect.signature(function).parameters.items():
         param_type = param.annotation
-        arg_value = parameters.get(param_name)
+        arg_value = dict_arguments.get(param_name)
 
         # Check if parameter type is a subclass of BaseModel and deserialize JSON into Pydantic model
         if inspect.isclass(param_type) and issubclass(param_type, BaseModel):
             prepared_arguments[param_name] = param_type.model_validate(arg_value)
         else:
             prepared_arguments[param_name] = cast(Any, arg_value)
-    
+
     return prepared_arguments
