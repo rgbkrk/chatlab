@@ -62,6 +62,8 @@ from openai.types import FunctionDefinition, FunctionParameters
 from openai.types.chat.completion_create_params import Function, FunctionCall
 from pydantic import BaseModel, create_model
 
+from openai.types.chat import ChatCompletionToolParam
+
 from .decorators import ChatlabMetadata
 
 
@@ -429,7 +431,7 @@ class FunctionRegistry:
         }
 
     @property
-    def tools(self):
+    def tools(self) -> Iterable[ChatCompletionToolParam]:
         return [{"type": "function", "function": adapt_function_definition(f)} for f in self.__schemas.values()]
 
     async def call(self, name: str, arguments: Optional[str] = None) -> Any:
