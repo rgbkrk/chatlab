@@ -458,31 +458,14 @@ class FunctionRegistry:
 
         function = possible_function
 
-        parameters: dict = {}
-
-        if arguments is not None and arguments != "":
-            try:
-                parameters = json.loads(arguments)
-            except json.JSONDecodeError:
-                raise FunctionArgumentError(f"Invalid Function call on {name}. Arguments must be a valid JSON object")
-
-        prepared_arguments = {}
-
-        for param_name, param in inspect.signature(function).parameters.items():
-            param_type = param.annotation
-            arg_value = parameters.get(param_name)
-
-            # Check if parameter type is a subclass of BaseModel and deserialize JSON into Pydantic model
-            if inspect.isclass(param_type) and issubclass(param_type, BaseModel):
-                prepared_arguments[param_name] = param_type.model_validate(arg_value)
-            else:
-                prepared_arguments[param_name] = cast(Any, arg_value)
+        prepared_arguments = extract_arguments(name, function, arguments)
 
         if asyncio.iscoroutinefunction(function):
             result = await function(**prepared_arguments)
         else:
             result = function(**prepared_arguments)
         return result
+
 
     def __contains__(self, name) -> bool:
         """Check if a function is registered by name."""
@@ -494,3 +477,26 @@ class FunctionRegistry:
     def function_definitions(self) -> list[FunctionDefinition]:
         """Get a list of function definitions."""
         return list(self.__schemas.values())
+
+
+def extract_arguments(name: str, function: Callable, arguments: Optional[str]) -> dict:
+    if arguments is not None and arguments != "":
+        try:
+            arguments = json.loads(arguments)
+        except json.JSONDecodeError:
+            raise FunctionArgumentError(f"Invalid Function call on {name}. Arguments must be a valid JSON object")
+
+    parameters: dict = {}
+    prepared_arguments = {}
+
+    for param_name, param in inspect.signature(function).parameters.items():
+        param_type = param.annotation
+        arg_value = parameters.get(param_name)
+
+        # Check if parameter type is a subclass of BaseModel and deserialize JSON into Pydantic model
+        if inspect.isclass(param_type) and issubclass(param_type, BaseModel):
+            prepared_arguments[param_name] = param_type.model_validate(arg_value)
+        else:
+            prepared_arguments[param_name] = cast(Any, arg_value)
+    
+    return prepared_arguments
