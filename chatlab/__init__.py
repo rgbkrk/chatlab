@@ -15,8 +15,6 @@ I am the king of the skies, the lord of the avian realm. Squawk!
 __author__ = """Kyle Kelley"""
 __email__ = "rgbkrk@gmail.com"
 
-from deprecation import deprecated
-
 from . import models
 from ._version import __version__
 from .chat import Chat
@@ -30,51 +28,12 @@ from .messaging import (
     narrate,
     system,
     user,
-    tool_result
+    tool_result,
 )
 from .registry import FunctionRegistry
 from spork import Markdown
 
-
-# Deprecate Session in favor of Chat
-class Session(Chat):
-    """Interactive chats inside of computational notebooks, relying on OpenAI's API.
-
-    Session is deprecated. Use `Chat` instead.
-    """
-
-    @deprecated(
-        deprecated_in="0.13.0",
-        removed_in="1.0.0",
-        current_version=__version__,
-        details="Use `Chat` instead.",
-    )
-    def __init__(self, *args, **kwargs):
-        """Initialize a Session with an optional initial context of messages.
-
-        Session is deprecated. Use `Chat` instead."""
-        super().__init__(*args, **kwargs)
-
-
-# Deprecate Session in favor of Chat
-class Conversation(Chat):
-    """Interactive chats inside of computational notebooks, relying on OpenAI's API.
-
-    Conversation is deprecated. Use `Chat` instead.
-    """
-
-    @deprecated(
-        deprecated_in="1.0.0",
-        removed_in="1.1.0",
-        current_version=__version__,
-        details="Use `Chat` instead.",
-    )
-    def __init__(self, *args, **kwargs):
-        """Initialize a Session with an optional initial context of messages.
-
-        Session is deprecated. Use `Chat` instead."""
-        super().__init__(*args, **kwargs)
-
+__version__ = __version__
 
 __all__ = [
     "Markdown",
@@ -88,7 +47,6 @@ __all__ = [
     "function_result",
     "tool_result",
     "models",
-    "Session",
     "Chat",
     "FunctionRegistry",
     "ChatlabMetadata",
