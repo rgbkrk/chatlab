@@ -1,10 +1,9 @@
 """Views for ChatLab."""
 from .assistant import AssistantMessageView
-from .assistant_function_call import AssistantFunctionCallView
-from .markdown import Markdown
+from .tools import ToolArguments, ToolCalled
 
 __all__ = [
     "AssistantMessageView",
-    "AssistantFunctionCallView",
-    "Markdown",
+    "ToolArguments",
+    "ToolCalled"
 ]
