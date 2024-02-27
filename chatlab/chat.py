@@ -17,14 +17,11 @@ import os
 from typing import Callable, List, Optional, Tuple, Type, Union, overload
 
 import openai
-from deprecation import deprecated
-from IPython.core.async_helpers import get_asyncio_loop
 from openai import AsyncOpenAI, AsyncStream
 from openai.types import FunctionDefinition
 from openai.types.chat import ChatCompletion, ChatCompletionChunk, ChatCompletionMessageParam
 from pydantic import BaseModel
 
-from ._version import __version__
 from .errors import ChatLabError
 from .messaging import assistant_tool_calls, human
 from .registry import FunctionRegistry, PythonHallucinationFunction
@@ -122,22 +119,6 @@ class Chat:
 
         if chat_functions is not None:
             self.function_registry.register_functions(chat_functions)
-
-    @deprecated(
-        deprecated_in="0.13.0",
-        removed_in="1.0.0",
-        current_version=__version__,
-        details="Use `submit` instead.",
-    )
-    def chat(
-        self,
-        *messages: Union[ChatCompletionMessageParam, str],
-    ):
-        """Send messages to the chat model and display the response.
-
-        Deprecated in 0.13.0, removed in 1.0.0. Use `submit` instead.
-        """
-        raise Exception("This method is deprecated. Use `submit` instead.")
 
     async def __call__(self, *messages: Union[ChatCompletionMessageParam, str], stream=True, **kwargs):
         """Send messages to the chat model and display the response."""
@@ -464,34 +445,3 @@ class Chat:
             return "<ChatLab 1 message>"
 
         return f"<ChatLab {len(self.messages)} messages>"
-
-    def ipython_magic_submit(self, line, cell: Optional[str] = None, **kwargs):
-        """Submit a cell to the ChatLab instance."""
-        # Line is currently unused, allowing for future expansion into allowing
-        # sending messages with other roles.
-
-        if cell is None:
-            return
-        cell = cell.strip()
-
-        asyncio.run_coroutine_threadsafe(self.submit(cell, **kwargs), get_asyncio_loop())
-
-    def make_magic(self, name):
-        """Register the chat as an IPython magic with the given name.
-
-        In [1]: chat = Chat()
-        In [2]: chat.make_magic("chat")
-        In [3]: %%chat
-           ...:
-           ...: Lets chat!
-           ...:
-        Out[3]: Sure, I'd be happy to chat! What's on your mind?
-
-        """
-        from IPython.core.getipython import get_ipython
-
-        ip = get_ipython()
-        if ip is None:
-            raise Exception("IPython is not available.")
-
-        ip.register_magic_function(self.ipython_magic_submit, magic_kind="line_cell", magic_name=name)
