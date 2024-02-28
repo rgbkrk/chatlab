@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Support parallel tool calling by default in `Chat`.
 - Legacy support for function calling is available by passing `legacy_function_calling=True` to the `Chat` constructor.
+- :new: `@incremental_display` decorator (see https://github.com/rgbkrk/chatlab/pull/136) that allows you to stream visualizations to the user as the model fills out function arguments.
+
+![building a graph quickly](https://private-user-images.githubusercontent.com/836375/308375331-8953f679-5051-4416-b8a1-0994bde8b032.gif?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDkwODIyMjEsIm5iZiI6MTcwOTA4MTkyMSwicGF0aCI6Ii84MzYzNzUvMzA4Mzc1MzMxLTg5NTNmNjc5LTUwNTEtNDQxNi1iOGExLTA5OTRiZGU4YjAzMi5naWY_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjQwMjI4JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI0MDIyOFQwMDU4NDFaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT0yNmIxMWIzMTczM2VmYzA0M2VlMDY1MmE0YmE0ODUwZjJjNzMxYjIzYjc1MDI1MmJjYTBhNWZhMzg5MjExZThmJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZhY3Rvcl9pZD0wJmtleV9pZD0wJnJlcG9faWQ9MCJ9.hhQqvJtvm3cI8W-JTuQiu8rryl97O_xLKf7dpR2QFSQ)
+
+
 
 ## [1.3.0]
 
