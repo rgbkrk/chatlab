@@ -30,15 +30,14 @@ Examples:
 """
 
 
-class ChatlabMetadata:
+from typing import Callable, Optional
+
+from pydantic import BaseModel
+
+class ChatlabMetadata(BaseModel):
     """ChatLab metadata for a function."""
-
-    expose_exception_to_llm: bool
-
-    def __init__(self, expose_exception_to_llm=False):
-        """Initialize ChatLab metadata for a function."""
-        self.expose_exception_to_llm = expose_exception_to_llm
-
+    expose_exception_to_llm: bool = False
+    render: Optional[Callable] = None
 
 def expose_exception_to_llm(func):
     """Expose exceptions from calling the function to the LLM.
@@ -70,3 +69,42 @@ def expose_exception_to_llm(func):
 
     func.chatlab_metadata.expose_exception_to_llm = True
     return func
+
+
+'''
+The `incremental_display` decorator lets you render a function while the model is streaming in arguments.
+
+def visualize_knowledge_graph(kg: KnowledgeGraph, comment: str = "Knowledge Graph"):
+    """Visualizes a knowledge graph using graphviz."""
+    dot = Digraph(comment=comment)
+
+    for node in kg.nodes:
+        dot.node(str(node.id), node.label, color=node.color)
+
+    for edge in kg.edges:
+        dot.edge(str(edge.source), str(edge.target), label=edge.label, color=edge.color)
+    
+    return dot
+
+
+@incremental_display(visualize_knowledge_graph)
+def store_knowledge_graph(kg: KnowledgeGraph, comment: str = "Knowledge Graph"):
+    """Databases a knowledge graph"""
+    ...
+
+chat.register(store_knowledge_graph)
+'''
+
+def incremental_display(render_func: Callable):
+    def decorator(func):
+        if not hasattr(func, "chatlab_metadata"):
+            func.chatlab_metadata = ChatlabMetadata()
+
+        # Make sure that chatlab_metadata is an instance of ChatlabMetadata
+        if not isinstance(func.chatlab_metadata, ChatlabMetadata):
+            raise Exception("func.chatlab_metadata must be an instance of ChatlabMetadata")
+
+        func.chatlab_metadata.render = render_func
+        return func
+    return decorator
+

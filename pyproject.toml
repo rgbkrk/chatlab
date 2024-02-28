@@ -32,7 +32,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 ipython = ">=7.0.0"
 openai = "^1.2.2"
 pydantic = "^2.4.2"
@@ -45,6 +45,7 @@ aiofiles = "^23.1.0"
 types-aiofiles = "^23.2.0.0"
 mypy = "^1.6.1"
 spork = "^1.2.0"
+instructor = "^0.6.1"
 
 [tool.poetry.group.dev.dependencies]
 tox = "^4.4.11"
@@ -76,13 +77,18 @@ test = [
 
 dev = ["tox", "pre-commit", "virtualenv", "pip", "twine", "toml", "bump2version"]
 
+[tool.setuptools.package-data]
+chatlab = ["py.typed"]
+
 [[tool.mypy.overrides]]
 module = [
     "aiofiles",
     "orjson",
     "vdom",
     "repr_llm.*",
-    "deprecation"
+    "deprecation",
+    "instructor",
+    "instructor.*"
 ]
 
 ignore_missing_imports = true
