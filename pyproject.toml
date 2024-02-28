@@ -3,7 +3,7 @@
 name = "chatlab"
 version = "1.3.0"
 homepage = "https://github.com/rgbkrk/chatlab"
-description = "Chat Plugin Experiments, Simplified. Create agents and give them superpowers in your notebooks."
+description = "Chat Plugin Experiments, Simplified. Give all the power to the models in your life."
 authors = ["Kyle Kelley <rgbkrk@gmail.com>"]
 readme = "README.md"
 license =  "BSD-3-Clause"
