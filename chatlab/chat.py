@@ -261,6 +261,7 @@ class Chat:
             stream: Whether to stream chat into markdown or not. If False, the entire chat will be sent once.
 
         """
+
         full_messages: List[ChatCompletionMessageParam] = []
         full_messages.extend(self.messages)
 
@@ -285,14 +286,14 @@ class Chat:
                 "temperature": kwargs.get("temperature", 0),
             }
 
+            if self.legacy_function_calling:
+                chat_create_kwargs.update(self.function_registry.api_manifest())
+            else:
+                chat_create_kwargs["tools"] = self.function_registry.tools or None
+
             # Due to the strict response typing based on `Literal` typing on `stream`, we have to process these
             # two cases separately
             if stream:
-                if self.legacy_function_calling:
-                    chat_create_kwargs.update(self.function_registry.api_manifest())
-                else:
-                    chat_create_kwargs["tools"] = self.function_registry.tools
-
                 streaming_response = await client.chat.completions.create(
                     **chat_create_kwargs,
                     stream=True,
