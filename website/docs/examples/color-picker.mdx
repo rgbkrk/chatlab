@@ -7,10 +7,11 @@ import ChatFunctionCall from "@site/src/components/ChatFunctionCall";
 import { OutputBlock } from "@site/src/components/cell";
 import { ColorPalette } from "@site/src/components/ColorPalette";
 
-Tool and function calls can return rich HTML output into notebooks. 
-In this example, we expose a function `show_colors` to the model to let it display the color palette it chooses.
-The function itself uses the Ipython function `display()` in order to use `_repr_html_()` to create a visual display in the notebook.
-This reuses the standard method of displaying rich information in notebooks.
+Tool and function calls can `display` rich HTML output into notebooks. 
+
+In this example, we expose a function `show_colors` to the model to let it display the color palette it chooses to the user.
+
+The IPython-provided `display()` uses your object's `_repr_html_()` to show HTML in your notebook.
 
 ```python cell count=1
 from chatlab import Chat, models, system
