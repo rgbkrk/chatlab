@@ -1,42 +1,38 @@
-"""Color hacking in the notebook.
-
-This module exposes a function that will display a color palette in a notebook"""
+"""Let models pick and show color palettes to you."""
 import hashlib
-from typing import Dict, List, Optional
+from typing import List, Optional
+from pydantic import BaseModel, validator, Field
 
 from IPython.display import display
 
 
-class Palette:
+class Palette(BaseModel):
     """A palette of colors for the user to see."""
 
-    def __init__(self, colors: List[str], name: Optional[str]):
-        """Creates a palette of colors for the user to see."""
-        self.colors = colors
-        self.name = name
+    colors: List[str] = Field(..., description="A list of CSS colors to display.")
+    name: Optional[str] = None
 
-    @property
-    def colors(self):
-        """Returns the colors in the palette."""
-        return self._colors
-
-    @colors.setter
-    def colors(self, colors: List[str]):
-        self._colors = colors
-        self.html = "<div>"
-        for color in colors:
-            self.html += f'<div style="background-color:{color}; width:50px; height:50px; display:inline-block;"></div>'
-        self.html += "</div>"
+    @validator("colors", each_item=True)
+    def check_color_validity(cls, v):
+        if not isinstance(v, str):
+            raise ValueError("Each color must be a string representation of a CSS color.")
+        if not all(c.isalnum() or c in "#.,()% " for c in v):
+            raise ValueError(
+                "Color contains invalid characters. Only alphanumeric and CSS color specific characters are allowed."
+            )
+        return v
 
     def _repr_html_(self):
-        return self.html
+        html = "<div>"
+        for color in self.colors:
+            html += f'<div style="background-color:{color}; width:50px; height:50px; display:inline-block;"></div>'
+        html += "</div>"
+
+        return html
 
     def __repr__(self):
         """Returns a string representation of the palette."""
         return f"Palette({self.colors}, {self.name})"
-
-
-palettes: Dict[str, Palette] = {}
 
 
 def _generate_palette_name(colors: List[str]) -> str:
@@ -44,15 +40,9 @@ def _generate_palette_name(colors: List[str]) -> str:
     return f"palette-{hash_object.hexdigest()}"
 
 
-def show_colors(colors: List[str], store_as: Optional[str] = None):
+def show_colors(colors: List[str]):
     """Shows a list of CSS colors for the user in their notebook."""
-    global palettes
-
-    if store_as is None:
-        store_as = _generate_palette_name(colors)
-
-    palette = Palette(colors, store_as)
-    palettes[store_as] = palette
+    palette = Palette(colors=colors)
 
     display(palette)
-    return f"Displayed colors for user and stored as `palettes['{store_as}']`."
+    return "Displayed colors for user."
