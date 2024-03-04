@@ -46,5 +46,7 @@ def test_assistant_function_call_view_get():
         "arguments": "you can do it",
         "result": "3.14159",
         "verbage": "Called",
+        "custom_render": None,
+        "finished": True
     }
 
