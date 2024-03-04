@@ -161,7 +161,6 @@ def extract_model_from_function(func_name: str, function: Callable) -> Type[Base
     model = create_model(
         function.__name__,
         __config__=FunctionSchemaConfig,  # type: ignore
-        __required__=required_fields,
         **fields,  # type: ignore
     )
     return model
