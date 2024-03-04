@@ -179,6 +179,7 @@ class ToolCalled(ToolArguments):
     arguments: str = ""
     verbage: str = "Called"
     result: str = ""
+    finished: bool = True
 
     def render(self):
         if self.custom_render is not None:
