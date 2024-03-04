@@ -27,6 +27,8 @@ from .messaging import assistant_tool_calls, human
 from .registry import FunctionRegistry, PythonHallucinationFunction
 from .views import ToolArguments, AssistantMessageView
 
+from .models import GPT_3_5_TURBO
+
 logger = logging.getLogger(__name__)
 
 
@@ -65,7 +67,7 @@ class Chat:
         *initial_context: Union[ChatCompletionMessageParam, str],
         base_url=None,
         api_key=None,
-        model="gpt-3.5-turbo-0613",
+        model=GPT_3_5_TURBO,
         function_registry: Optional[FunctionRegistry] = None,
         chat_functions: Optional[List[Callable]] = None,
         allow_hallucinated_python: bool = False,
