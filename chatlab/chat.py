@@ -109,9 +109,9 @@ class Chat:
 
         if function_registry is None:
             if allow_hallucinated_python and python_hallucination_function is None:
-                from .builtins import run_cell
+                from .tools import run_python
 
-                python_hallucination_function = run_cell
+                python_hallucination_function = run_python
 
             self.function_registry = FunctionRegistry(python_hallucination_function=python_hallucination_function)
         else:

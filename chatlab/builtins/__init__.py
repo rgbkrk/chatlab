@@ -1,4 +1,4 @@
-"""Builtins for ChatLab."""
+"""Simple tools for any LLM to use."""
 
 from deprecation import deprecated
 

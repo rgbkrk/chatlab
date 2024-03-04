@@ -15,7 +15,7 @@ The IPython-provided `display()` uses your object's `_repr_html_()` to show HTML
 
 ```python cell count=1
 from chatlab import Chat, models, system
-from chatlab.builtins.colors import show_colors
+from chatlab.tools.colors import show_colors
 
 chat = Chat(
     system("Format responses in markdown,. You are a skilled designer."),
