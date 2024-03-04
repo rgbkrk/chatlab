@@ -18,27 +18,6 @@ from IPython.core.getipython import get_ipython
 from instructor.dsl.partialjson import JSONParser
 
 
-class ToolCalled(AutoUpdate):
-    """Once a tool has finished up, this is the view."""
-
-    id: str
-    name: str
-    arguments: str = ""
-    verbage: str = "Called"
-    result: str = ""
-
-    def render(self):
-        return ChatFunctionComponent(name=self.name, verbage=self.verbage, input=self.arguments, output=self.result)
-
-    # TODO: This is only here for legacy function calling
-    def get_function_called_message(self):
-        return function_result(self.name, self.result)
-
-    def get_tool_called_message(self):
-        # NOTE: OpenAI has mismatched types where it doesn't include the `name`
-        # xref: https://github.com/openai/openai-python/issues/1078
-        return tool_result(tool_call_id=self.id, content=self.result, name=self.name)
-
 
 class ToolArguments(AutoUpdate):
     id: str
@@ -130,11 +109,13 @@ class ToolArguments(AutoUpdate):
 
     def apply_result(self, result: str):
         """Replaces the existing display with a new one that shows the result of the tool being called."""
-        return ToolCalled(
+        tc = ToolCalled(
             id=self.id, name=self.name, arguments=self.arguments, result=result, display_id=self.display_id
         )
+        tc.update()
+        return tc
 
-    async def call(self, function_registry: FunctionRegistry) -> ToolCalled:
+    async def call(self, function_registry: FunctionRegistry) -> 'ToolCalled':
         """Call the function and return a stack of messages for LLM and human consumption."""
         function_name = self.name
         function_args = self.arguments
@@ -188,3 +169,53 @@ class ToolArguments(AutoUpdate):
         self.verbage = "Ran"
 
         return self.apply_result(repr_llm)
+
+
+class ToolCalled(ToolArguments):
+    """Once a tool has finished up, this is the view."""
+
+    id: str
+    name: str
+    arguments: str = ""
+    verbage: str = "Called"
+    result: str = ""
+
+    def render(self):
+        if self.custom_render is not None:
+            # We use the same definition as was in the original function
+            try:
+                parser = JSONParser()
+                possible_args = parser.parse(self.arguments)
+
+                Model = extract_model_from_function(self.name, self.custom_render)
+                # model = Model.model_validate(possible_args)
+                model = Model(**possible_args)
+
+                # Pluck the kwargs out from the crafted model, as we can't pass the pydantic model as the arguments
+                # However any "inner" models should retain their pydantic Model nature
+                kwargs = {k: getattr(model, k) for k in model.__dict__.keys()}
+
+            except FunctionArgumentError:
+                return None
+            except ValidationError:
+                return None
+
+            try:
+                return self.custom_render(**kwargs)
+            except Exception as e:
+                # Exception in userland code
+                # Would be preferable to bubble up, however
+                # it might be due to us passing a not-quite model
+                warnings.warn_explicit(f"Exception in userland code: {e}", UserWarning, "chatlab", 0)
+                raise
+
+        return ChatFunctionComponent(name=self.name, verbage=self.verbage, input=self.arguments, output=self.result)
+
+    # TODO: This is only here for legacy function calling
+    def get_function_called_message(self):
+        return function_result(self.name, self.result)
+
+    def get_tool_called_message(self):
+        # NOTE: OpenAI has mismatched types where it doesn't include the `name`
+        # xref: https://github.com/openai/openai-python/issues/1078
+        return tool_result(tool_call_id=self.id, content=self.result, name=self.name)
