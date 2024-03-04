@@ -112,3 +112,5 @@ Untitled*.ipynb
 lcov.info
 
 ops.ipynb
+
+.jupyter_ystore.db

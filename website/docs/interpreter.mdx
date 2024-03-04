@@ -12,17 +12,17 @@ There is a builtin code interpreter that lets the assistant run code. It's not e
 
 ```python cell count=1
 from chatlab import Chat
-from chatlab.builtins import run_cell
+from chatlab.tools import run_python
 
 chat = Chat()
-chat.register(run_cell)
+chat.register(run_python)
 await chat("Please calculate sin(793.1)")
 ```
 
 <OutputBlock count={1}>
   <ChatFunctionCall
     open
-    name="run_cell"
+    name="run_python"
     input={'{\n  "code": "import math\\nmath.sin(793.1)"\n}'}
     output="0.9884482539459452"
   />
@@ -37,7 +37,7 @@ You can let ChatGPT take on a data persona with a `system` message and then have
 
 ```python
 from chatlab import Chat, system
-from chatlab.builtins import run_cell
+from chatlab.tools import run_python 
 import pandas as pd
 
 # The Chicago Public Library location dataset
@@ -49,22 +49,22 @@ chat = Chat(
         "collaborating with a data engineer."
     ),
 )
-chat.register(run_cell)
+chat.register(run_python)
 await chat("Please tell me about what's in `df`")
 ```
 
 ## The hidden `python` hallucination
 
-Sometimes GPT models will hallucinate a `python` tool that accepts a single string rather than the proper JSON object that `run_cell` requests. You can include it in your `Chat` to handle these cases.
+Sometimes GPT models will hallucinate a `python` tool that accepts a single string rather than the proper JSON object that `run_python` requests. You can include it in your `Chat` to handle these cases.
 
 ```python cell count=1
 from chatlab import Chat
-from chatlab.builtins import run_cell
+from chatlab.tools import run_python 
 
 chat = Chat(
     allow_hallucinated_python=True
 )
-chat.register(run_cell)
+chat.register(run_python)
 await chat("Please calculate sin(793.1)")
 ```
 

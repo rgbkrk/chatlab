@@ -3,7 +3,7 @@ import pytest
 
 from chatlab import FunctionRegistry
 from chatlab.builtins import os_functions
-from chatlab.builtins.files import (
+from chatlab.tools.files import (
     get_file_size,
     is_directory,
     is_file,
@@ -11,7 +11,7 @@ from chatlab.builtins.files import (
     read_file,
     write_file,
 )
-from chatlab.builtins.shell import run_shell_command
+from chatlab.tools.shell import run_shell_command
 
 
 def test_chat_function_adherence():
@@ -39,7 +39,7 @@ async def test_run_shell_command():
 
 @pytest.mark.asyncio
 async def test_list_files():
-    directory = "chatlab/builtins"
+    directory = "chatlab/tools"
     files = await list_files(directory)
     assert isinstance(files, list)
     assert len(files) > 0
@@ -47,7 +47,7 @@ async def test_list_files():
 
 @pytest.mark.asyncio
 async def test_get_file_size():
-    file_path = "chatlab/builtins/files.py"
+    file_path = "chatlab/tools/files.py"
     size = await get_file_size(file_path)
     assert isinstance(size, int)
     assert size > 0
@@ -55,13 +55,13 @@ async def test_get_file_size():
 
 @pytest.mark.asyncio
 async def test_is_file():
-    file_path = "chatlab/builtins/files.py"
+    file_path = "chatlab/tools/files.py"
     assert await is_file(file_path)
 
 
 @pytest.mark.asyncio
 async def test_is_directory():
-    directory = "chatlab/builtins"
+    directory = "chatlab/tools"
     assert await is_directory(directory)
 
 
