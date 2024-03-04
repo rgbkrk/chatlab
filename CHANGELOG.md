@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0]
+
+### Added
+- New `tools` namespace to replace the `builtins` namespace.
+- Simplified `Palette` class in `colors.py` for displaying color palettes, now leveraging Pydantic for validation.
+
+### Changed
+- Default model in `Chat` class constructor now uses the `GPT_3_5_TURBO` enum.
+- Migrated `run_cell` to `run_python` to avoid naming confusion and deprecated `run_cell`.
+- Updated documentation and examples to reflect the new `tools` namespace and usage patterns.
+- Removed `__required__` from `extract_model_from_function` in `registry.py` to suppress Pydantic warnings.
+
+### Fixed
+- Ensured the final tool call result properly updates the UI to reflect the outcome of tool execution.
+
 ## [2.0.0]
 
 - Support parallel tool calling by default in `Chat`.

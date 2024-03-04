@@ -18,7 +18,7 @@ __email__ = "rgbkrk@gmail.com"
 from . import models
 from ._version import __version__
 from .chat import Chat
-from .decorators import ChatlabMetadata, expose_exception_to_llm
+from .decorators import ChatlabMetadata, expose_exception_to_llm, incremental_display
 from .messaging import (
     ai,
     assistant,
@@ -45,6 +45,7 @@ __all__ = [
     "user",
     "assistant",
     "assistant_function_call",
+    "incremental_display",
     "function_result",
     "tool_result",
     "models",
