@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.1.1]
 
 ### Fixed
-- Fixed a bug where the final render of a tool call was not being displayed in the UI.
+- Fixed a bug where the final render of a tool call wasn't using the custom render.
 
 ## [2.1.0]
 
