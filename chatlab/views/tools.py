@@ -110,7 +110,8 @@ class ToolArguments(AutoUpdate):
     def apply_result(self, result: str):
         """Replaces the existing display with a new one that shows the result of the tool being called."""
         tc = ToolCalled(
-            id=self.id, name=self.name, arguments=self.arguments, result=result, display_id=self.display_id
+            id=self.id, name=self.name, arguments=self.arguments, result=result, display_id=self.display_id,
+            custom_render=self.custom_render
         )
         tc.update()
         return tc
