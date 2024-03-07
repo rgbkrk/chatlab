@@ -145,8 +145,7 @@ class ToolArguments(AutoUpdate):
             # If not, then we just raise it and let the user handle it.
             chatlab_metadata = function_registry.get_chatlab_metadata(function_name)
 
-            if not chatlab_metadata.expose_exception_to_llm:
-                # Bubble up the exception to the user
+            if chatlab_metadata.bubble_exceptions:
                 raise
 
             repr_llm = repr(e)
