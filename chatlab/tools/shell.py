@@ -1,4 +1,5 @@
 """Shell commands for ChatLab."""
+
 import asyncio
 import subprocess
 

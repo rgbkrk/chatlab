@@ -390,16 +390,14 @@ class Chat:
         self,
         function: None = None,
         parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
-    ) -> Callable:
-        ...
+    ) -> Callable: ...
 
     @overload
     def register(
         self,
         function: Callable,
         parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
-    ) -> FunctionDefinition:
-        ...
+    ) -> FunctionDefinition: ...
 
     def register(
         self,

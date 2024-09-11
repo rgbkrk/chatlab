@@ -288,16 +288,14 @@ class FunctionRegistry:
         self,
         function: None = None,
         parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
-    ) -> Callable:
-        ...
+    ) -> Callable: ...
 
     @overload
     def register(
         self,
         function: Callable,
         parameter_schema: Optional[Union[Type["BaseModel"], dict]] = None,
-    ) -> FunctionDefinition:
-        ...
+    ) -> FunctionDefinition: ...
 
     def register(
         self,
@@ -438,7 +436,13 @@ class FunctionRegistry:
 
     @property
     def tools(self) -> Iterable[ChatCompletionToolParam]:
-        return [{"type": "function", "function": adapt_function_definition(f)} for f in self.__schemas.values()]
+        return [
+            ChatCompletionToolParam(
+                type="function",
+                function=adapt_function_definition(f),  # type: ignore
+            )
+            for f in self.__schemas.values()
+        ]
 
     async def call(self, name: str, arguments: Optional[str] = None) -> Any:
         """Call a function by name with the given parameters."""

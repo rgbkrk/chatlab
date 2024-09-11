@@ -1,4 +1,5 @@
 """Media types for rich output for LLMs and in-notebook."""
+
 import json
 from typing import Optional
 

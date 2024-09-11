@@ -47,6 +47,5 @@ def test_assistant_function_call_view_get():
         "result": "3.14159",
         "verbage": "Called",
         "custom_render": None,
-        "finished": True
+        "finished": True,
     }
-

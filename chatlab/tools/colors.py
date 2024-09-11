@@ -1,4 +1,5 @@
 """Let models pick and show color palettes to you."""
+
 import hashlib
 from typing import List, Optional
 from pydantic import BaseModel, validator, Field

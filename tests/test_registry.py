@@ -121,6 +121,7 @@ def test_generate_function_schema():
             },
             "required": ["x", "y"],
         },
+        "strict": None,
     }
     assert schema.model_dump() == expected_schema
 
@@ -143,6 +144,7 @@ def test_generate_function_schema_with_model():
             },
             "required": ["x", "y"],
         },
+        "strict": None,
     }
     assert schema.model_dump() == expected_schema
 
@@ -161,6 +163,7 @@ def test_generate_function_schema_with_method():
             },
             "required": ["x", "y"],
         },
+        "strict": None,
     }
     assert schema.model_dump() == expected_schema
 
@@ -176,7 +179,7 @@ def test_generate_function_schema_with_model_argument():
                 "x": {"type": "integer"},
                 "y": {"type": "string"},
                 "z": {"default": False, "type": "boolean"},
-                "model": {"allOf": [{"$ref": "#/$defs/SimpleModel"}], "default": None},
+                "model": {"$ref": "#/$defs/SimpleModel", "default": None},
             },
             "required": ["x", "y"],
             "$defs": {
@@ -197,6 +200,7 @@ def test_generate_function_schema_with_model_argument():
                 }
             },
         },
+        "strict": None,
     }
     assert schema.model_dump() == expected_schema
 
@@ -212,8 +216,8 @@ def test_generate_function_schema_with_model_and_nested_model_arguments():
                 "x": {"type": "integer"},
                 "y": {"type": "string"},
                 "z": {"default": False, "type": "boolean"},
-                "model": {"allOf": [{"$ref": "#/$defs/SimpleModel"}], "default": None},
-                "nested_model": {"allOf": [{"$ref": "#/$defs/NestedModel"}], "default": None},
+                "model": {"$ref": "#/$defs/SimpleModel", "default": None},
+                "nested_model": {"$ref": "#/$defs/NestedModel", "default": None},
             },
             "required": ["x", "y"],
             "$defs": {
@@ -249,6 +253,7 @@ def test_generate_function_schema_with_model_and_nested_model_arguments():
                 },
             },
         },
+        "strict": None,
     }
     assert schema.model_dump() == expected_schema
 
@@ -268,6 +273,7 @@ def test_generate_function_schema_with_uuid_argument():
             },
             "required": ["x", "y"],
         },
+        "strict": None,
     }
     assert schema.model_dump() == expected_schema
 
@@ -383,57 +389,59 @@ async def test_function_registry_call_edge_cases():
 async def test_function_registry_call_tool():
     registry = FunctionRegistry()
     registry.register(simple_func, SimpleModel)
-
     registry.register(simple_func_with_model_arg)
 
     tools = registry.tools
 
-    assert tools == [{
-        "type": "function",
-        "function": {
-            "name": "simple_func",
-            "description": "A simple test function",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "x": {"type": "integer"},
-                    "y": {"type": "string"},
-                    "z": {"type": "boolean", "default": False, "description": "A simple boolean field"},
+    assert tools == [
+        {
+            "type": "function",
+            "function": {
+                "name": "simple_func",
+                "description": "A simple test function",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "x": {"type": "integer"},
+                        "y": {"type": "string"},
+                        "z": {"type": "boolean", "default": False, "description": "A simple boolean field"},
+                    },
+                    "required": ["x", "y"],
                 },
-                "required": ["x", "y"],
             },
-        }
-    }, {
-        "type": "function",
-        "function": {
-            "name": "simple_func_with_model_arg",
-            "description": "A simple test function with a model argument",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "x": {"type": "integer"},
-                    "y": {"type": "string"},
-                    "z": {"default": False, "type": "boolean"},
-                    "model": {"allOf": [{"$ref": "#/$defs/SimpleModel"}], "default": None},
-                },
-                "required": ["x", "y"],
-                "$defs": {
-                    "SimpleModel": {
-                        "title": "SimpleModel",
-                        "type": "object",
-                        "properties": {
-                            "x": {"title": "X", "type": "integer"},
-                            "y": {"title": "Y", "type": "string"},
-                            "z": {
-                                "title": "Z",
-                                "description": "A simple boolean field",
-                                "default": False,
-                                "type": "boolean",
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "simple_func_with_model_arg",
+                "description": "A simple test function with a model argument",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "x": {"type": "integer"},
+                        "y": {"type": "string"},
+                        "z": {"default": False, "type": "boolean"},
+                        "model": {"$ref": "#/$defs/SimpleModel", "default": None},
+                    },
+                    "required": ["x", "y"],
+                    "$defs": {
+                        "SimpleModel": {
+                            "title": "SimpleModel",
+                            "type": "object",
+                            "properties": {
+                                "x": {"title": "X", "type": "integer"},
+                                "y": {"title": "Y", "type": "string"},
+                                "z": {
+                                    "title": "Z",
+                                    "description": "A simple boolean field",
+                                    "default": False,
+                                    "type": "boolean",
+                                },
                             },
-                        },
-                        "required": ["x", "y"],
-                    }
+                            "required": ["x", "y"],
+                        }
+                    },
                 },
             },
-        }
-    }]
+        },
+    ]
