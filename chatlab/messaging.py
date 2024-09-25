@@ -105,8 +105,7 @@ def function_result(name: str, content: str) -> ChatCompletionMessageParam:
 
 
 class HasGetToolArgumentsParameter(Protocol):
-    def get_tool_arguments_parameter(self) -> ChatCompletionMessageToolCallParam:
-        ...
+    def get_tool_arguments_parameter(self) -> ChatCompletionMessageToolCallParam: ...
 
 
 def assistant_tool_calls(tool_calls: Iterable[HasGetToolArgumentsParameter]) -> ChatCompletionMessageParam:

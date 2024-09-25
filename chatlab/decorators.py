@@ -29,16 +29,18 @@ Examples:
 
 """
 
-
 from typing import Callable, Optional
 
 from pydantic import BaseModel
 
+
 class ChatlabMetadata(BaseModel):
     """ChatLab metadata for a function."""
+
     expose_exception_to_llm: bool = True
     render: Optional[Callable] = None
     bubble_exceptions: bool = False
+
 
 def bubble_exceptions(func):
     if not hasattr(func, "chatlab_metadata"):
@@ -50,6 +52,7 @@ def bubble_exceptions(func):
 
     func.chatlab_metadata.bubble_exceptions = True
     return func
+
 
 def expose_exception_to_llm(func):
     """Expose exceptions from calling the function to the LLM.
@@ -107,6 +110,7 @@ def store_knowledge_graph(kg: KnowledgeGraph, comment: str = "Knowledge Graph"):
 chat.register(store_knowledge_graph)
 '''
 
+
 def incremental_display(render_func: Callable):
     def decorator(func):
         if not hasattr(func, "chatlab_metadata"):
@@ -118,5 +122,5 @@ def incremental_display(render_func: Callable):
 
         func.chatlab_metadata.render = render_func
         return func
-    return decorator
 
+    return decorator

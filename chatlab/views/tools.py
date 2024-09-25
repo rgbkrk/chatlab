@@ -15,8 +15,7 @@ from openai.types.chat import ChatCompletionMessageToolCallParam
 from IPython.display import display
 from IPython.core.getipython import get_ipython
 
-from instructor.dsl.partialjson import JSONParser
-
+from jiter import from_json
 
 
 class ToolArguments(AutoUpdate):
@@ -75,11 +74,11 @@ class ToolArguments(AutoUpdate):
 
     def render(self):
         if self.custom_render is not None:
-            # We use the same definition as was in the original function
             try:
-                parser = JSONParser()
-                possible_args = parser.parse(self.arguments)
-
+                possible_args = from_json(self.arguments.encode("utf-8"), partial_mode="trailing-strings")
+            except Exception:
+                return None
+            try:
                 Model = extract_model_from_function(self.name, self.custom_render)
                 # model = Model.model_validate(possible_args)
                 model = Model(**possible_args)
@@ -110,13 +109,17 @@ class ToolArguments(AutoUpdate):
     def apply_result(self, result: str):
         """Replaces the existing display with a new one that shows the result of the tool being called."""
         tc = ToolCalled(
-            id=self.id, name=self.name, arguments=self.arguments, result=result, display_id=self.display_id,
-            custom_render=self.custom_render
+            id=self.id,
+            name=self.name,
+            arguments=self.arguments,
+            result=result,
+            display_id=self.display_id,
+            custom_render=self.custom_render,
         )
         tc.update()
         return tc
 
-    async def call(self, function_registry: FunctionRegistry) -> 'ToolCalled':
+    async def call(self, function_registry: FunctionRegistry) -> "ToolCalled":
         """Call the function and return a stack of messages for LLM and human consumption."""
         function_name = self.name
         function_args = self.arguments
@@ -185,9 +188,11 @@ class ToolCalled(ToolArguments):
         if self.custom_render is not None:
             # We use the same definition as was in the original function
             try:
-                parser = JSONParser()
-                possible_args = parser.parse(self.arguments)
+                possible_args = from_json(self.arguments.encode("utf-8"), partial_mode="trailing-strings")
+            except Exception:
+                return None
 
+            try:
                 Model = extract_model_from_function(self.name, self.custom_render)
                 # model = Model.model_validate(possible_args)
                 model = Model(**possible_args)
